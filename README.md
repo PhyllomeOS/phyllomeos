@@ -17,6 +17,71 @@ Adjust settings according to your needs
 
 ```
 virt-install \
+    --connect qemu:///system \
+    --name flat-dmd \ 
+    --virt-type kvm \ 
+    --arch x86_64 \ 
+    --machine q35 \
+    --boot uefi \ 
+    --cpu host-model,topology.sockets=1,topology.cores=2,topology.threads=2 \
+    --vcpus 4 \ 
+    --memory 8192 \
+    --controller type=scsi,model=virtio-scsi \
+    --disk path=/var/lib/libvirt/images/flat-dmd.img,format=raw,bus=virtio,cache=writeback,size=10 \ 
+    --controller type=virtio-serial \ 
+    --video virtio \ 
+    --network network=default,model=virtio \
+    --input type=keyboard,bus=virtio \ 
+    --input type=tablet,bus=virtio \ 
+    --rng /dev/urandom,model=virtio \
+    --channel spicevmc \ 
+    --autoconsole none \  
+    --sound none \ 
+    --controller type=usb,model=none \
+    --location=https://download.fedoraproject.org/pub/fedora/linux/releases/34/Everything/x86_64/os/ \
+    --extra-args="inst.ks=https://git.phyllo.me/home/kickstart/raw/branch/master/flat/flat-dmd.cfg"
+```
+
+### This one bellow works 
+
+```
+virt-install \
+    --connect qemu:///system \
+    --virt-type kvm \
+    --arch x86_64 \
+    --machine q35 \
+    --name flat-dmd \
+    --boot uefi \
+    --cpu host-model,topology.sockets=1,topology.cores=2,topology.threads=2 \
+    --vcpus 4 \
+    --memory 8192 \
+    --video virtio \
+    --channel spicevmc \
+    --autoconsole none \
+    --sound none \
+    --controller type=virtio-serial \
+    --controller type=usb,model=none \
+    --controller type=scsi,model=virtio-scsi \
+    --network network=default,model=virtio \
+    --input type=keyboard,bus=virtio \
+    --input type=tablet,bus=virtio \
+    --rng /dev/urandom,model=virtio \
+    --disk path=/var/lib/libvirt/images/flat-dmd.img,format=raw,bus=virtio,cache=writeback,size=5 \
+    --location=https://download.fedoraproject.org/pub/fedora/linux/releases/34/Everything/x86_64/os/ \
+    --extra-args="inst.ks=https://git.phyllo.me/home/kickstart/raw/branch/master/flat/flat-dmd.cfg"
+```
+
+###  Basic building blocks 
+
+%include bmd.cfg # A minimal machine
+%include bdmd.cfg # A desktop environment
+%include bhmd.cfg # A base hypervisor
+%include bhamd.cfg # Specific virtualization configuration for AMD (tm) CPUs
+
+### Explanation
+
+```
+virt-install \
     --name flat-dmd \ # [Optionnal] name of the machine 
     --connect qemu:///system \ # we connect to QEMU through the system socket ?
     --virt-type kvm \ # pick kvm VMM
@@ -38,17 +103,10 @@ virt-install \
     --autoconsole none \ # no auto connection to console on launch 
     --sound none \ no sound emulation
     --controller type=usb,model=none \ no emulated USB controller
-
     --location=https://download.fedoraproject.org/pub/fedora/linux/releases/34/Everything/x86_64/os/ \
     --extra-args="inst.ks=https://git.phyllo.me/home/kickstart/raw/branch/master/flat/flat-dmd.cfg"
 ```
 
-###  Basic building blocks 
-
-%include bmd.cfg # A minimal machine
-%include bdmd.cfg # A desktop environment
-%include bhmd.cfg # A base hypervisor
-%include bhamd.cfg # Specific virtualization configuration for AMD (tm) CPUs
 
 ### Licence
 
