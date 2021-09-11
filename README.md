@@ -11,7 +11,7 @@
 
 ### Examples
 
-* With a remotely hosted kickstart file, install a minimal Linux RPM-based operating system automatically on an UEFI-based, Q35 PCI-Express virtual motherboard with virtio-devices.
+* With a remotely hosted kickstart file, install a minimal Linux RPM-based operating system automatically on an UEFI-based, Q35 PCI Express virtual motherboard with virtio-devices.
 
 Adjust settings according to your needs
 
@@ -70,6 +70,8 @@ virt-install \
     --location=https://download.fedoraproject.org/pub/fedora/linux/releases/34/Everything/x86_64/os/ \
     --extra-args="inst.ks=https://git.phyllo.me/home/kickstart/raw/branch/master/flat/flat-dmd.cfg"
 ```
+
+    --initrd-inject bmd.cfg --extra-args "inst.ks=file:/bmd.cfg"
 
 ###  Basic building blocks 
 
