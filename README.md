@@ -1,49 +1,52 @@
-#            __          ____                        ____  _____
-#     ____  / /_  __  __/ / /___  ____ ___  ___     / __ \/ ___/
-#    / __ \/ __ \/ / / / / / __ \/ __ `__ \/ _ \   / / / /\__ \
-#   / /_/ / / / / /_/ / / / /_/ / / / / / /  __/  / /_/ /___/ /
-#  / .___/_/ /_/\__, /_/_/\____/_/ /_/ /_/\___/   \____//____/
-# /_/          /____/
+# Phyllome OS
 
+> Virtualization for the rest of us
 
-### What ? 
+## What ? 
 
-    * This repository contains kickstart files for Phyllome itself and its RPM-based guests.
+* This repository contains the basic building blocks required for deploying [Phyllome OS](https://phyllo.me/) bare-metal or in a virtual machine using [kickstart](https://en.wikipedia.org/wiki/Kickstart_(Linux)) files. 
 
-### Examples
+## Development
 
-* With a remotely hosted kickstart file, install a minimal Linux RPM-based operating system automatically on an UEFI-based, Q35 PCI Express virtual motherboard with virtio-devices.
+For development purposes, Phyllome OS can be deployed in a virtual machine, leveraging nested-virtualization.
 
-Adjust settings according to your needs
+### Requirements
 
-```
-virt-install \
-    --connect qemu:///system \
-    --name flat-dmd \ 
-    --virt-type kvm \ 
-    --arch x86_64 \ 
-    --machine q35 \
-    --boot uefi \ 
-    --cpu host-model,topology.sockets=1,topology.cores=2,topology.threads=2 \
-    --vcpus 4 \ 
-    --memory 8192 \
-    --controller type=scsi,model=virtio-scsi \
-    --disk path=/var/lib/libvirt/images/flat-dmd.img,format=raw,bus=virtio,cache=writeback,size=10 \ 
-    --controller type=virtio-serial \ 
-    --video virtio \ 
-    --network network=default,model=virtio \
-    --input type=keyboard,bus=virtio \ 
-    --input type=tablet,bus=virtio \ 
-    --rng /dev/urandom,model=virtio \
-    --channel spicevmc \ 
-    --autoconsole none \  
-    --sound none \ 
-    --controller type=usb,model=none \
-    --location=https://download.fedoraproject.org/pub/fedora/linux/releases/34/Everything/x86_64/os/ \
-    --extra-args="inst.ks=https://git.phyllo.me/home/kickstart/raw/branch/master/flat/flat-dmd.cfg"
-```
+* A x86_64 platform that supports hardware-assisted virtualization
+* A recent Linux Kernel (5.X)
+* The `virt-install` and `virt-manager` tools
+* `libvirt` and `qemu-kvm`up and running
+* Nested-virtualization enabled
 
-### This one bellow works 
+### Preparation
+
+*Enable nested-virtualization* :
+
+* For AMD-based systems
+
+```to be done```
+
+* For Intel-based systems
+
+```to be done```
+
+* For Fedora 34
+
+*Install the prerequisites* :
+
+```sudo dnf install -y qemu-kvm libvirt libvirt-daemon-config-network libvirt-daemon-kvm virt-install virt-top virt-manager libguestfs-tools python3-libguestfs guestfs-tools```
+
+* For Ubuntu 20.4 or Debian 11
+
+```To be done```
+
+### Fire!
+
+> Note : the following scripts relies on a kickstart tuned for Intel CPU and GPU, but may nonetheless on other systems.
+
+This script will automatically deploy the alpha version of Phyllome OS, on a Q35 virtual motherboard, a UEFI-based firmware, virtio-devices accross the board, 2 vCPUs, 4 GB of RAM and a disk of 5 GB. 
+
+Adjust it according to your need. When ready, copy and paste it to your terminal and fire-up it up!
 
 ```
 virt-install \
@@ -51,11 +54,11 @@ virt-install \
     --virt-type kvm \
     --arch x86_64 \
     --machine q35 \
-    --name flat-dmd \
+    --name phyllome-alpha \
     --boot uefi \
-    --cpu host-model,topology.sockets=1,topology.cores=2,topology.threads=2 \
-    --vcpus 4 \
-    --memory 8192 \
+    --cpu host-model,topology.sockets=1,topology.cores=2,topology.threads=1 \
+    --vcpus 2 \
+    --memory 4096 \
     --video virtio \
     --channel spicevmc \
     --autoconsole none \
@@ -67,49 +70,10 @@ virt-install \
     --input type=keyboard,bus=virtio \
     --input type=tablet,bus=virtio \
     --rng /dev/urandom,model=virtio \
-    --disk path=/var/lib/libvirt/images/flat-dmd.img,format=raw,bus=virtio,cache=writeback,size=5 \
+    --disk path=/var/lib/libvirt/images/flat-dhimd.img,format=raw,bus=virtio,cache=writeback,size=5 \
     --location=https://download.fedoraproject.org/pub/fedora/linux/releases/34/Everything/x86_64/os/ \
-    --extra-args="inst.ks=https://git.phyllo.me/home/kickstart/raw/branch/master/flat/flat-dmd.cfg"
+    --extra-args="inst.ks=https://git.phyllo.me/home/kickstart/raw/branch/master/flat/flat-dhimd.cfg"
 ```
-
-    --initrd-inject bmd.cfg --extra-args "inst.ks=file:/bmd.cfg"
-
-###  Basic building blocks 
-
-%include bmd.cfg # A minimal machine
-%include bdmd.cfg # A desktop environment
-%include bhmd.cfg # A base hypervisor
-%include bhamd.cfg # Specific virtualization configuration for AMD (tm) CPUs
-
-### Explanation
-
-```
-virt-install \
-    --name flat-dmd \ # [Optionnal] name of the machine 
-    --connect qemu:///system \ # we connect to QEMU through the system socket ?
-    --virt-type kvm \ # pick kvm VMM
-    --arch x86_64 \ # x64 architecture
-    --machine q35 \ # pci-express chipset enabled motherboard
-    --boot uefi \ # boot type {bios;uefi?}
-    --cpu host-model,topology.sockets=1,topology.cores=2,topology.threads=2 \
-    --vcpus 4 \ # vCPU number
-    --memory 8192 \ # 8192 Mb of RAM
-    --controller type=scsi,model=virtio-scsi \
-    --disk path=/var/lib/libvirt/images/flat-dmd.img,format=raw,bus=virtio,cache=writeback,size=10 \ # Create a 10 GiB RAW image
-    --controller type=virtio-serial \ 
-    --video virtio \ # virtual grahicard card, aka virtio-gpu 
-    --network network=default,model=virtio \ # virtio NAT-based network
-    --input type=keyboard,bus=virtio \ # virtio keyboard
-    --input type=tablet,bus=virtio \ # virtio tablet/mouse
-    --rng /dev/urandom,model=virtio \
-    --channel spicevmc \ # use spice channel. Useful ?
-    --autoconsole none \ # no auto connection to console on launch 
-    --sound none \ no sound emulation
-    --controller type=usb,model=none \ no emulated USB controller
-    --location=https://download.fedoraproject.org/pub/fedora/linux/releases/34/Everything/x86_64/os/ \
-    --extra-args="inst.ks=https://git.phyllo.me/home/kickstart/raw/branch/master/flat/flat-dmd.cfg"
-```
-
 
 ### Licence
 
@@ -117,9 +81,9 @@ virt-install \
 
 ### Acknowledgement
 
-* Contributors of the official Fedora kickstart files repository, and direct inspiration for the automated, kickstart-based deployment : 
+* I would like to thanks the main contributors of the official Fedora kickstart files repository, and related tools. 
 
-Adam Miller, Bastien Nocera, Bruno Wolff III, Bryan Kearney, Chitlesh Goorah, Christoph Wickert, 
+> Adam Miller, Bastien Nocera, Bruno Wolff III, Bryan Kearney, Chitlesh Goorah, Christoph Wickert, 
 Colin Walters, Fabian Affolter, Igor Pires Soares, Jens Petersen, Jeremy Katz, Jeroen van Meeuwen
 Jesse Keating, Luya Tshimbalanga, Matthias Clasen, Pedro Silva, Rahul Sundaram, Sebastian Dziallas
 Sebastian Vahl, wart. More information here : https://pagure.io/fedora-kickstarts
