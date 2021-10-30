@@ -87,5 +87,3 @@ virt-install \
 Colin Walters, Fabian Affolter, Igor Pires Soares, Jens Petersen, Jeremy Katz, Jeroen van Meeuwen
 Jesse Keating, Luya Tshimbalanga, Matthias Clasen, Pedro Silva, Rahul Sundaram, Sebastian Dziallas
 Sebastian Vahl, wart. More information here : https://pagure.io/fedora-kickstarts
-
-Thank you!
