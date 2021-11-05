@@ -1,6 +1,10 @@
 # This script is fetched during the kickstarted installation of machines shipping with a hypervisor.
 # It is then executed once upon first-boot as a systemd-unit
 
+# Set the default wallpaper for Phyllome
+
+gsettings set org.gnome.desktop.background picture-uri 'file:///usr/share/backgrounds/elementary/Morskie Oko.jpg'
+
 # virsh command fail. would need to fetch a script and execute post-launch with a delay, for example using a systemd unit 
 virsh pool-define-as iso dir - - - - /var/lib/libvirt/iso/ # Make libvirt aware of this new directory by creating a so-called 'pool'.
 virsh pool-build iso # Build the pool
@@ -33,7 +37,3 @@ virt-install \
     --disk none \
     --cdrom=/var/lib/libvirt/iso/netboot.xyz.iso \
     --install no_install=yes
-    
-# Set the default wallpaper for Phyllome
-
-gsettings set org.gnome.desktop.background picture-uri 'file:///usr/share/backgrounds/elementary/Morskie Oko.jpg'
