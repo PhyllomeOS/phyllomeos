@@ -57,7 +57,7 @@ gsettings set org.virt-manager.virt-manager.confirm unapplied-dev false
 # gsettings set org.virt-manager.virt-manager.paths media-default ''
 # gsettings set org.virt-manager.virt-manager.paths image-default ''
 
-# virsh commands fail in a kickstart environement (chroot or not it seems). would need to fetch a script and execute post-launch with a delay, for example using a systemd unit 
+# virsh commands fail in a kickstart environment (chroot or not it seems). would need to fetch a script and execute post-launch with a delay, for example using a systemd unit 
 virsh pool-define-as iso dir - - - - /var/lib/libvirt/iso/ # Make libvirt aware of this new directory by creating a so-called 'pool'.
 virsh pool-build iso # Build the pool
 virsh pool-start iso # Start it
