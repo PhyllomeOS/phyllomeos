@@ -8,7 +8,9 @@ This repository contains the basic building blocks required for deploying [Phyll
 
 > Note: This is the **alpha version** of Phyllome OS. Expect bugs and disappointment
 
-> Note: External contributions for Phyllome OS itself are **not** yet accepted. However, the Phyllome OS Project is looking for **core contributors**. If you are interested about making cutting-edge open-source virtualization more accessible, please send an email to contact@phyllo.me.
+> Note: External contributions for Phyllome OS are welcome. Have a look [here](https://kanboard.phyllo.me/b/CH7qd98J2v7egmodk/development) for some ideas on what to do next. To get the bigger picture, you could skim through the white paper.
+
+> Note: The Phyllome OS Project is looking for **core contributors**, able to spend some a few hours on the project each week. If you are interested about making cutting-edge open-source virtualization more accessible, please send an email to contact@phyllo.me.
 
 ### Structure of the repository
 
@@ -16,10 +18,13 @@ This repository contains the basic building blocks required for deploying [Phyll
     * For instance, the Phyllome OS Desktop version optimized for Intel(tm) CPUs and Intel(tm) graphic cards, refered internally as `dhi`, can be found there (*d* for desktop; *h* for hypervisor; *i* for intel)
     * Eventually, there will be three generic editions : **server**; **desktop** and **live**, with their own platform-dependant optimizations 
 * `flat` : this directory contains the end products in the form of stand-alone and ready-to-use kickstart files
+* `post` : this directory contains scripts that are meant to be run after a successful installation
 
-## How to hack
+## How to hack Phyllome OS
 
 Hacking kickstart files is the main way to assemble and configure Phyllome OS, which is RPM-based. Kickstart files are snippets of code which automate the installation of RPM-based Linux distributions.
+
+> Note : The steps to deploy Phyllome OS bare-metal are available on the [external wiki]().
 
 ### Requirements
 
@@ -55,7 +60,7 @@ Install the prerequisites on Ubuntu 20.4 or Debian 11
 
 ### Hack
 
-From within your favorite terminal :
+From within your favorite terminal:
 
 ```
 git clone https://github.com/PhyllomeOS/PhyllomeOS.git
@@ -63,7 +68,7 @@ git clone https://github.com/PhyllomeOS/PhyllomeOS.git
 
 Hack files inside the `leaves` directory.
 
-When you are done, move to the `flat` directory :
+When you are done, move to the `flat` directory:
 
 ```
 cd ./PhyllomeOS/flat/
@@ -137,7 +142,7 @@ After you are done setting your user account, `virt-manager` will automatically 
 
 ## Phyllome OS 
 
-Phyllome OS is a [Fedora Remix](https://fedoraproject.org/wiki/Remix) based on [Fedora Server 34](https://getfedora.org/en/server/) designed to leverage hardware-assisted virtualization and VirtIO-based paravirtualization to run modern UEFI-compatible guest operating systems locally.
+Phyllome OS is a [Fedora Remix](https://fedoraproject.org/wiki/Remix) based on [Fedora Server 35](https://getfedora.org/en/server/) designed to leverage hardware-assisted virtualization and VirtIO-based paravirtualization to run modern UEFI-compatible guest operating systems locally.
 
 The goal is to maximize ease-of-use and compatibility. As such, Phyllome OS intends to become the easiest way to virtualize modern operating systems, by integrating pertinent open-source software such as `libvirt`, `qemu-kvm` (and then the `Cloud Hypervisor`) and `virt-manager`.
 
@@ -154,7 +159,7 @@ The Phyllome OS Project relies on multiple tools, including the following front-
 * **The wiki**: Have a look at the [wiki repository](https://github.com/PhyllomeOS/wiki) for more information on how you can contribute to improve the documentation.
 * **Issues tracker**: public, read-only issue tracking is [available online](https://kanboard.phyllo.me/b/CH7qd98J2v7egmodk/development)
 * **The website**: the website repository is [available here](https://github.com/PhyllomeOS/www) 
-* **Code repository**: GitHub is being used
+* **Code repository**: GitHub is being used to host the code, with a mirror pointing to https://git.phyllo.me
 
 ## Licence
 
