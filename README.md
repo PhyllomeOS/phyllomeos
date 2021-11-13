@@ -163,7 +163,7 @@ The Phyllome OS Project relies on multiple tools, including the following front-
 
 ## Licence
 
-* [GENERAL PUBLIC LICENCE 3](./LICENSE) 
+* [GENERAL PUBLIC LICENCE 3](./LICENSE.md) 
 
 ## Acknowledgement
 
