@@ -6,13 +6,13 @@
 
 > This is the **alpha version** of Phyllome OS. Expect bugs and disappointment.
 
-> External contributions for Phyllome OS are welcome. Have a look [here](https://kanboard.phyllo.me/b/CH7qd98J2v7egmodk/development) for some ideas on what to do next, or feel free to create an issue and suggest an idea you wish to work on. 
+> External contributions to Phyllome OS are welcome. Have a look [here](https://kanboard.phyllo.me/b/CH7qd98J2v7egmodk/development) for some ideas on what to do next, or feel free to create an issue and suggest an idea you wish to work on. 
 
-> The Phyllome OS Project is **looking** for **core contributors**, willing to contribute regularly on the project. If you are interested about making cutting-edge open-source virtualization more accessible, please send an email to contact@phyllo.me.
+> The Phyllome OS Project is **looking for core contributors**, willing to contribute regularly to the project. If you are interested in making cutting-edge open-source virtualization more accessible, please send an email to contact@phyllo.me. 
 
 ## What
 
-This repository contains the basic building blocks required for deploying [Phyllome OS](https://phyllo.me/) in a virtual machine, using kickstart files. 
+This repository contains the basic building blocks required to deploy [Phyllome OS](https://phyllo.me/) in a virtual machine, using kickstart files. 
 
 Kickstart files are used to automate the installation and configuration of RPM-based operating systems.
 
@@ -24,10 +24,10 @@ Kickstart files are used to automate the installation and configuration of RPM-b
     * This is where most of the development happens.
 * `blocks-live` : this directory contains the basic building blocks for creating a live medium for Phyllome OS.
     * The code in this directory usually lags behind what is found in the `blocks` directory. 
-    * Ideally, the `blocks` and `blocks-live` repository would be merged, and the number of blocks reduced, to avoid code duplication.  
+    * The `blocks` and `blocks-live` repository will eventually be merged, and the number of blocks will be reduced to avoid code duplication.  
 * `leaves` : this directory contains the end product in the form of stand-alone and ready-to-use kickstart files.
-    * For instance, the Phyllome OS Desktop version optimized for Intel(tm) CPUs and Intel(tm) graphics cards, refered internally as `flat-dhi`, is stored there (*d* stands for desktop, *h* for hypervisor and *i* for intel).
-* `post` : this directory contains scripts that are meant to be run after a successful installation, after Phyllome OS has started
+    * For instance, the Phyllome OS Desktop version optimized for Intel(tm) CPUs and Intel(tm) graphics cards, referred to internally as `flat-dhi`, is stored there (*d* stands for desktop, *h* for hypervisor and *i* for intel).
+* `post` : this directory contains scripts that are meant to be run after a successful installation, after Phyllome OS has started.
     * Ideally, these code snippets will be merged with existing building blocks, or summoned as a systemd unit.
 
 ## How to hack Phyllome OS
@@ -83,12 +83,12 @@ When you are done, move to the `flat` directory:
 cd ./PhyllomeOS/flat/
 ```
 
-Then, merge the kickstart basic building blocks into a single file, a process called flattening.
+Then, merge the kickstart basic building blocks into a single file, a process called 'flattening'.
 
 ```
 ksflatten -c ../blocks/dhi.cfg -o flat-dhi.cfg
 ```
-If any error is detected, go back and fix them.
+If any errors are detected, go back and fix them.
 
 ### Fire it up!
 
@@ -98,7 +98,7 @@ The following command will automatically deploy the alpha version of Phyllome OS
 
 It uses a Q35 virtual motherboard, a UEFI-based firmware, virtio-devices accross the board, 2 vCPUs, 4 GB of RAM and a disk of 5 GB.
 
-> Adjust it according to your need. 
+> Adjust it according to your needs. 
 
 When ready, copy and paste it to your terminal.
 
@@ -128,7 +128,7 @@ virt-install \
     --location=https://download.fedoraproject.org/pub/fedora/linux/releases/35/Everything/x86_64/os/ \
     --initrd-inject flat-dhi.cfg --extra-args "inst.ks=file:flat-dhi.cfg"
 ```
-You should see the following message. 
+You should see the following message: 
 ```
 Starting install...
 Retrieving file vmlinuz...                                  |  10 MB  00:00     
@@ -142,33 +142,33 @@ Allocating 'flat-dhi.img'                                 | 5.0 GB  00:00
 Domain is still running. Installation may be in progress.
 You can reconnect to the console to complete the installation process.
 ```
-The installation process will be launched behind the scene. You can open `virt-manager` and connect to the virtual machine console to follow the process. Eventually, you will be greeted with this screen:
+The installation process will be launched behind the scenes. You can open `virt-manager` and connect to the virtual machine console to follow the process. Eventually, you will be greeted with this screen:
 
 ![greetings](./img/greetings.png)
 
-After you are done setting your user account, `virt-manager` will automatically start:
+After you are done setting up your user account, `virt-manager` will automatically start:
 
 ![greetings](./img/desktop.png)
 
-If the installation is a success and your feature is working as intended, you are welcome to create a pull request. Thank you!
+If the installation is successful and your feature is working as intended, you are welcome to create a pull request. Thank you!
 
 ## Phyllome OS 
 
-Phyllome OS goal is to maximize ease-of-use and compatibility. As such, it intends to become the easiest way to virtualize modern operating systems locally, by integrating pertinent open-source software such as `libvirt`, `qemu-kvm` (and eventually `Cloud Hypervisor`), as well as `virt-manager`.
+Phyllome OS' goal is to maximize ease-of-use and compatibility. As such, it intends to become the easiest way to virtualize modern operating systems locally, by integrating pertinent open-source software such as `libvirt`, `qemu-kvm` (and eventually `Cloud Hypervisor`), as well as `virt-manager`.
 
-A user should not have to manage Phyllome OS: it should be able to pick its favorite operating system and Phyllome OS should run it, no question asked.
+Users should not have to manage Phyllome OS: they should be able to pick their favorite operating system and Phyllome OS should run it, no questions asked.
 
-> Note : at the exception of open-source [Darwin derivatives](https://en.wikipedia.org/wiki/Darwin_(operating_system)#Derived_projects), Phyllome OS **strongly** discourage users from running proprietary, darwin-based derivatives on non-Apple hardware.
+> Note : with the exception of open-source [Darwin derivatives](https://en.wikipedia.org/wiki/Darwin_(operating_system)#Derived_projects), Phyllome OS **strongly** discourages users from running proprietary, darwin-based derivatives on non-Apple hardware.
 
 ### The Phyllome OS Project
 
 The Phyllome OS Project relies on multiple tools, including the following public-facing tools: 
 
-* **Wiki**: Have a look at the [wiki repository](https://github.com/PhyllomeOS/wiki) for more information on how you can contribute to improve the documentation.
-* **Issues tracker**: a public, read-only issue tracking is [available online](https://kanboard.phyllo.me/b/CH7qd98J2v7egmodk/development). For now one, GitHub issue tracking will be used to track development only issues.  
+* **Wiki**: Take a look at the [wiki repository](https://github.com/PhyllomeOS/wiki) for more information on how you can contribute to improving the documentation.
+* **Issues tracker**: a public, read-only issue tracking is [available online](https://kanboard.phyllo.me/b/CH7qd98J2v7egmodk/development). From now on, GitHub issue tracking will be used to track development-only issues.  
 * **Code repository**: GitHub is used to host the code, with a mirror pointing to git.phyllo.me
 
-## Licence
+## License
 
 * [MIT](./LICENSE.md) for the most part, with some [GPL](./blocks-live/LICENSE.md) code.
 
