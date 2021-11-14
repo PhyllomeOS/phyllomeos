@@ -2,7 +2,7 @@
 
 > Virtualization for the rest of us
 
-*Phyllome OS is a [Fedora Remix](https://fedoraproject.org/wiki/Remix) based on [Fedora Server 35](https://getfedora.org/en/server/) designed to leverage hardware-assisted virtualization and VirtIO-based paravirtualization to make it easier to run modern UEFI-compatible guest operating systems locally.*
+*Phyllome OS is a [Fedora Remix](https://fedoraproject.org/wiki/Remix) based on [Fedora Server 35](https://getfedora.org/en/server/) designed to leverage hardware-assisted virtualization and paravirtualization to make it easier to run modern guest operating systems locally.*
 
 > This is the **alpha version** of Phyllome OS. Expect bugs and disappointment.
 
@@ -154,7 +154,7 @@ If the installation is a success and your feature is working as intended, you ar
 
 ## Phyllome OS 
 
-Phyllome OS goal is to maximize ease-of-use and compatibility. As such, it intends to become the easiest way to virtualize modern operating systems locally, by integrating pertinent open-source software such as `libvirt`, `qemu-kvm` (and eventually `Cloud Hypervisor`), as well as `virt-manager`.
+Phyllome OS goal is to maximize ease-of-use and compatibility. As such, it intends to become the easiest way to use modern operating systems locally, in a virtual machine, by integrating pertinent open-source software such as `libvirt`, `qemu-kvm` (and eventually `Cloud Hypervisor`), as well as `virt-manager`.
 
 A user should not have to manage Phyllome OS: it should be able to pick its favorite operating system and Phyllome OS should run it, no question asked.
 
