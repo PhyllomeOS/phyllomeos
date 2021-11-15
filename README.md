@@ -6,7 +6,7 @@
 
 > This is the **alpha version** of Phyllome OS. Expect bugs and disappointment.
 
-> External contributions to Phyllome OS are welcome. Have a look [here](https://kanboard.phyllo.me/b/CH7qd98J2v7egmodk/development) for some ideas on what to do next, or feel free to create an issue and suggest an idea you wish to work on. 
+> External contributions to Phyllome OS are welcome. Have a look [here](https://kanboard.phyllo.me/b/CH7qd98J2v7egmodk/development) for some ideas on what to do next, or feel free to create an issue and suggest an idea you wish to work on. Also, it might be good to skim through the [white-paper](https://files.phyllo.me/s/oYwfxYpZcbppwr6) to understand what it is about and what the project is trying to achieve.
 
 > The Phyllome OS Project is **looking for core contributors**, willing to contribute regularly to the project. If you are interested in making cutting-edge open-source virtualization more accessible, please send an email to contact@phyllo.me. 
 
