@@ -20,16 +20,17 @@ virt-install \
     --video virtio \
     --graphics spice,gl.enable=yes,listen=none \
     --channel spicevmc \
+    --channel unix,target.type=virtio,target.name=org.qemu.guest_agent.0 \
     --autoconsole none \
     --console pty,target.type=virtio \
     --sound none \
     --network type=user,model=virtio \
-    --controller type=virtio-serial,driver.iommu=on \
+    --controller type=virtio-serial \
     --controller type=usb,model=none \
-    --controller type=scsi,model=virtio-scsi,driver.iommu=on \
-    --input type=keyboard,bus=virtio,driver.iommu=on \
-    --input type=tablet,bus=virtio,driver.iommu=on \
-    --rng /dev/urandom,model=virtio,driver.iommu=on \
+    --controller type=scsi,model=virtio-scsi \
+    --input type=keyboard,bus=virtio \
+    --input type=tablet,bus=virtio \
+    --rng /dev/urandom,model=virtio \
     --disk none \
     --cdrom=/var/lib/libvirt/iso/netboot.xyz.iso \
     --install no_install=yes
@@ -56,21 +57,24 @@ virt-install \
     --graphics spice,listen=none \
     --graphics egl-headless,gl.enable=yes \
     --channel spicevmc \
+    --channel unix,target.type=virtio,target.name=org.qemu.guest_agent.0 \
     --autoconsole none \
     --console pty,target.type=virtio \
     --sound none \
     --network type=user,model=virtio \
-    --controller type=virtio-serial,driver.iommu=on \
+    --controller type=virtio-serial \
     --controller type=usb,model=none \
-    --controller type=scsi,model=virtio-scsi,driver.iommu=on \
-    --input type=keyboard,bus=virtio,driver.iommu=on \
-    --input type=tablet,bus=virtio,driver.iommu=on \
-    --rng /dev/urandom,model=virtio,driver.iommu=on \
+    --controller type=scsi,model=virtio-scsi \
+    --input type=keyboard,bus=virtio \
+    --input type=tablet,bus=virtio \
+    --rng /dev/urandom,model=virtio \
     --disk none \
     --cdrom=/var/lib/libvirt/iso/netboot.xyz.iso \
     --install no_install=yes
 
+
 virsh destroy linux-egl-headless-gl
+
 
 # Create then shutdown a diskless virtual machine with SDL and OpenGL enabled, using virt-install.
 # SDL with OpenGL enabled performs better than egl-headless or Spice with OpenGL enabled.
