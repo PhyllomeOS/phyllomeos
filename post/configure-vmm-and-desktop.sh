@@ -43,7 +43,7 @@ gsettings set org.virt-manager.virt-manager.stats enable-disk-poll true
 
 # Modify the default virt-manager behavior for misc. options
 gsettings set org.virt-manager.virt-manager manager-window-width 200
-gsettings set org.virt-manager.virt-manager manager-window-height 500
+gsettings set org.virt-manager.virt-manager manager-window-height 300
 # gsettings set org.virt-manager.virt-manager.details show-toolbar true
 gsettings set org.virt-manager.virt-manager xmleditor-enabled true # enable xml edition
 # gsettings set org.virt-manager.virt-manager.urls kickstarts @as []
