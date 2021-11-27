@@ -12,7 +12,7 @@ This is the **alpha version** of Phyllome OS. Expect bugs and disappointment.
 
 ## What
 
-This repository contains the basic building blocks required to deploy the plaform-agnostic edition of [Phyllome OS](https://wiki.phyllo.me/deploy/rightforyou#phyllome-os-versions) Desktop, inside a virtual machine, using a kickstart file. 
+This repository contains the basic building blocks required to deploy the [plaform-agnostic edition](https://wiki.phyllo.me/deploy/rightforyou#phyllome-os-versions) of Phyllome OS Desktop, inside a virtual machine, using a kickstart file. 
 
 Kickstart files are used to automate the installation and configuration of RPM-based operating systems.
 
@@ -41,7 +41,8 @@ Have a look [here](https://docs.fedoraproject.org/en-US/fedora/rawhide/install-g
 ### Requirements
 
 * A Linux distribution, with a recent Linux Kernel (> 5.X)
-* An x86_64 platform with hardware-assisted virtualization [enabled](https://wiki.phyllo.me/deploy/prepare)
+* An x86_64 platform with hardware-assisted virtualization enabled. 
+    * Follow [this guide](https://wiki.phyllo.me/deploy/prepare#enable-hardware-assisted-virtualization) to learn how to activate hardware-assisted virtualization on a supported platform.
 * Nested-virtualization enabled (optional but better to have)
 * `virt-install` and `virt-manager`, as well as `libvirt` and `qemu-kvm` up and running
 
