@@ -123,7 +123,7 @@ cd ../leaves
 
 The following command will read your flattened file and use it to automatically bootstrap your modified revision of Phyllome OS on a virtual machine with 2 vCPUs, 4 GB of RAM and a disk of 5 GB.
 
-> Adjust it according to your needs. 
+> Adjust it according to your need.
 
 ```
 virt-install \
