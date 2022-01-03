@@ -4,41 +4,40 @@
 
 This is the **alpha version** of Phyllome OS. Expect bugs and disappointment.
 
-> External contributions to Phyllome OS are welcome. Have a look [here](https://kanboard.phyllo.me/b/CH7qd98J2v7egmodk/development) for some ideas on what to do next, or feel free to create an issue and suggest an idea you wish to work on. Also, it might be good to skim through the [white-paper](https://files.phyllo.me/s/oYwfxYpZcbppwr6) to understand what it is about and what the project is trying to achieve.
-
-> The Phyllome OS Project is **looking for core contributors**, willing to contribute regularly to the project. If you are interested in making cutting-edge open-source virtualization more accessible, email to contact@phyllo.me. 
+> External contributions to Phyllome OS are welcome. Have a look [here](https://kanboard.phyllo.me/b/CH7qd98J2v7egmodk/development) for some ideas on what to do next, or feel free to create a GitHub issue and suggest an idea you wish to work on. Also, it might be good to skim through the [white-paper](https://files.phyllo.me/s/oYwfxYpZcbppwr6) to understand what it is about and what the project is trying to achieve.
 
 *Phyllome OS is a [Fedora Remix](https://fedoraproject.org/wiki/Remix) based on [Fedora Server 35](https://getfedora.org/en/server/) designed to leverage hardware-assisted virtualization and paravirtualization to make it easier to run modern guest operating systems locally.*
 
-## What
+## What is on the menu or the content of this repository
 
-This repository contains the basic building blocks required to deploy the [plaform-agnostic edition](https://wiki.phyllo.me/deploy/rightforyou#phyllome-os-versions) of Phyllome OS Desktop, inside a virtual machine, using a kickstart file. 
+This repository contains snippets of code for the [multiple versions](https://wiki.phyllo.me/deploy/rightforyou#phyllome-os-versions) of Phyllome OS, and also a handful of other operating systems artefacts. 
 
-Kickstart files are used to automate the installation and configuration of RPM-based operating systems.
+Each version of Phyllome OS is like a *dish* that is based on a *recipe* that contains *ingredients*. Dishes are stand-alone kickstart files. Kickstart files are used to automate the installation and configuration of RPM-based operating systems such as Phyllome OS, just as a recipe and its instructions can be used to create a dish.
 
-> If you would like to install Phyllome OS on your computer instead, as a replacement of your current operating system, please follow [this guide](https://wiki.phyllo.me/deploy/prepare) instead.
-
-### Structure of the repository
-
-* `blocks` : this directory contains the basic building blocks for assembling Phyllome OS Desktop and Phyllome OS Server.
-    * This is where most of the development happens.
-* `blocks-live` : this directory contains the basic building blocks for creating a live medium for Phyllome OS.
-    * The code in this directory usually lags behind what is found in the `blocks` directory. 
-    * Ideally, the `blocks` and `blocks-live` directory will eventually be merged, and the number of blocks will be reduced to avoid code duplication.  
-* `leaves` : this directory contains the end-product in the form of stand-alone and ready-to-use kickstart files.
-    * For instance, the kickstart file to deploy the Phyllome OS Desktop edition optimized for Intel(tm) CPUs and GPUs, referred to as Phyllome Desktop II.
-* `post` : this directory contains scripts that are meant to be run manually by the user after a successful installation.
+* `ingredients`: this directory contains the basic building blocks, or ingredients, for assembling Phyllome OS and other derivatives.
+    * Each ingredient represents a feature of a set of integrated features, such as a Desktop Environment. Not all ingredients will end up in the final product, but that is okay to try and add new flavors!
+    * Feel free to add new ingredients here, such as another Desktop Environment or a new set of software. 
+* `recipes`: this directory contains recipes, which are made of ingredients listed in a specific order.
+    * Everyone is free to create a new recipe based on new or existing ingredients.
+* `dishes`: this directory contains the end-product in the form of stand-alone and ready-to-consume kickstart files, just like cooked dishes.
+    * When a new ingredient ends up in a dish, it should be tested before being committed to the repository. The total number of official dishes should not exceed a handful, to avoid the burden of testing too many dishes.
+* `post-first-startup-scripts` : this directory contains scripts that are meant to be run manually by the user after a successful installation.
     * These code snippets will eventually be included inside existing building blocks, summoned as a systemd unit after a successful installation, or turned into RPM-packages.
+* `img` : this directory contains screenshots of Phyllome OS used in the README file.
 
 ## How to hack Phyllome OS
 
-> Only Linux-based development is possible at the moment. Support for macOS and Windows-based development will follow.
+This readme contains contains the instructions to deploy Phyllome OS Desktop locally, inside a virtual machine, using a local kickstart file. 
+
+> If you would like to install Phyllome OS on your computer instead, as a replacement of your current operating system, please follow [this guide](https://wiki.phyllo.me/deploy/prepare) instead.
 
 As of now, hacking kickstart files is the main way to develop Phyllome OS. 
 
 Have a look [here](https://docs.fedoraproject.org/en-US/fedora/rawhide/install-guide/appendixes/Kickstart_Syntax_Reference/) to learn the kickstart syntax. You can also study the official kickstart for all Fedora versions [here](https://pagure.io/fedora-kickstarts/tree/main). 
 
 ### Requirements
+
+> Only Linux-based development is possible at the moment. Support for macOS and Windows-based development will follow.
 
 * A Linux distribution, with a recent Linux Kernel (> 5.X)
 * An x86_64 platform with hardware-assisted virtualization enabled. 
@@ -84,17 +83,6 @@ sudo dnf install -y qemu-kvm libvirt libvirt-daemon-config-network libvirt-daemo
 
 ```To be done```
 
-#### Define new URI for the virtual machine manager
-
-> GNOME Shell only
-
-By default, `virt-manager` connect to `libvirtd` as *root*. The following command will add a new URI to `virt-manager` so that you can manage virtual machines using your potentially unprivileged account. 
-
-```
-gsettings set org.virt-manager.virt-manager.connections uris "['qemu:///system', 'qemu:///session']"
-gsettings set org.virt-manager.virt-manager.connections autoconnect "['qemu:///system', 'qemu:///session']"
-```
-
 ### Hack around
 
 Clone this repository:
@@ -103,20 +91,20 @@ Clone this repository:
 git clone https://github.com/PhyllomeOS/PhyllomeOS.git
 ```
 
-Modify some files, typically inside the `blocks` directory, using your favorite editor.
+Modify some files, typically inside the `ingredients` directory, using your favorite editor.
 
-Then, merge the kickstart basic building blocks into a single file, a process called 'flattening'.
+Then, merge the kickstart basic building blocks or ingredients of the recipe into a single file, or dish. This process is called 'flattening'.
 
 ```
-ksflatten -c virtual-desktop-hypervisor.cfg -o ../leaves/virtual-phyllome-desktop.cfg
+ksflatten -c virtual-desktop-hypervisor.cfg -o ../dishes/virtual-phyllome-desktop.cfg
 ```
 
 > If any errors are detected, go back and fix them.
 
-When you are done, move to the `leaves` directory:
+When you are done, move to the `dishes` directory:
 
 ```
-cd ../leaves
+cd ../dishes
 ```
 
 ### Fire it up!
@@ -126,8 +114,8 @@ The following command will read your flattened file and use it to automatically 
 > Adjust it according to your need.
 
 ```
-virt-install \
-    --connect qemu:///session \
+sudo virt-install \
+    --connect qemu:///system \
     --metadata description="Phyllome OS Desktop, generic edition" \
     --os-variant detect=off \
     --virt-type kvm \
@@ -195,6 +183,8 @@ The Phyllome OS Project relies on multiple tools, including the following public
 * **Wiki**: Take a look at the [wiki repository](https://github.com/PhyllomeOS/wiki) for more information on how you can contribute to improving the documentation.
 * **Issues tracker**: a public, read-only issue tracking is [available online](https://kanboard.phyllo.me/b/CH7qd98J2v7egmodk/development). From now on, GitHub issue tracking will be used to track development-only issues.  
 * **Code repository**: GitHub is used to host the code, with a mirror pointing to git.phyllo.me
+
+> The Phyllome OS Project is **looking for core contributors**, willing to contribute regularly to the project. If you are interested in making cutting-edge open-source virtualization more accessible, please send a message to contact@phyllo.me. 
 
 ## License
 
