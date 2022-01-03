@@ -5,11 +5,11 @@
 #  / .___/_/ /_/\__, /_/_/\____/_/ /_/ /_/\___/   \____//____/
 # /_/          /____/
 
-# What ? This kickstart file bootstraps a desktop hypervisor configured for AMD (tm) CPUs.
+# What ? This kickstart file bootstraps a desktop hypervisor configured for Intel(tm) CPU and Intel(tm) GPUs compatible with vfio-mdev (pre-Tiger Lake)
 
 # In order to be fed to virt-install or software like livecd-creator, this file needs to be flatten or merged into one.
 # Here is how you can do it with the ksflatten tool provided by the pykickstart package on Fedora :
-# ksflatten -c desktop-hypervisor-a.cfg -o ../leaves/phyllome-desktop-a.cfg
+# ksflatten -c desktop-hypervisor-intelcpu-intelgpu.cfg -o ../leaves/phyllome-desktop-intelcpu-intelgpu.cfg
 
 %include base-fedora-repo.cfg # offical repositories for Fedora
 %include base-storage.cfg # base storage
@@ -17,7 +17,8 @@
 %include base-desktop-gnome.cfg # A desktop environment that ships with virtual machine manager
 %include base-desktop-virtual-machine-manager.cfg # the virtual machine manager
 %include base-hypervisor.cfg # A base hypervisor
-%include base-hypervisor-a.cfg # Specific virtualization configuration for AMD (tm) CPUs
+%include base-hypervisor-intelcpu.cfg # Specific virtualization configuration for Intel (tm) CPUs
+%include base-hypervisor-intelgpu.cfg # Specific virtualization configuration for Intel (tm) GPUs from 4th to the 9th generation (compatible with vfio-mdev).
 %include base-initial-setup-gnome.cfg # Includes initial-setup for GNOME
 
 reboot --kexec # Reboot straight into the system after a successfull installation
