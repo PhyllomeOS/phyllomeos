@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Attention please: will soon be deprecated in favor of a more generic VM model 
+
 # This script can be run as a normal user.
 # Make sure qemu-session is available as an URI in virt-manager running the following in your terminal: 
 # gsettings set org.virt-manager.virt-manager.connections uris "['qemu:///system', 'qemu:///session']"
@@ -113,9 +115,9 @@ virt-install \
 
 virsh destroy user-linux-egl-headless-gl
 
-# Create then shutdown a diskless virtual machine with qemu-sesssion, SDL and OpenGL enabled, using virt-install.
+# Create and run a diskless virtual machine with `virt-install`. Spice and OpenGL are enabled.
 # Should work with all GPUs on the host including Nvidia's and does expect an EFI-based Linux guest. 
-# No ISO is attached to this virtual machine. The user have to manually add one.
+# No ISO is attached to this virtual machine. The user has to manually add one.
 
 virt-install \
     --connect qemu:///session \
