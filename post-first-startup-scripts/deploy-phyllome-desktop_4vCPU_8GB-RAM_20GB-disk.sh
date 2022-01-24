@@ -12,7 +12,7 @@ virt-install \
     --machine q35 \
     --name virtual-phyllome-os \
     --boot uefi \
-    --cpu host-model,topology.sockets=1,topology.cores=2,topology.threads=2 \
+    --cpu host-passthrough,topology.sockets=1,topology.cores=2,topology.threads=2 \
     --vcpus 1 \
     --memory 8192 \
     --video virtio \

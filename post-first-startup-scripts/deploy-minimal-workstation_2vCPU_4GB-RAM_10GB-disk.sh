@@ -12,7 +12,7 @@ virt-install \
     --machine q35 \
     --name minimal-workstation \
     --boot uefi \
-    --cpu host-passthrough,topology.sockets=1,topology.cores=1,topology.threads=1 \
+    --cpu host-model,topology.sockets=1,topology.cores=1,topology.threads=2 \
     --vcpus 1 \
     --memory 2048 \
     --video virtio \
