@@ -12,18 +12,20 @@ This is the **alpha version** of Phyllome OS. Expect bugs and disappointment.
 
 This repository contains snippets of code for the [multiple versions](https://wiki.phyllo.me/deploy/rightforyou#phyllome-os-versions) of Phyllome OS, and also a handful of other operating systems artefacts. 
 
-Each version of Phyllome OS is like a *dish* that is based on a *recipe* that contains *ingredients*. Dishes are stand-alone kickstart files. Kickstart files are used to automate the installation and configuration of RPM-based operating systems such as Phyllome OS, just as a recipe and its instructions can be used to create a dish.
+Each version of Phyllome OS is like a ***dish*** that is based on a ***recipe*** that contains ***ingredients***. Dishes are stand-alone kickstart files. Kickstart files are used to automate the installation and configuration of RPM-based operating systems such as Phyllome OS, just as a recipe and its instructions can be used to create a dish.
 
-* `ingredients`: this directory contains the basic building blocks, or ingredients, for assembling Phyllome OS and other derivatives.
-    * Each ingredient represents a feature of a set of integrated features, such as a Desktop Environment. Not all ingredients will end up in the final product, but that is okay to try and add new flavors!
+* `ingredients`🥑 🥥 🥭 🥝 🥦 🥬 🥒 🧄...: this directory contains the basic building blocks, or ingredients, for assembling Phyllome OS and other derivatives.
+    * Each ingredient represents a feature or a set of integrated features, such as a Desktop Environment. Not all ingredients will end up in the final product, but that is okay to try and add new flavors!
     * Feel free to add new ingredients here, such as another Desktop Environment or a new set of software. 
-* `recipes`: this directory contains recipes, which are made of ingredients listed in a specific order.
+* `recipes`🧾 🧩: this directory contains recipes, which are made of ingredients listed in a specific order.
     * Everyone is free to create a new recipe based on new or existing ingredients.
-* `dishes`: this directory contains the end-product in the form of stand-alone and ready-to-consume kickstart files, just like cooked dishes.
+* `dishes`🥨 🥐 🥖 🥧 🥞 🥯 🧆 🧁...: this directory contains the end-product in the form of stand-alone and ready-to-consume kickstart files, just like cooked dishes.
     * When a new ingredient ends up in a dish, it should be tested before being committed to the repository. The total number of official dishes should not exceed a handful, to avoid the burden of testing too many dishes.
-* `post-first-startup-scripts` : this directory contains scripts that are meant to be run manually by the user after a successful installation.
+* `post-first-startup-scripts` : this directory contains scripts that are meant to be run manually by the user after a successful installation. This is like the topping of a dish.
     * These code snippets will eventually be included inside existing building blocks, summoned as a systemd unit after a successful installation, or turned into RPM-packages.
 * `img` : this directory contains screenshots of Phyllome OS used in the README file.
+
+*Developping Phyllome OS should feel like creating a new dish! 👩🏽‍🍳 🧑🏿‍🍳 *
 
 ## How to hack Phyllome OS
 
