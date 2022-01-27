@@ -12,8 +12,8 @@ virt-install \
     --machine q35 \
     --name minimal-workstation \
     --boot uefi \
-    --cpu host-model,topology.sockets=1,topology.cores=1,topology.threads=2 \
-    --vcpus 1 \
+    --cpu host-model,topology.sockets=1,topology.cores=2,topology.threads=1 \
+    --vcpus 2 \
     --memory 2048 \
     --video virtio \
     --graphics spice,gl.enable=yes,listen=none \

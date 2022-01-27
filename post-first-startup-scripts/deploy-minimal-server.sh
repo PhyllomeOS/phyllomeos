@@ -10,11 +10,11 @@ virt-install \
     --virt-type kvm \
     --arch x86_64 \
     --machine q35 \
-    --name minimal-workstation \
+    --name minimal-server \
     --boot uefi \
     --cpu host-model,topology.sockets=1,topology.cores=1,topology.threads=1 \
     --vcpus 1 \
-    --memory 2048 \
+    --memory 512 \
     --video virtio \
     --graphics spice,gl.enable=yes,listen=none \
     --channel spicevmc \
@@ -30,6 +30,6 @@ virt-install \
     --input type=tablet,bus=virtio \
     --memballoon none \
     --rng /dev/urandom,model=virtio \
-    --disk path=/var/lib/libvirt/images/virtual-desktop.img,format=raw,bus=virtio,cache=writeback,size=5 \
+    --disk path=/var/lib/libvirt/images/virtual-server.img,format=raw,bus=virtio,cache=writeback,size=5 \
     --location=https://download.fedoraproject.org/pub/fedora/linux/releases/35/Everything/x86_64/os/ \
     --extra-args="inst.ks=https://raw.githubusercontent.com/PhyllomeOS/phyllomeos/main/dishes/virtual-server.cfg"

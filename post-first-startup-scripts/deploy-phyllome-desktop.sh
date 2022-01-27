@@ -13,8 +13,8 @@ virt-install \
     --name virtual-phyllome-os \
     --boot uefi \
     --cpu host-passthrough,topology.sockets=1,topology.cores=2,topology.threads=2 \
-    --vcpus 1 \
-    --memory 8192 \
+    --vcpus 4 \
+    --memory 4092 \
     --video virtio \
     --graphics spice,gl.enable=yes,listen=none \
     --channel spicevmc \
@@ -30,6 +30,6 @@ virt-install \
     --input type=tablet,bus=virtio \
     --memballoon none \
     --rng /dev/urandom,model=virtio \
-    --disk path=/var/lib/libvirt/images/virtual-desktop.img,format=raw,bus=virtio,cache=writeback,size=20 \
+    --disk path=/var/lib/libvirt/images/virtual-phyllome-os.img,format=raw,bus=virtio,cache=writeback,size=20 \
     --location=https://download.fedoraproject.org/pub/fedora/linux/releases/35/Everything/x86_64/os/ \
     --extra-args="inst.ks=https://raw.githubusercontent.com/PhyllomeOS/phyllomeos/main/dishes/virtual-phyllome-desktop.cfg"
