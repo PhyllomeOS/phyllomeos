@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Attention please: will soon be deprecated in favor of a more generic VM model 
+# Attention please: will soon be deprecated in favor of a more generic virtual machine model 
 
 # This script can be run as a normal user.
 # Make sure qemu-session is available as an URI in virt-manager running the following in your terminal: 
