@@ -5,7 +5,7 @@
 
 virt-install \
     --connect qemu:///system \
-    --metadata description="Spice with OpenGL. OS shipping with a minimal server environment. Based on Fedora Server 35" \
+    --metadata description="Spice with OpenGL. Minimal server environment. Based on Fedora Server 35" \
     --os-variant detect=off \
     --virt-type kvm \
     --arch x86_64 \
