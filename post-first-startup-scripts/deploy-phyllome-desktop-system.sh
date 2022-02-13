@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# Deploy Phyllome OS Desktop generic edition  with `virt-install` on a 20G disk, with 4vCPU, 8G of RAM.
+# Deploy Phyllome OS Desktop, generic edition  with `virt-install` on a 20G disk, with 4vCPU and 4G of RAM.
 # GPU and CPU agnostic configuration. 
 
 virt-install \
     --connect qemu:///system \
-    --metadata description="Spice with OpenGL. Phyllome OS Desktop edition." \
+    --metadata description="Spice with OpenGL. Phyllome OS Desktop, agnostic edition." \
     --os-variant detect=off \
     --virt-type kvm \
     --arch x86_64 \
