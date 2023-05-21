@@ -187,16 +187,22 @@ minetest # a free and open-source sandbox video game
 %end
 ```
 
+* Navigate inside the `recipes` folder:
+
+```
+$ cd recipes
+```
+
 * Pick a suitable recipe to add your ingredient to it. As Minetest is a GUI application, `virtual-desktop.cfg` is a fitting candidate. Make a copy of it.
 
 ```
-$ cp recipes/virtual-desktop.cfg recipes/virtual-desktop-minetest.cfg
+$ cp virtual-desktop.cfg virtual-desktop-minetest.cfg
 ```
 
 * Edit the file and add the newly defined ingredient:
 
 ```
-$ nano recipes/virtual-desktop-minetest.cfg
+$ nano virtual-desktop-minetest.cfg
 ```
 
 ```
@@ -212,13 +218,19 @@ $ nano recipes/virtual-desktop-minetest.cfg
 poweroff # Shut down the system after a successful installation
 ```
 
-* Then, merge the kickstart basic building blocks a single file, or dish. This process is called 'flattening'.
+* Merge the kickstart basic building blocks a single file, or dish. This process is called 'flattening'.
 
 ```
-$ ksflatten -c recipe/virtual-desktop-minetest.cfg -o ../dishes/virtual-desktop-minetest.cfg
+$ ksflatten -c virtual-desktop-minetest.cfg -o ../dishes/virtual-desktop-minetest.cfg
 ```
 
 > If any errors are detected, go back and fix them.
+
+* Navigate inside the `dishes` folder:
+
+```
+$ cd ../dishes/
+```
 
 * You can then kickstart your own installation:
 
