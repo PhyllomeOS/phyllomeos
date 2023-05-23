@@ -80,7 +80,7 @@ It is also the first step kickstart files.
 $ wget https://raw.githubusercontent.com/PhyllomeOS/phyllomeos/main/dishes/virtual-phyllome-desktop.cfg
 ```
 
-* Use `virt-install` alongside the previously downloaded kickstart file and use it to automatically bootstrap Phyllome OS on a virtual machine with 2 vCPUs, 4 GB of RAM and a disk of 5 GB (feel free to increase these values which satisfy the minimal requirements for Phyllome OS):
+* Use `virt-install` alongside the previously downloaded kickstart file and use it to automatically bootstrap Phyllome OS on a virtual machine with 2 vCPUs, 4 GB of RAM and a disk of 5 GB (feel free to increase these values which satisfy the minimal requirements for running Phyllome OS):
 
 ```
 # virt-install \
