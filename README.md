@@ -77,10 +77,10 @@ It is also the first step kickstart files.
 * Fetch the kickstart file optimized for deploying Phyllome OS in a virtual machine:
 
 ```
-$ wget https://raw.githubusercontent.com/PhyllomeOS/phyllomeos/main/dishes/virtual-phyllome-desktop.cfg
+$ wget https://raw.githubusercontent.com/PhyllomeOS/phyllomeos/main/dishes/virtual-desktop-hypervisor.cfg
 ```
 
-* Use `virt-install` alongside the previously downloaded kickstart file and use it to automatically bootstrap Phyllome OS on a virtual machine with 2 vCPUs, 4 GB of RAM and a disk of 5 GB (feel free to increase these values which satisfy the minimal requirements for running Phyllome OS):
+* Use `virt-install` alongside the previously downloaded kickstart file and use it to automatically bootstrap Phyllome OS on a virtual machine with 2 vCPUs, 4 GB of RAM and a disk of 10 GB (feel free to increase these values):
 
 ```
 # virt-install \
@@ -90,7 +90,7 @@ $ wget https://raw.githubusercontent.com/PhyllomeOS/phyllomeos/main/dishes/virtu
     --virt-type kvm \
     --arch x86_64 \
     --machine q35 \
-    --name virtual-phyllome-desktop \
+    --name virtual-desktop-hypervisor \
     --boot uefi \
     --cpu host-model,topology.sockets=1,topology.cores=2,topology.threads=1 \
     --vcpus 2 \
@@ -108,9 +108,9 @@ $ wget https://raw.githubusercontent.com/PhyllomeOS/phyllomeos/main/dishes/virtu
     --input type=keyboard,bus=virtio \
     --input type=tablet,bus=virtio \
     --rng /dev/urandom,model=virtio \
-    --disk path=/var/lib/libvirt/images/virtual-phyllome-desktop.img,format=raw,bus=virtio,cache=writeback,size=5 \
+    --disk path=/var/lib/libvirt/images/virtual-desktop-hypervisor.img,format=raw,bus=virtio,cache=writeback,size=10 \
     --location=https://download.fedoraproject.org/pub/fedora/linux/releases/38/Everything/x86_64/os/ \
-    --initrd-inject virtual-phyllome-desktop.cfg --extra-args "inst.ks=file:virtual-phyllome-desktop.cfg"
+    --initrd-inject virtual-desktop-hypervisor.cfg --extra-args "inst.ks=file:virtual-desktop-hypervisor.cfg"
 ```
 * The following message will appear, and the installation process will be launched behind the scenes:
 
