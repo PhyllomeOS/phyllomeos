@@ -12,9 +12,7 @@ This repository contains complete or partial kickstart files, [organized by fold
 
 ## Kickstarting Phyllome OS
 
-Kickstarting Phyllome OS in a virtual machine (VM) using a kickstart file is a great way to test it out before using [burning the ISO](https://github.com/PhyllomeOS/phyllomeos/releases/tag/v.0.2.0-alpha) or commiting to [a bare-metal installation](https://wiki.phyllo.me/deploy/prepare).
-
-It is also the first step kickstart files.
+Kickstarting Phyllome OS in a virtual machine (VM) using a kickstart file is a great way to test it out before using [burning the ISO](https://github.com/PhyllomeOS/phyllomeos/releases/tag/v.0.2.0-alpha) or committing to [a bare-metal installation](https://wiki.phyllo.me/deploy/prepare).
 
 * **Requirements:**
     * An x86_64 platform with hardware-assisted virtualization [enabled](https://wiki.phyllo.me/deploy/prepare#enable-hardware-assisted-virtualization)
@@ -66,7 +64,7 @@ It is also the first step kickstart files.
     # apt install qemu-kvm qemu-utils libvirt-daemon-system libvirt-clients bridge-utils virt-manager ovmf python-pykickstart wget
     ```
 
-3. Add current user to the libvirt group
+3. Add current user to the *libvirt* group
 
 ```
 # usermod -a -G libvirt $(whoami)
@@ -109,7 +107,7 @@ $ wget https://raw.githubusercontent.com/PhyllomeOS/phyllomeos/main/dishes/virtu
     --input type=tablet,bus=virtio \
     --rng /dev/urandom,model=virtio \
     --disk path=/var/lib/libvirt/images/virtual-desktop-hypervisor.img,format=raw,bus=virtio,cache=writeback,size=10 \
-    --location=https://download.fedoraproject.org/pub/fedora/linux/releases/38/Everything/x86_64/os/ \
+    --location=https://download.fedoraproject.org/pub/fedora/linux/releases/39/Everything/x86_64/os/ \
     --initrd-inject virtual-desktop-hypervisor.cfg --extra-args "inst.ks=file:virtual-desktop-hypervisor.cfg"
 ```
 * The following message will appear, and the installation process will be launched behind the scenes:
@@ -140,7 +138,7 @@ You can reconnect to the console to complete the installation process.
 
 ## The content of this repository
 
-This repository contains snippets of code for the [multiple versions](https://wiki.phyllo.me/deploy/rightforyou#phyllome-os-versions) of Phyllome OS, and also a handful of other operating systems artefacts. 
+This repository contains snippets of code for the [multiple versions](https://wiki.phyllo.me/deploy/rightforyou#phyllome-os-versions) of Phyllome OS, and also a handful of other operating systems artifacts. 
 
 Each version of Phyllome OS is like a `dish` that is based on a `recipe` that lists `ingredients`. 
 
@@ -151,13 +149,13 @@ Each version of Phyllome OS is like a `dish` that is based on a `recipe` that li
     * Everyone is free to create a new recipe based on new or existing ingredients.
 * `dishes`🥨 🥐 🥖 🥧 🥞 🥯 🧆 🧁...: this directory contains the end-product in the form of stand-alone and ready-to-consume kickstart files, just like cooked dishes.
     * When a new ingredient ends up in a dish, it should be tested before being committed to the repository. The total number of official dishes should not exceed a handful, to avoid the burden of testing too many dishes.
-* `post-first-startup-scripts` : this directory contains scripts that are meant to be run manually by the user after a successful installation. This is like the topping of a dish.
+* `post-first-startup-scripts`: this directory contains scripts that are meant to be run manually by the user after a successful installation. This is like the topping of a dish.
     * These code snippets will eventually be included inside existing building blocks, summoned as a systemd unit after a successful installation, or turned into RPM-packages.
-* `img` : this directory contains screenshots of Phyllome OS used in the README file.
+* `img`:: this directory contains screenshots of Phyllome OS used in the README file.
 
-## Improve an existing or create your own OS artefact
+## Improve an existing or create your own OS artifact
 
-Let's assume your want to add [Minetest](https://minetest.org/), a free and open-source sandbox video game, as an ingredient to a dish, so that you could deploy a virtual machine with this specific package:
+Let's assume you want to add [Minetest](https://minetest.org/), a free and open-source sandbox video game, as an ingredient to a dish, so that you could deploy a virtual machine with this specific package:
 
 * Clone this repository using `git`:
 
@@ -271,7 +269,7 @@ Phyllome OS goal is to maximize ease-of-use and compatibility. As such, it inten
 
 Users should not have to manage Phyllome OS: they should be able to pick their favorite operating system and Phyllome OS should run it, no questions asked.
 
-> Note : expect for open-source [Darwin derivatives](https://en.wikipedia.org/wiki/Darwin_(operating_system)#Derived_projects), Phyllome OS **strongly** discourages users from running proprietary, darwin-based derivatives on non-Apple hardware.
+> Note : except for open-source [Darwin derivatives](https://en.wikipedia.org/wiki/Darwin_(operating_system)#Derived_projects), Phyllome OS **strongly** discourages users from running proprietary, darwin-based derivatives on non-Apple hardware.
 
 ### The Phyllome OS Project
 
