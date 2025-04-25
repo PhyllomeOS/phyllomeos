@@ -12,8 +12,6 @@ Each version of Phyllome OS is like a `dish` that is based on a `recipe` that li
 
 * `ingredients`🥑 🥥 🥭 🥝 🥦 🥬 🥒 🧄: Each ingredient represents a feature or a set of integrated features, such as a specific Desktop Environment
 
-Example for the base storage ingredient used by Phyllome OS.
-
 `cat ingredients/base-storage.cfg`
 
 ```
@@ -26,9 +24,6 @@ part / --fstype="ext4" --grow --label=root # The remaining space will be used fo
 ```
 
 * `recipes`🧾 🧩: this directory contains recipes for deploying operating system artifacts on bare-metal, as a live system, or inside a virtual machine.
-
-Let's take a look at the recipe to deploy Phyllome OS Desktop.
-
 
 `cat recipes/desktop-hypervisor.cfg`
 
@@ -47,8 +42,6 @@ Let's take a look at the recipe to deploy Phyllome OS Desktop.
 ```
 
 * `dishes`🥨 🥐 🥖 🥧 🥞 🥯 🧆 🧁...: the end-product in the form of stand-alone and ready-to-consume kickstart file
-
-Let's take a look at the final Phyllome OS Desktop dish.
 
 `cat dishes/desktop-hypervisor.cfg`
 
@@ -116,7 +109,7 @@ wpa_supplicant
 
 Let's assume you wish to add [Luanti](https://www.luanti.org/), a free and open-source sandbox video game engine, as an ingredient to a dish.
 
-* Clone this repository and move inside:
+* Clone this repository and change directory:
 
 ```
 $ git clone https://git.phyllo.me/roots/phyllomeos && cd phyllomeos
