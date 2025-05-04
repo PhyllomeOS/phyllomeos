@@ -1,4 +1,4 @@
-> This licence applies to chunks of code as found especially in the `../ingredients/base-live-desktop-quirks.cfg` and `../ingredients/base-live.cfg` files, as those files contain codes from the following GNU-licensed project: https://pagure.io/fedora-kickstarts. Standalone kickstart files that are based on the said code, such as `flat-ld.cfg`, are  also released under this license.
+> This license applies to chunks of code as found especially in the `../ingredients/base-live-desktop-quirks.cfg` and `../ingredients/base-live.cfg` files, as those files contain codes from the following GNU-licensed project: https://pagure.io/fedora-kickstarts. Standalone kickstart files that are based on the said code, such as `flat-ld.cfg`, are also released under this license.
 
 > All new contributions are made under the parent MIT license.
 
