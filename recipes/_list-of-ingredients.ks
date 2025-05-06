@@ -6,7 +6,7 @@
 # /_/          /____/
 
 # The list of ingredients for composing Phyllome OS
-# Uncomment to enable option
+# Uncomment lines with "%include" to enable ingredient
 
 # Installation method
 # Exactly one option has to be picked
@@ -47,41 +47,39 @@
 
 # Repositories 
 # Exactly one option has to be picked
-# %include ../ingredients/core-fedora-repo.cfg # Offical repositories for Fedora
-# %include ../ingredients/core-fedora-repo-rawhide.cfg # Offical repositories for Fedora Rawhide
+# %include ../ingredients/core-fedora-repo.cfg # Official repositories for Fedora
+# %include ../ingredients/core-fedora-repo-rawhide.cfg # Official repositories for Fedora Rawhide
 
-### Package selection ###
-# Mandatory packages. Exactly one option has to be picked
-# %include ../ingredients/core-packages-mandatory.cfg # Mandatory packages 
-# %include ../ingredients/core-packages-mandatory-trimming-attempt.cfg # Trimming attempt for the mandatory packages 
-
-# Mandatory packages to make it a generic distribution. Required
-# %include ../ingredients/core-packages-generic.cfg # Generic
-
-# Mandatory packages for live edition. Required
+# Packages 
+# Exactly one option has to be picked
+# %include ../ingredients/core-packages-mandatory.cfg # Mandatory packages
+# %include ../ingredients/core-packages-mandatory-trimming-attempt.cfg # Trimming attempt for the mandatory packages
+# Mandatory packages for live editions
 # %include ../ingredients/live-core-mandatory-packages.cfg # For live systems
+# Other optional packages
+# Recommended but not strictly required
+# %include ../ingredients/core-packages-default.cfg # Recommended extra packages
+# %include ../ingredients/core-packages-hardware-support.cfg # Extended hardware support. Recommended for non-virtual systems
+# Documentation: https://pykickstart.readthedocs.io/en/latest/kickstart-docs.html#chapter-9-package-selection
 
-# Other optional packages. Recommended but not stricly required
-# %include ../ingredients/core-packages-default.cfg # Default but not necessary packages
-# %include ../ingredients/core-packages-custom.cfg # Hand-picked packages
-# %include ../ingredients/core-packages-hardware-support.cfg # Extended hardware support 
-### End of Package selection ###
-
-### Pre and post section ###
-# Scripts launched before the installation. Optionnal. Two options can be picked
+# Pre and post installation sections. 
+# Optionnal 
+# All options can be picked
 # %include ../ingredients/pre.cfg # Triggered just after the kickstart file has been parsed
+# Documentation: https://pykickstart.readthedocs.io/en/latest/kickstart-docs.html#chapter-4-pre-installation-script
 # %include ../ingredients/pre-install.cfg # Script triggered just after the system storage has been set up
-# Scripts launched after the installation. Optionnal.
-# %include ../ingredients/phyllomeos/ingredients/core-post-nochroot.cfg # Triggered after the installation no chroot
+# Documentation: https://pykickstart.readthedocs.io/en/latest/kickstart-docs.html#chapter-5-pre-install-script
+# %include ../ingredients/core-post-nochroot.cfg # Triggered after the installation no chroot
+# Documentation: https://pykickstart.readthedocs.io/en/latest/kickstart-docs.html#chapter-6-post-installation-script
 # %include ../ingredients/core-post.cfg # Triggered after the installation
+# Documentation: https://pykickstart.readthedocs.io/en/latest/kickstart-docs.html#chapter-6-post-installation-script
+# Two options have to be picked, for live systems only
 # %include ../ingredients/live-core-post.cfg # Post configuration script for a live system only
 # %include ../ingredients/live-core-post-live-session.cfg # Live session script
-### End of pre and post section ###
-### Pre and post section ###
 
-# OEM setup 
+# OEM setup
 # Exactly one option has to be picked
-# %include ../ingredients/core-desktop-initial-setup.cfg #  Ensures that GNOME initial setup will launch on the first system start-up
+# %include ../ingredients/core-desktop-initial-setup.cfg # Ensures that GNOME initial setup will launch on the first system start-up
 # %include ../ingredients/core-server-initial-setup.cfg # For headless systems
 
 # A GNOME Shell-based desktop environment. 
@@ -92,7 +90,7 @@
 # Virtualization-related packages
 # Optionnal
 # %include ../ingredients/base-desktop-virtual-machine-manager.cfg # Virtual Machine Manager
-# %include ../ingredients/base-hypervisor.cfg # Base hypervisor
+# %include ../ingredients/base-hypervisor.cfg # Generic building block to build a virtualization host
 
 # Virtualization-related options
 # Optionnal
