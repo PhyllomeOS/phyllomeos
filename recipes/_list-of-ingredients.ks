@@ -62,8 +62,8 @@
 # %include ../ingredients/core-packages-hardware-support.cfg # Extended hardware support. Recommended for non-virtual systems
 # Documentation: https://pykickstart.readthedocs.io/en/latest/kickstart-docs.html#chapter-9-package-selection
 
-# Pre and post installation sections. 
-# Optionnal 
+# Pre- and post-installation sections
+# Optional 
 # All options can be picked
 # %include ../ingredients/pre.cfg # Triggered just after the kickstart file has been parsed
 # Documentation: https://pykickstart.readthedocs.io/en/latest/kickstart-docs.html#chapter-4-pre-installation-script
@@ -83,17 +83,17 @@
 # %include ../ingredients/core-server-initial-setup.cfg # For headless systems
 
 # A GNOME Shell-based desktop environment. 
-# Optionnal
+# Optional
 # %include ../ingredients/base-desktop-gnome.cfg # A GNOME Shell-based desktop environment
 # Documentation: https://fedoraproject.org/wiki/InitialSetup
 
 # Virtualization-related packages
-# Optionnal
+# Optional
 # %include ../ingredients/base-desktop-virtual-machine-manager.cfg # Virtual Machine Manager
 # %include ../ingredients/base-hypervisor.cfg # Generic building block to build a virtualization host
 
 # Virtualization-related options
-# Optionnal
+# Optional
 # %include ../ingredients/base-hypervisor-amdcpu.cfg # Virtualization configuration for AMD (tm) CPUs
 # %include ../ingredients/base-hypervisor-intelcpu.cfg # Virtualization configuration for Intel (tm) CPUs
 # %include ../ingredients/base-hypervisor-intelgpu.cfg # Virtualization configuration for Intel (tm) GPUs from 4th to the 9th generation (compatible with vfio-mdev)
