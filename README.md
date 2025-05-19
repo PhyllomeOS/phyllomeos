@@ -46,32 +46,12 @@ $ ksflatten -c recipes/virtual-desktop-luanti.cfg -o dishes/virtual-desktop-luan
 
 > If any errors are detected, go back and fix them.
 
-If multiple dishes are affected by your ingredient, you can flatten them all
-
-- Navigate to the recipes' directory
-
-```
-cd recipes
-```
-
-- Then use the following
-
-```
-for filename in *.cfg; do ksflatten -c "$filename" -o "../dishes/$filename"; done
-```
-
-The following message can be discarded:
-
-```
-/usr/lib/python3.13/site-packages/pykickstart/commands/partition.py:461: KickstartParseWarning: A partition with the mountpoint / has already been defined.
-```
-
 It is time to test the new dish!
 
 - Navigate inside the `dishes` folder:
 
 ```
-$ cd ../dishes/
+$ cd dishes/
 ```
 
 * You can then kickstart your own installation:
@@ -112,6 +92,28 @@ $ cd ../dishes/
 - Start it again, and ensure that Luanti has correctly been installed
 
 That's it !
+
+## FAQ
+
+If multiple dishes are affected by your ingredient, you can flatten them all
+
+- Navigate to the recipes' directory
+
+```
+cd recipes
+```
+
+- Then use the following
+
+```
+for filename in *.cfg; do ksflatten -c "$filename" -o "../dishes/$filename"; done
+```
+
+The following message can be discarded:
+
+```
+/usr/lib/python3.13/site-packages/pykickstart/commands/partition.py:461: KickstartParseWarning: A partition with the mountpoint / has already been defined.
+```
 
 ## Acknowledgement
 
