@@ -10,11 +10,15 @@ This repository contains such files broken down as:
 
 * `dishes`🥨 🥐 🥖 🥧 🥞 🥯 🧆 🧁: read-to-consume and standalone kickstart artifacts, which can be used to deploy complete systems
 
+Each ingredient represents a feature or a set of integrated features, such as a specific Desktop Environment or a storage configuration. 
+    - Ingredients prefixed with *live* such as `live-core.cfg` are to be used with live editions only
+    - *core* ingredients are meant be used in all their respective recipes, *base* ingredients, recommended but optional, and extra provides more stuff (sic)
+
 ## Development
 
 Using a pull request, you can suggest a modification to an existing ingredient or create a new ingredient from scratch.
 
-### Example: add a new package and include it into a recipe
+### Example 1: add a new package and include it into a recipe
 
 - Add [Luanti](https://www.luanti.org/), a free and open-source sandbox video game engine formerly known as Minetest, as a standalone ingredient, using the `echo` command
 
@@ -38,6 +42,8 @@ $ cp recipes/virtual-desktop.cfg recipes/virtual-desktop-luanti.cfg
 echo "%include ../ingredients/extra-luanti.cfg # Sandbox video game engine" >> recipes/virtual-desktop-luanti.cfg
 ```
 
+#### Flatten
+
 - Prepare the dish by following the recipe, a process called 'flattening'
 
 ```
@@ -53,6 +59,8 @@ It is time to test the new dish!
 ```
 $ cd dishes/
 ```
+
+#### Kickstart
 
 * You can then kickstart your own installation:
 
@@ -93,6 +101,48 @@ $ cd dishes/
 
 That's it !
 
+### Example 2: Create a new recipe from the existing list of ingredients
+
+The file `recipes/_list-of-ingredients.cfg` can be copied and edited to create your own remix of Phyllome OS, which itself is a remix of Fedora.
+
+```
+cp recipes/_list-of-ingredients.cfg recipes/my-new-distro.cfg
+```
+
+Then edit the said file to include your favorite ingredient
+
+```
+nano recipes/my-new-distro.cfg
+```
+
+```
+#            __          ____                        ____  _____
+#     ____  / /_  __  __/ / /___  ____ ___  ___     / __ \/ ___/
+#    / __ \/ __ \/ / / / / / __ \/ __ `__ \/ _ \   / / / /\__ \
+#   / /_/ / / / / /_/ / / / /_/ / / / / / /  __/  / /_/ /___/ /
+#  / .___/_/ /_/\__, /_/_/\____/_/ /_/ /_/\___/   \____//____/
+# /_/          /____/
+
+# The list of ingredients for composing Phyllome OS
+# Uncomment lines with "%include" to enable ingredient
+
+# Installation method
+# Exactly one option has to be picked
+# %include ../ingredients/core.cfg # Text mode
+# %include ../ingredients/live-core.cfg # For live systems only
+# Documentation: https://pykickstart.readthedocs.io/en/latest/kickstart-docs.html#graphical-or-text-or-cmdline
+
+# Storage configuration 
+# Exactly one option has to be picked
+# WARNING !!! Will erase local disks!
+# %include ../ingredients/core-storage.cfg # Basic ext4 partition layout for UEFI-based systems
+# %include ../ingredients/live-core-storage.cfg # For live systems only
+# Documentation: https://pykickstart.readthedocs.io/en/latest/kickstart-docs.html#part-or-partition
+[...]
+```
+
+- Once you are done, you can [flatten](#flatten) the file and [kickstart](#kickstart) it as explained in the previous section.
+
 ## FAQ
 
 If multiple dishes are affected by your ingredient, you can flatten them all
@@ -109,7 +159,7 @@ cd recipes
 for filename in *.cfg; do ksflatten -c "$filename" -o "../dishes/$filename"; done
 ```
 
-The following message can be discarded:
+The following message can safetly be ignored:
 
 ```
 /usr/lib/python3.13/site-packages/pykickstart/commands/partition.py:461: KickstartParseWarning: A partition with the mountpoint / has already been defined.
