@@ -18,6 +18,13 @@ Each ingredient represents a feature or a set of integrated features, such as a 
 
 Using a pull request, you can suggest a modification to an existing ingredient or create a new ingredient from scratch.
 
+### Requirements
+
+- `qemu`
+- `libvirt`
+- `virt-install`
+- `pykickstart`
+
 ### Example 1: add a new package and include it into a recipe
 
 - Add [Luanti](https://www.luanti.org/), a free and open-source sandbox video game engine formerly known as Minetest, as a standalone ingredient, using the `echo` command
