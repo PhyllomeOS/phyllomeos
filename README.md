@@ -12,98 +12,63 @@ This repository contains such files broken down as:
 
 ## Development
 
-git clone 
+Using a pull request, you can suggest a modification to an existing ingredient or create a new ingredient from scratch.
 
-You can suggest a modification to an existing ingredient or create a new ingredient from scratch.
+### Example: add a new package and include it into a recipe
 
-Let's assume that you wish to add *luanti*, an infinite-world block sandbox engine to all default installation. 
-
-The following command will automatically add the said package to the file `ingredient/core-packages-default.cfg`, just before the `%end` packages section
-
-`sed -i '/^%end # End of the packages section/i luanti # Multiplayer infinite-world block sandbox with survival mode' ingredient/core-packages-default.cfg`
-
-A recipe can then be modified. 
-
-### Recipes
-
-You can modify an existing recipe or create
-
-Let's assume you wish to add [Luanti](https://www.luanti.org/), a free and open-source sandbox video game engine, as an ingredient to a dish.
-
-* Clone this repository and change directory:
+- Add [Luanti](https://www.luanti.org/), a free and open-source sandbox video game engine formerly known as Minetest, as a standalone ingredient, using the `echo` command
 
 ```
-$ git clone https://git.phyllo.me/roots/phyllomeos && cd phyllomeos
+echo "%packages --exclude-weakdeps # Beginning of the package section. Does not include weak dependencies
+
+luanti # Multiplayer infinite-world block sandbox with survival mode
+
+%end # End of the packages section" > ingredients/extra-luanti.cfg
 ```
 
-* Make a copy of the `template.cfg` file and rename it
+Instead of creating a recipe from scratch, let's make a copy of the `virtual-desktop.cfg` recipe, which provide a Desktop environment necessary for *luanti* to function
 
 ```
-$ cp ingredients/template.cfg ingredients/extra-luanti.cfg
+$ cp recipes/virtual-desktop.cfg recipes/virtual-desktop-luanti.cfg
 ```
 
-* Add software `luanti` to your file:
+- Add the extra ingredient to the new recipe:
 
-```
-$ nano ingredients/extra-luanti.cfg
-```
-
-```
-# What ? This partial kickstart file provides the video game Luanti
-
-%packages --exclude-weakdeps # Beginning of the packages section. Excludes weak package dependencies
-
-luanti # a free and open-source sandbox video game
-
-%end
+``` 
+echo "%include ../ingredients/extra-luanti.cfg # Sandbox video game engine" >> recipes/virtual-desktop-luanti.cfg
 ```
 
-* Navigate inside the `recipes` folder:
+- Prepare the dish by following the recipe, a process called 'flattening'
 
 ```
-$ cd recipes
-```
-
-* Pick a suitable recipe to add your ingredient to it. As luanti is a GUI application, `virtual-desktop.cfg` is a fitting candidate. Make a copy of it.
-
-```
-$ cp virtual-desktop.cfg virtual-desktop-lunanti.cfg
-```
-
-* Edit the file and add the newly defined ingredient:
-
-```
-$ nano virtual-desktop-luanti.cfg
-```
-
-```
-%include ../ingredients/base-fedora-repo.cfg # offical repositories for Fedora
-%include ../ingredients/base-storage.cfg # base storage
-%include ../ingredients/base.cfg # A minimal machine
-%include ../ingredients/base-desktop-gnome.cfg # A desktop environment
-%include ../ingredients/base-guest-agents.cfg # Guest agents
-%include ../ingredients/base-initial-setup-gnome.cfg # Includes initial-setup for GNOME Shell, allowing for the creation of a user after the first boot, as well as some basic configuration
-
-%include ../ingredients/extra-luanti.cfg # A free and open-source sandbox video game
-
-poweroff # Shut down the system after a successful installation
-```
-
-* Merge the kickstart basic building blocks a single file, or dish. This process is called 'flattening'.
-
-```
-$ ksflatten -c virtual-desktop-lunanti.cfg -o ../dishes/virtual-desktop-luanti.cfg
+$ ksflatten -c recipes/virtual-desktop-luanti.cfg -o dishes/virtual-desktop-luanti.cfg
 ```
 
 > If any errors are detected, go back and fix them.
 
-If multiple dishes are affected by your ingredients, flatten them all while in the `recipes` folder.
+If multiple dishes are affected by your ingredient, you can flatten them all
+
+- Navigate to the recipes' directory
+
+```
+cd recipes
+```
+
+- Then use the following
 
 ```
 for filename in *.cfg; do ksflatten -c "$filename" -o "../dishes/$filename"; done
 ```
 
-* Navigate inside the `dishes` folder:
+The following message can be discarded:
+
+```
+/usr/lib/python3.13/site-packages/pykickstart/commands/partition.py:461: KickstartParseWarning: A partition with the mountpoint / has already been defined.
+```
+
+It is time to test the new dish!
+
+- Navigate inside the `dishes` folder:
 
 ```
 $ cd ../dishes/
@@ -113,8 +78,8 @@ $ cd ../dishes/
 
 ```
 # virt-install \
-    --connect qemu:///system \
-    --metadata description="Phyllome OS Desktop, virtual edition, with Luanti" \
+    --connect qemu:///system     \
+    --metadata description="Virtual desktop with Luanti" \
     --os-variant fedora41 \
     --virt-type kvm \
     --arch x86_64 \
@@ -137,10 +102,16 @@ $ cd ../dishes/
     --input type=keyboard,bus=virtio \
     --input type=tablet,bus=virtio \
     --rng /dev/urandom,model=virtio \
-    --disk path=/var/lib/libvirt/images/virtual-phyllome-desktop.img,format=raw,bus=virtio,cache=writeback,size=5 \
+    --disk path=/var/lib/libvirt/images/virtual-desktop-luanti.img,format=raw,bus=virtio,cache=writeback,size=10 \
     --location=https://download.fedoraproject.org/pub/fedora/linux/releases/42/Everything/x86_64/os/ \
     --initrd-inject virtual-desktop-luanti.cfg --extra-args "inst.ks=file:virtual-desktop-luanti.cfg"
 ```
+
+- When the installation is done, the machine will shut down
+
+- Start it again, and ensure that Luanti has correctly been installed
+
+That's it !
 
 ## Acknowledgement
 
