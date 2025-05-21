@@ -40,7 +40,7 @@ luanti # Multiplayer infinite-world block sandbox with survival mode
 Instead of creating a recipe from scratch, let's make a copy of the `virtual-desktop.cfg` recipe, which provide a Desktop environment necessary for *luanti* to function
 
 ```
-$ cp recipes/virtual-desktop.cfg recipes/virtual-desktop-luanti.cfg
+cp recipes/virtual-desktop.cfg recipes/virtual-desktop-luanti.cfg
 ```
 
 - Add the extra ingredient to the new recipe:
@@ -54,52 +54,35 @@ echo "%include ../ingredients/extra-luanti.cfg # Sandbox video game engine" >> r
 - Prepare the dish by following the recipe, a process called 'flattening'
 
 ```
-$ ksflatten -c recipes/virtual-desktop-luanti.cfg -o dishes/virtual-desktop-luanti.cfg
+ksflatten -c recipes/virtual-desktop-luanti.cfg -o dishes/virtual-desktop-luanti.cfg
 ```
 
 > If any errors are detected, go back and fix them.
 
 It is time to test the new dish!
 
-- Navigate inside the `dishes` folder:
-
-```
-$ cd dishes/
-```
-
 #### Kickstart
 
-* You can then kickstart your own installation:
+- Make the `deploy-vm.sh` script executable
 
 ```
-# virt-install \
-    --connect qemu:///system     \
-    --metadata description="Virtual desktop with Luanti" \
-    --os-variant fedora41 \
-    --virt-type kvm \
-    --arch x86_64 \
-    --machine q35 \
-    --name virtual-desktop-luanti \
-    --boot uefi \
-    --cpu host-model,topology.sockets=1,topology.cores=2,topology.threads=1 \
-    --vcpus 2 \
-    --memory 4096 \
-    --video virtio \
-    --graphics spice,listen=none \
-    --channel spicevmc \
-    --autoconsole none \
-    --console pty,target.type=virtio \
-    --sound none \
-    --network type=user,model=virtio \
-    --controller type=virtio-serial \
-    --controller type=usb,model=none \
-    --controller type=scsi,model=virtio-scsi \
-    --input type=keyboard,bus=virtio \
-    --input type=tablet,bus=virtio \
-    --rng /dev/urandom,model=virtio \
-    --disk path=/var/lib/libvirt/images/virtual-desktop-luanti.img,format=raw,bus=virtio,cache=writeback,size=10 \
-    --location=https://download.fedoraproject.org/pub/fedora/linux/releases/42/Everything/x86_64/os/ \
-    --initrd-inject virtual-desktop-luanti.cfg --extra-args "inst.ks=file:virtual-desktop-luanti.cfg"
+chmod +x deploy-vm.sh
+```
+
+- Execute the script
+
+```
+./deploy-vm.sh
+```
+
+- Select the new dish, *virtual-desktop-luanti*
+
+```
+[...]
+Available files:
+1. desktop-hypervisor-amdcpu
+[...]
+14. virtual-desktop-luanti
 ```
 
 - When the installation is done, the machine will shut down
