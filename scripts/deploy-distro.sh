@@ -55,6 +55,7 @@ virt-install \
     --rng /dev/urandom,model=virtio \
     --disk path=/var/lib/libvirt/images/"$vm_name".img,format=raw,bus=virtio,cache=writeback,size=10 \
     --location=https://download.fedoraproject.org/pub/fedora/linux/releases/42/Everything/x86_64/os/ \
-    --initrd-inject "dishes/$vm_name".cfg --extra-args "inst.ks=file:dishes/$vm_name.cfg"
+    --initrd-inject "./dishes/$vm_name".cfg \
+    --extra-args "inst.ks=file:$vm_name.cfg"
 
 echo "virt-install command executed with VM name: $vm_name"
