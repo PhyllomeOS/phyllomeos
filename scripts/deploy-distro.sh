@@ -39,14 +39,15 @@ virt-install \
     --machine q35 \
     --name "$vm_name" \
     --boot uefi \
-    --cpu host-model,topology.sockets=1,topology.cores=2,topology.threads=1 \
-    --vcpus 2 \
-    --memory 2048 \
+    --cpu host-model,topology.sockets=1,topology.cores=2,topology.threads=2 \
+    --vcpus 4 \
+    --memory 4096 \
     --video virtio \
+    --channel unix,target.type=virtio,target.name=org.qemu.guest_agent.0 \
     --autoconsole none \
     --console pty,target.type=virtio \
     --sound none \
-    --network type=user,model=virtio \
+    --network type=default,model=virtio \
     --controller type=virtio-serial \
     --controller type=usb,model=none \
     --controller type=scsi,model=virtio-scsi \
@@ -55,7 +56,7 @@ virt-install \
     --rng /dev/urandom,model=virtio \
     --disk path=/var/lib/libvirt/images/"$vm_name".img,format=raw,bus=virtio,cache=writeback,size=10 \
     --location=https://download.fedoraproject.org/pub/fedora/linux/releases/42/Everything/x86_64/os/ \
-    --initrd-inject "./dishes/$vm_name".cfg \
-    --extra-args "inst.ks=file:$vm_name.cfg"
+    --initrd-inject ./dishes/"$vm_name".cfg \
+    --extra-args "inst.ks=file:/$vm_name.cfg" 
 
 echo "virt-install command executed with VM name: $vm_name"
