@@ -1,5 +1,29 @@
 #!/bin/bash
 
+# Default values
+DEFAULT_MEMORY=4096
+DEFAULT_DISK_SIZE=10
+
+# Prompt user for memory size
+read -r -p "Enter memory size in MB or press Enter to keep default value: $DEFAULT_MEMORY): " memory_size
+memory_size=${memory_size:-$DEFAULT_MEMORY}
+
+# Validate memory size
+if ! [[ "$memory_size" =~ ^[0-9]+$ ]] || (( memory_size < 2048 )); then
+    echo "Invalid memory size.  Must be a number greater than or equal to 2048. Using default value of $DEFAULT_MEMORY."
+    memory_size=$DEFAULT_MEMORY
+fi
+
+# Prompt user for disk size
+read -r -p "Enter disk size in GB (default: $DEFAULT_DISK_SIZE): " disk_size
+disk_size=${disk_size:-$DEFAULT_DISK_SIZE}
+
+# Validate disk size
+if ! [[ "$disk_size" =~ ^[0-9]+$ ]] || (( disk_size < 10 )); then
+    echo "Invalid disk size.  Must be a number greater than or equal to 10 GiB. Using default value of $DEFAULT_DISK_SIZE."
+    disk_size=$DEFAULT_DISK_SIZE
+fi
+
 # Get a list of files in the directory dishes without extensions
 mapfile -t dish_name < <(find "dishes/" -maxdepth 1 -type f -printf "%f\n" | sed 's/\.[^.]*$//')
 
@@ -41,7 +65,7 @@ virt-install \
     --boot uefi \
     --cpu host-model,topology.sockets=1,topology.cores=2,topology.threads=2 \
     --vcpus 4 \
-    --memory 4096 \
+    --memory "$memory_size" \
     --video virtio \
     --channel unix,target.type=virtio,target.name=org.qemu.guest_agent.0 \
     --autoconsole none \
@@ -54,7 +78,7 @@ virt-install \
     --input type=keyboard,bus=virtio \
     --input type=tablet,bus=virtio \
     --rng /dev/urandom,model=virtio \
-    --disk path=/var/lib/libvirt/images/"$vm_name".img,format=raw,bus=virtio,cache=writeback,size=10 \
+    --disk path=/var/lib/libvirt/images/"$vm_name".img,format=raw,bus=virtio,cache=writeback,size="$disk_size" \
     --location=https://download.fedoraproject.org/pub/fedora/linux/releases/42/Everything/x86_64/os/ \
     --initrd-inject ./dishes/"$vm_name".cfg \
     --extra-args "inst.ks=file:/$vm_name.cfg" 
