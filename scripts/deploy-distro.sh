@@ -4,8 +4,8 @@
 DEFAULT_MEMORY=4096
 DEFAULT_DISK_SIZE=10
 
-# Prompt user for memory size
-read -r -p "Enter memory size in MB or press Enter to keep default value: $DEFAULT_MEMORY): " memory_size
+# Prompt user for VM memory size
+read -r -p "Provide memory desired VM memory in MB or press Enter to keep default value of $DEFAULT_MEMORY): " memory_size
 memory_size=${memory_size:-$DEFAULT_MEMORY}
 
 # Validate memory size
@@ -14,8 +14,8 @@ if ! [[ "$memory_size" =~ ^[0-9]+$ ]] || (( memory_size < 2048 )); then
     memory_size=$DEFAULT_MEMORY
 fi
 
-# Prompt user for disk size
-read -r -p "Enter disk size in GB (default: $DEFAULT_DISK_SIZE): " disk_size
+# Prompt user for VM disk size
+read -r -p "Provide desired disk size of VM in GB or press Enter to use default disk size of $DEFAULT_DISK_SIZE: " disk_size
 disk_size=${disk_size:-$DEFAULT_DISK_SIZE}
 
 # Validate disk size
@@ -24,7 +24,43 @@ if ! [[ "$disk_size" =~ ^[0-9]+$ ]] || (( disk_size < 10 )); then
     disk_size=$DEFAULT_DISK_SIZE
 fi
 
-# Get a list of files in the directory dishes without extensions
+# Define URI options for qemu
+uri_options=("qemu:///system" "qemu:///session")
+
+# Prompt user to select URI
+select uri in "${uri_options[@]}"; do
+    if [[ -n "$uri" ]]; then
+        break  # Exit the select loop if a valid option is chosen
+    else
+        echo "Invalid selection. Please choose a valid URI."
+    fi
+done
+
+case "$uri" in
+    qemu:///session)
+        disk_path="$HOME/.local/share/libvirt/images/"
+        ;;
+    qemu:///system)
+        disk_path="/var/lib/libvirt/images/"
+        ;;
+    *)
+        echo "Invalid URI selected. Exiting."
+        exit 1
+esac
+
+case "$uri" in
+    qemu:///session)
+        network_type="user"
+        ;;
+    qemu:///system)
+        network_type="default"
+        ;;
+    *)
+        echo "Invalid URI selected. Exiting."
+        exit 1
+esac
+
+# Get a list of files in "dishes" directory, restricted to those starting with "virtual"
 mapfile -t dish_name < <(find "dishes/" -maxdepth 1 -type f -printf "%f\n" | sed 's/\.[^.]*$//')
 
 # Check if there are any files
@@ -56,7 +92,7 @@ echo "You selected: $vm_name"
 
 # virt-install command with user-defined VM name
 virt-install \
-    --connect qemu:///system \
+    --connect "$uri" \
     --os-variant fedora41 \
     --virt-type kvm \
     --arch x86_64 \
@@ -70,15 +106,15 @@ virt-install \
     --channel unix,target.type=virtio,target.name=org.qemu.guest_agent.0 \
     --autoconsole none \
     --console pty,target.type=virtio \
-    --sound none \
-    --network type=default,model=virtio \
+    --sound virtio \
+    --network type="$network_type",model=virtio \
     --controller type=virtio-serial \
     --controller type=usb,model=none \
     --controller type=scsi,model=virtio-scsi \
     --input type=keyboard,bus=virtio \
-    --input type=tablet,bus=virtio \
+    --input type=mouse,bus=virtio \
     --rng /dev/urandom,model=virtio \
-    --disk path=/var/lib/libvirt/images/"$vm_name".img,format=raw,bus=virtio,cache=writeback,size="$disk_size" \
+    --disk path="${disk_path}/${vm_name}.img",format=raw,bus=virtio,cache=writeback,size="$disk_size" \
     --location=https://download.fedoraproject.org/pub/fedora/linux/releases/42/Everything/x86_64/os/ \
     --initrd-inject ./dishes/"$vm_name".cfg \
     --extra-args "inst.ks=file:/$vm_name.cfg" 
