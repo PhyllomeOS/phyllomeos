@@ -5,17 +5,17 @@ DEFAULT_MEMORY=4096
 DEFAULT_DISK_SIZE=10
 
 # Prompt user for VM memory size
-read -r -p "Provide memory desired VM memory in MB or press Enter to keep default value of $DEFAULT_MEMORY): " memory_size
+read -r -p "Provide desired VM memory in MB or press Enter to keep default value of $DEFAULT_MEMORY MB): " memory_size
 memory_size=${memory_size:-$DEFAULT_MEMORY}
 
 # Validate memory size
 if ! [[ "$memory_size" =~ ^[0-9]+$ ]] || (( memory_size < 2048 )); then
-    echo "Invalid memory size.  Must be a number greater than or equal to 2048. Using default value of $DEFAULT_MEMORY."
+    echo "Invalid memory size.  Must be a number greater than or equal to 2048. Using default value of $DEFAULT_MEMORY MB."
     memory_size=$DEFAULT_MEMORY
 fi
 
 # Prompt user for VM disk size
-read -r -p "Provide desired disk size of VM in GB or press Enter to use default disk size of $DEFAULT_DISK_SIZE: " disk_size
+read -r -p "Provide desired disk size of VM in GB or press Enter to use default disk size of $DEFAULT_DISK_SIZE GB: " disk_size
 disk_size=${disk_size:-$DEFAULT_DISK_SIZE}
 
 # Validate disk size
@@ -24,44 +24,43 @@ if ! [[ "$disk_size" =~ ^[0-9]+$ ]] || (( disk_size < 10 )); then
     disk_size=$DEFAULT_DISK_SIZE
 fi
 
-# Define URI options for qemu
-uri_options=("qemu:///system" "qemu:///session")
+# Set the choices
+CHOICE_SYSTEM="qemu:///system"
+CHOICE_SESSION="qemu:///session"
 
-# Prompt user to select URI
-select uri in "${uri_options[@]}"; do
-    if [[ -n "$uri" ]]; then
-        break  # Exit the select loop if a valid option is chosen
-    else
-        echo "Invalid selection. Please choose a valid URI."
-    fi
-done
+# Display the choices to the user
+echo "Please select an option or press Enter to keep default value of $CHOICE_SESSION):"
+echo "1) $CHOICE_SYSTEM (system-based or rootfull virtual machine)"
+echo "2) $CHOICE_SESSION (session-based or rootless virtual machine)"
 
-case "$uri" in
-    qemu:///session)
-        disk_path="$HOME/.local/share/libvirt/images/"
-        ;;
-    qemu:///system)
-        disk_path="/var/lib/libvirt/images/"
-        ;;
+# Prompt the user for input
+IFS= read -r -p "Enter your choice (1 or 2): " user_choice
+
+# Validate the user's input
+if [[ ! "$user_choice" =~ ^[12]$ ]]; then
+  echo "Invalid choice.  Defaulting to session-based VM."
+  uri="$CHOICE_SESSION"  # Default to session-based if input is invalid
+else
+  # Determine the selected option
+  case "$user_choice" in
+    1)
+      uri="$CHOICE_SYSTEM"
+      ;;
+    2)
+      uri="$CHOICE_SESSION"
+      ;;
     *)
-        echo "Invalid URI selected. Exiting."
-        exit 1
-esac
+      echo "Unexpected error: Invalid choice. This should not happen due to validation."
+      exit 1
+      ;;
+  esac
+fi
 
-case "$uri" in
-    qemu:///session)
-        network_type="user"
-        ;;
-    qemu:///system)
-        network_type="default"
-        ;;
-    *)
-        echo "Invalid URI selected. Exiting."
-        exit 1
-esac
+# Display the selected option (optional)
+echo "You selected: $uri"
 
-# Get a list of files in "dishes" directory, restricted to those starting with "virtual"
-mapfile -t dish_name < <(find "dishes/" -maxdepth 1 -type f -printf "%f\n" | sed 's/\.[^.]*$//')
+# Get a list of files in "dishes" directory
+mapfile -t dish_name < <(find "dishes/" -maxdepth 1 -type f \( -name "virtual*" \) -printf "%f\n" | sed 's/\.[^.]*$//')
 
 # Check if there are any files
 if [ ${#dish_name[@]} -eq 0 ]; then
