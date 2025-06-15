@@ -54,6 +54,15 @@ else
       exit 1
       ;;
   esac
+
+  # Conditional variable assignment based on URI
+  if [[ "$uri" == "qemu:///system" ]]; then
+    disk_path="/var/lib/libvirt/images/"
+    network_type="default"
+  elif [[ "$uri" == "qemu:///session" ]]; then
+    disk_path="$HOME/.local/share/libvirt/images/"
+    network_type="user"
+  fi
 fi
 
 # Display the selected option (optional)
