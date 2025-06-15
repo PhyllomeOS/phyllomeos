@@ -17,7 +17,7 @@ chmod +x deploy-vm.sh
 
 Executing: ./scripts/core-count.sh
 System has more than 2 core (nproc --all: 6).
-[...]]
+[...]
 10. virtual-desktop-hypervisor
 [...]
 Enter the number of the file you want to select: 10
