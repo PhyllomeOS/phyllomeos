@@ -122,6 +122,8 @@ virt-install \
     --input type=keyboard,bus=virtio \
     --input type=mouse,bus=virtio \
     --rng /dev/urandom,model=virtio \
+    --iommu model=virtio \
+    --memballoon none \
     --disk path="${disk_path}/${vm_name}.img",format=raw,bus=virtio,cache=writeback,size="$disk_size" \
     --location=https://download.fedoraproject.org/pub/fedora/linux/releases/42/Everything/x86_64/os/ \
     --initrd-inject ./dishes/"$vm_name".cfg \
