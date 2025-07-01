@@ -13,6 +13,7 @@ execute_script() {
 
 # Array of scripts
 scripts=(
+  "./scripts/install-prerequisites-on-linux.sh"
   "./scripts/core-count.sh"
   "./scripts/system-memory.sh"
   "./scripts/deploy-distro.sh"
