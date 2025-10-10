@@ -111,6 +111,7 @@ virt-install \
     --vcpus 4 \
     --memory "$memory_size" \
     --video virtio \
+    --graphics spice,listen=0.0.0.0 \
     --channel unix,target.type=virtio,target.name=org.qemu.guest_agent.0 \
     --autoconsole none \
     --console pty,target.type=virtio \
