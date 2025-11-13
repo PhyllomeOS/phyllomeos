@@ -129,7 +129,7 @@ virt-install \
     --watchdog none \
     --memballoon none \
     --disk path="${disk_path}/${vm_name}.img",format=raw,bus=virtio,cache=writeback,size="$disk_size" \
-    --location=https://download.fedoraproject.org/pub/fedora/linux/releases/42/Everything/x86_64/os/ \
+    --location=https://download.fedoraproject.org/pub/fedora/linux/releases/43/Everything/x86_64/os/ \
     --initrd-inject ./dishes/"$vm_name".cfg \
     --extra-args "inst.ks=file:/$vm_name.cfg" 
 
