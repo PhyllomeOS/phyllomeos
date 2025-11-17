@@ -1,0 +1,76 @@
+name: release
+
+on: 
+  push:
+    branches:
+      - main  # Or your desired branch
+
+jobs:
+  checkout:
+    runs-on: fedora-cloud-42
+    defaults:
+      run:
+        shell: bash
+    container: 
+      image: git.phyllo.me/devops/fedora-runner-image:latest
+
+    steps:
+      - uses: https://git.phyllo.me/devops/checkout@v5
+        with:
+          fetch-depth: 0
+   
+      - name: Initialize mock
+        run: |
+          mock -r fedora-43-x86_64 --init
+
+      - name: Install required packages
+        run: |
+          mock -r fedora-43-x86_64 --install lorax-lmc-novirt vim-minimal pykickstart livecd-tools
+
+      - name: Copy configuration file to mock
+        run: |
+          mock -r fedora-43-x86_64 --copyin dishes/live-server.cfg /builddir
+
+      - name: Build ISO with livemedia-creator
+        run: |
+          mock -r fedora-43-x86_64 --shell --enable-network --isolation=simple << 'EOF'
+          cd /builddir
+          livemedia-creator --ks live-server.cfg --no-virt --resultdir /var/lmc --project live-desktop-hypervisor --make-iso --volid live-desktop-hypervisor --iso-only --iso-name server-43.iso --releasever 43 --macboot
+          EOF
+
+      - name: Upload ISO as artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: server-43.iso
+          path: /var/lmc/server-43.iso
+          if-no-files-found: error
+
+      - name: Create Release
+        if: github.ref == 'refs/heads/main'
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: iso-build-${{ github.run_number }}
+          release_name: ISO Build ${{ github.run_number }}
+          body: |
+            Build artifact from workflow run ${{ github.run_number }}
+            ISO file: server-43.iso
+          draft: false
+          prerelease: false
+
+      - name: Upload ISO to Release
+        if: github.ref == 'refs/heads/main'
+        uses: actions/upload-release-asset@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: /var/lmc/server-43.iso
+          asset_name: server-43.iso
+          asset_content_type: application/x-iso9660-image
+
+      - name: Cleanup mock environment
+        if: always()
+        run: |
+          mock -r fedora-43-x86_64 --clean
