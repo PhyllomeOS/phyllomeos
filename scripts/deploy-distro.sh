@@ -4,6 +4,28 @@
 DEFAULT_MEMORY=4096
 DEFAULT_DISK_SIZE=10
 
+# Function to find Fedora ISO
+find_fedora_iso() {
+    local iso_dir="/var/lib/libvirt/isos"
+    local fedora_iso=""
+    
+    # Check if directory exists
+    if [ -d "$iso_dir" ]; then
+        # Find the first Fedora-Server*.iso file
+        fedora_iso=$(find "$iso_dir" -maxdepth 1 -name "Fedora-Server*.iso" -type f | head -n 1)
+        
+        # If found, return the full path
+        if [ -n "$fedora_iso" ] && [ -f "$fedora_iso" ]; then
+            echo "$fedora_iso"
+            return 0
+        fi
+    fi
+    
+    # Return empty if no ISO found
+    echo ""
+    return 1
+}
+
 # Prompt user for VM memory size
 read -r -p "Provide desired VM memory in MB or press Enter to keep default value of $DEFAULT_MEMORY MB): " memory_size
 memory_size=${memory_size:-$DEFAULT_MEMORY}
@@ -98,6 +120,16 @@ vm_name="${dish_name[$((choice - 1))]}"
 # Output the selected filename
 echo "You selected: $vm_name"
 
+# Find Fedora ISO or use default location
+fedora_iso=$(find_fedora_iso)
+if [ -n "$fedora_iso" ]; then
+    location_param="$fedora_iso"
+    echo "Using local ISO: $fedora_iso"
+else
+    location_param="https://download.fedoraproject.org/pub/fedora/linux/releases/43/Everything/x86_64/os/"
+    echo "Using default online repository"
+fi
+
 # virt-install command with user-defined VM name
 virt-install \
     --connect "$uri" \
@@ -129,7 +161,7 @@ virt-install \
     --watchdog none \
     --memballoon none \
     --disk path="${disk_path}/${vm_name}.img",format=raw,bus=virtio,cache=writeback,size="$disk_size" \
-    --location=https://download.fedoraproject.org/pub/fedora/linux/releases/43/Everything/x86_64/os/ \
+    --location="$location_param" \
     --initrd-inject ./dishes/"$vm_name".cfg \
     --extra-args "inst.ks=file:/$vm_name.cfg" 
 
