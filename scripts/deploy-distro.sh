@@ -11,7 +11,7 @@ find_fedora_iso() {
     
     # Check if directory exists
     if [ -d "$iso_dir" ]; then
-        # Find the first Fedora-Server*.iso file
+        # Find the first Fedora-Everything*.iso file
         fedora_iso=$(find "$iso_dir" -maxdepth 1 -name "Fedora-Server*.iso" -type f | head -n 1)
         
         # If found, return the full path
