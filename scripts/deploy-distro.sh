@@ -4,8 +4,59 @@
 DEFAULT_MEMORY=4096
 DEFAULT_DISK_SIZE=10
 
-# Function to find Fedora ISO
+# Function to find Fedora ISO based on dish name
 find_fedora_iso() {
+    local iso_dir="/var/lib/libvirt/isos"
+    local dish_name="$1"
+    local fedora_iso=""
+    
+    # Check if directory exists
+    if [ -d "$iso_dir" ]; then
+        # Parse dish name to extract version or "rawhide"
+        local version=""
+        if [[ "$dish_name" == *"rawhide"* ]]; then
+            version="Rawhide"
+        elif [[ "$dish_name" == *"_43"* ]]; then
+            version="43"
+        elif [[ "$dish_name" == *"_44"* ]]; then
+            version="44"
+        elif [[ "$dish_name" == *"_45"* ]]; then
+            version="45"
+        fi
+        
+        # If we found a version, try to match with that version in ISO name
+        if [ -n "$version" ]; then
+            if [ "$version" = "Rawhide" ]; then
+                # For rawhide, look for ISO with "Rawhide" in the name
+                fedora_iso=$(find "$iso_dir" -maxdepth 1 -name "Fedora-Everything*.iso" -type f | grep -i "rawhide" | head -n 1)
+            else
+                # For regular versions, look for ISO with that version number in the name
+                fedora_iso=$(find "$iso_dir" -maxdepth 1 -name "Fedora-Everything*.iso" -type f | grep -i "$version" | head -n 1)
+            fi
+            
+            # If no specific version match found, fallback to any Fedora-Everything ISO
+            if [ -z "$fedora_iso" ] || [ ! -f "$fedora_iso" ]; then
+                fedora_iso=$(find "$iso_dir" -maxdepth 1 -name "Fedora-Everything*.iso" -type f | head -n 1)
+            fi
+        else
+            # No version match found, fallback to any Fedora-Everything ISO
+            fedora_iso=$(find "$iso_dir" -maxdepth 1 -name "Fedora-Everything*.iso" -type f | head -n 1)
+        fi
+        
+        # If found, return the full path
+        if [ -n "$fedora_iso" ] && [ -f "$fedora_iso" ]; then
+            echo "$fedora_iso"
+            return 0
+        fi
+    fi
+    
+    # Return empty if no ISO found
+    echo ""
+    return 1
+}
+
+# Function to find Fedora ISO (backward compatibility)
+find_fedora_iso_old() {
     local iso_dir="/var/lib/libvirt/isos"
     local fedora_iso=""
     
@@ -120,14 +171,21 @@ vm_name="${dish_name[$((choice - 1))]}"
 # Output the selected filename
 echo "You selected: $vm_name"
 
-# Find Fedora ISO or use default location
-fedora_iso=$(find_fedora_iso)
+# Find Fedora ISO based on the dish name
+fedora_iso=$(find_fedora_iso "$vm_name")
 if [ -n "$fedora_iso" ]; then
     location_param="$fedora_iso"
     echo "Using local ISO: $fedora_iso"
 else
-    location_param="https://download.fedoraproject.org/pub/fedora/linux/releases/43/Everything/x86_64/os/"
-    echo "Using default online repository"
+    # Fallback to original behavior if no specific ISO found
+    fedora_iso=$(find_fedora_iso_old)
+    if [ -n "$fedora_iso" ]; then
+        location_param="$fedora_iso"
+        echo "Using local ISO: $fedora_iso"
+    else
+        location_param="https://download.fedoraproject.org/pub/fedora/linux/releases/43/Everything/x86_64/os/"
+        echo "Using default online repository"
+    fi
 fi
 
 # virt-install command with user-defined VM name
