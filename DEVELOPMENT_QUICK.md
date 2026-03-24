@@ -1,0 +1,66 @@
+# Phyllome OS Development Workflow
+
+This is a quick-reference guide for developers. For comprehensive coverage, see [DEVELOPMENT.md](./DEVELOPMENT.md).
+
+## Quick Start
+
+```bash
+# Prerequisites
+sudo dnf install qemu libvirt virt-install pykickstart
+pip install PyYAML pytest
+
+# Verify setup
+cd scripts && make generate-recipes && make test
+```
+
+## Core Workflows
+
+### Add Fragment
+
+```bash
+# Create new kickstart snippet
+cat > fragments/shared/packages/new-package.ks << 'EOF'
+%packages
+new-package
+%end
+```
+
+### Add to Recipe
+
+```bash
+# Edit scripts/recipe_templates.yaml to include fragment
+# Edit scripts/recipes_manifest.yaml to add variant
+
+# Regenerate
+cd scripts && make generate-recipes && make validate-recipes
+```
+
+### Run Tests
+
+```bash
+cd scripts
+make test                    # All tests
+make test-integration        # Integration only
+make test-container          # Containerized
+```
+
+### Validate Fragments
+
+```bash
+for f in $(find fragments -name "*.ks"); do
+    python3 -c "
+from pykickstart.parser import KickstartParser
+from pykickstart.version import makeVersion, DEVEL
+parser = KickstartParser(makeVersion(DEVEL))
+parser.readKickstart(open('$f').read())
+" || echo "✗ $f"
+done
+```
+
+## Architecture
+
+```
+fragments/ (54 .ks) → generate_recipe.py → recipes/ (16 .cfg) → ksflatten → dishes/ (28 .cfg)
+```
+
+See `DEVELOPMENT.md` Section 1 for detailed architecture overview.
