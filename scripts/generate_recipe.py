@@ -12,6 +12,59 @@ from pathlib import Path
 from typing import Dict, List, Optional, Any
 
 
+# Deprecated/removed command mappings for Fedora 43 (F42) and rawhide
+DEPRECATED_COMMANDS: Dict[str, Dict[str, str]] = {
+    'authconfig': {
+        'status': 'removed',
+        'removed_in': 'F34',
+        'alternative': 'authselect',
+        'message': 'authconfig was removed in Fedora 34. Use authselect instead.'
+    },
+    'keyboard': {
+        'status': 'deprecated',
+        'deprecated_in': 'F18',
+        'alternative': 'keyboard --vckeymap',
+        'message': 'keyboard command is deprecated. Use keyboard --vckeymap instead.'
+    },
+    'langsupport': {
+        'status': 'deprecated',
+        'deprecated_in': 'F21',
+        'alternative': 'lang',
+        'message': 'langsupport is deprecated. Use lang command instead.'
+    },
+    'nfs': {
+        'status': 'deprecated',
+        'deprecated_in': 'F23',
+        'alternative': 'repo --name=nfs',
+        'message': 'nfs command is deprecated. Use repo command instead.'
+    },
+    'parted': {
+        'status': 'deprecated',
+        'deprecated_in': 'F13',
+        'alternative': 'part',
+        'message': 'parted command is deprecated. Use part command instead.'
+    },
+}
+
+
+def _import_pykickstart():
+    """Import pykickstart modules, returns None if not available."""
+    try:
+        from pykickstart.parser import KickstartParser
+        from pykickstart.version import makeVersion
+        from pykickstart.version import DEVEL
+        from pykickstart.errors import KickstartParseError, KickstartError
+        return {
+            'parser': KickstartParser,
+            'makeVersion': makeVersion,
+            'DEVEL': DEVEL,
+            'KickstartParseError': KickstartParseError,
+            'KickstartError': KickstartError
+        }
+    except ImportError:
+        return None
+
+
 class RecipeGenerator:
     """Generate kickstart recipes from templates and modifiers."""
 
@@ -20,6 +73,13 @@ class RecipeGenerator:
         self.project_root = Path(__file__).parent.parent
         self.ingredients_dir = self.project_root / ingredients_dir
         self.templates = self.load_templates(templates_file)
+
+    def get_ksversion(self, version: str) -> Optional[str]:
+        """Map Phyllome OS version to pykickstart version string."""
+        if version == 'rawhide':
+            return None
+        else:
+            return f'F{int(version) - 1}'
 
     def load_templates(self, path: Path) -> Dict:
         """Load recipe templates from YAML file."""
@@ -217,6 +277,88 @@ class RecipeGenerator:
 
         return issues
 
+    def validate_recipe_semantic(self, content: str, version: str) -> List[str]:
+        """Validate recipe using pykickstart parser with version-specific checks."""
+        issues = []
+        
+        modules = _import_pykickstart()
+        if modules is None:
+            issues.append("Warning: pykickstart not installed, skipping semantic validation")
+            return issues
+        
+        KickstartParser = modules['parser']
+        makeVersion = modules['makeVersion']
+        KickstartParseError = modules['KickstartParseError']
+        KickstartError = modules['KickstartError']
+        
+        ks_version_str = self.get_ksversion(version)
+        if ks_version_str:
+            ks_version = makeVersion(ks_version_str)
+        else:
+            ks_version = makeVersion(modules['DEVEL'])
+        
+        try:
+            parser = KickstartParser(ks_version)
+            parser.readKickstartFromString(content)
+        except KickstartParseError as e:
+            issues.append(f"Syntax error line {e.lineno}: {e.message}")
+        except KickstartError as e:
+            issues.append(f"Validation error: {str(e)}")
+        except Exception as e:
+            issues.append(f"Unexpected error during parsing: {str(e)}")
+        
+        # Check for deprecated commands in the content
+        issues.extend(self._check_deprecated_commands(content))
+        
+        return issues
+
+    def _check_deprecated_commands(self, content: str) -> List[str]:
+        """Check for deprecated and removed commands with suggestions."""
+        issues = []
+        
+        for line_num, line in enumerate(content.split('\n'), start=1):
+            # Skip comments and empty lines
+            stripped = line.strip()
+            if not stripped or stripped.startswith('#'):
+                continue
+            
+            # Extract command (first word after % if in section, or just the first word)
+            if stripped.startswith('%'):
+                continue  # Skip section headers
+            
+            parts = stripped.split()
+            if not parts:
+                continue
+            
+            cmd = parts[0]
+            
+            if cmd in DEPRECATED_COMMANDS:
+                cmd_info = DEPRECATED_COMMANDS[cmd]
+                status = cmd_info['status']
+                msg = cmd_info['message']
+                
+                if status == 'removed':
+                    issues.append(f"ERROR: Line {line_num}: {msg}")
+                else:
+                    issues.append(f"Warning: Line {line_num}: {msg}")
+        
+        return issues
+
+    def extract_version(self, content: str, filename: str) -> Optional[str]:
+        """Extract Fedora version from recipe content or filename."""
+        import re
+        filename_match = re.search(r'(?:_|-)(43|rawhide)(?:_|-|.cfg|.yaml|$)', filename)
+        if filename_match:
+            return filename_match.group(1)
+        
+        for line in content.split('\n'):
+            if 'core-fedora-repo-43' in line:
+                return '43'
+            elif 'core-fedora-repo-rawhide' in line:
+                return 'rawhide'
+        
+        return None
+
     def generate_filename(self, recipe_type: str, version: str, **modifiers) -> str:
         """Generate recipe filename from parameters."""
         # Map modifiers to filename components
@@ -310,6 +452,11 @@ def main():
                         nargs='+',
                         help='Validate recipe files')
     
+    # Strict mode for CI
+    parser.add_argument('--strict',
+                        action='store_true',
+                        help='Treat warnings as errors (CI mode)')
+    
     args = parser.parse_args()
 
     # Initialize generator
@@ -323,6 +470,16 @@ def main():
                 with open(recipe_path) as f:
                     content = f.read()
                 issues = generator.validate_recipe(content)
+                
+                # Extract version and perform semantic validation
+                filename = Path(recipe_path).stem
+                version = generator.extract_version(content, filename)
+                if version:
+                    semantic_issues = generator.validate_recipe_semantic(content, version)
+                    issues.extend(semantic_issues)
+                else:
+                    issues.append("Warning: Could not determine version, skipping semantic validation")
+                
                 if issues:
                     all_issues.append((recipe_path, issues))
             except FileNotFoundError:
@@ -330,12 +487,39 @@ def main():
                 sys.exit(2)
         
         if all_issues:
-            print("Validation issues found:", file=sys.stderr)
+            print("=== Recipe Validation Report ===", file=sys.stderr)
             for path, issues in all_issues:
                 print(f"\n{path}:", file=sys.stderr)
-                for issue in issues:
-                    print(f"  - {issue}", file=sys.stderr)
-            sys.exit(1)
+                error_count = sum(1 for i in issues if 'ERROR' in i)
+                warning_count = sum(1 for i in issues if 'Warning:' in i)
+                
+                if error_count > 0:
+                    for issue in issues:
+                        if 'ERROR' in issue:
+                            print(f"  {issue}", file=sys.stderr)
+                
+                if warning_count > 0:
+                    for issue in issues:
+                        if 'Warning:' in issue:
+                            print(f"  {issue}", file=sys.stderr)
+                
+                if error_count == 0 and warning_count == 0:
+                    print(f"  No issues found (file exists)", file=sys.stderr)
+            
+            print(f"\nSummary:", file=sys.stderr)
+            print(f"  - {len(all_issues)} recipe(s) checked", file=sys.stderr)
+            
+            total_errors = sum(len([i for i in issues if 'ERROR' in i]) for _, issues in all_issues)
+            total_warnings = sum(len([i for i in issues if 'Warning:' in i]) for _, issues in all_issues)
+            print(f"  - {total_errors} error(s), {total_warnings} warning(s)", file=sys.stderr)
+            
+            # Strict mode: treat warnings as errors
+            if args.strict and total_warnings > 0:
+                print("\nStrict mode: Warnings treated as errors", file=sys.stderr)
+                sys.exit(1)
+            
+            if total_errors > 0:
+                sys.exit(1)
         else:
             print("All recipes validated successfully")
             sys.exit(0)
@@ -375,7 +559,9 @@ def main():
 
                 if args.validate and not args.dry_run:
                     issues = generator.validate_recipe(content)
-                    if issues:
+                    semantic_issues = generator.validate_recipe_semantic(content, version)
+                    all_issues = issues + semantic_issues
+                    if all_issues:
                         print(f"Validation issues for {recipe_type} {version}:", file=sys.stderr)
                         for issue in issues:
                             print(f"  - {issue}", file=sys.stderr)
@@ -409,7 +595,9 @@ def main():
 
         if args.validate:
             issues = generator.validate_recipe(content)
-            if issues:
+            semantic_issues = generator.validate_recipe_semantic(content, args.version)
+            all_issues = issues + semantic_issues
+            if all_issues:
                 print("Validation issues:", file=sys.stderr)
                 for issue in issues:
                     print(f"  - {issue}", file=sys.stderr)

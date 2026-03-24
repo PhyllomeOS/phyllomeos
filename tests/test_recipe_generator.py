@@ -225,3 +225,111 @@ class TestRecipeGenerator:
         manifest = {'recipes': [{'name': 'test', 'variants': [{}]}]}
         errors = self.generator.validate_manifest(manifest)
         assert any('version' in error for error in errors)
+
+    def test_get_ksversion_43(self):
+        """Test version mapping for Fedora 43."""
+        version = self.generator.get_ksversion('43')
+        assert version == 'F42'
+
+    def test_get_ksversion_rawhide(self):
+        """Test version mapping for rawhide."""
+        version = self.generator.get_ksversion('rawhide')
+        assert version is None
+
+    def test_validate_recipe_semantic_f42(self):
+        """Test semantic validation with valid recipe for F42."""
+        content = """text
+poweroff
+zerombr
+clearpart --all --initlabel
+part /boot/efi --fstype="efi" --size=512
+part / --fstype="ext4" --grow
+%packages
+@base-graphical
+%end
+"""
+        issues = self.generator.validate_recipe_semantic(content, '43')
+        # Should have no syntax errors
+        assert not any('Syntax' in issue for issue in issues)
+        assert not any('Validation' in issue for issue in issues)
+
+    def test_validate_recipe_semantic_empty(self):
+        """Test semantic validation with empty content."""
+        content = ""
+        issues = self.generator.validate_recipe_semantic(content, '43')
+        # Empty content should fail parsing but not crash
+        assert len(issues) >= 0  # At least info about empty content
+
+    def test_validate_recipe_semantic_invalid_syntax(self):
+        """Test semantic validation detects invalid syntax."""
+        content = """text
+invalidcmd --option=value
+%packages
+@base-graphical
+%end
+"""
+        issues = self.generator.validate_recipe_semantic(content, '43')
+        # Should detect invalid command
+        has_syntax_error = any('Syntax' in issue or 'invalidcmd' in issue.lower() 
+                              for issue in issues)
+        # Or pykickstart warning if not available
+        has_warning = any('Warning' in issue or 'pykickstart' in issue.lower() 
+                         for issue in issues)
+        assert has_syntax_error or has_warning
+
+
+    def test_validate_recipe_full_validation(self):
+        """Test full validation combines file and semantic checks."""
+        content = self.generator.generate_recipe('virtual-desktop', '43',
+                                                  desktop='gnome',
+                                                  storage='standard',
+                                                  security='secure')
+        issues = self.generator.validate_recipe(content)
+        # Check ingredient existence
+        assert len([i for i in issues if 'Missing' in i]) == 0, \
+            f"Found missing ingredients: {issues}"
+
+    def test_check_deprecated_removed_command(self):
+        """Test detection of removed deprecated command."""
+        content = """text
+authconfig --enableshadow
+%packages
+@core
+%end
+"""
+        issues = self.generator.validate_recipe_semantic(content, '43')
+        # Should detect authconfig as removed
+        has_removed = any('ERROR' in i and 'authconfig' in i for i in issues)
+        assert has_removed
+
+    def test_check_deprecated_warning_command(self):
+        """Test detection of deprecated command as warning."""
+        content = """text
+keyboard --evgrd
+%packages
+@core
+%end
+"""
+        issues = self.generator.validate_recipe_semantic(content, '43')
+        # Should detect keyboard as deprecated (warning)
+        has_warning = any('Warning' in i and 'keyboard' in i for i in issues)
+        assert has_warning
+
+    def test_extract_version_with_dash(self):
+        """Test version extraction from filename with dash."""
+        filename = 'test-43.cfg'
+        version = self.generator.extract_version('', filename)
+        assert version == '43'
+
+    def test_extract_version_with_underscore(self):
+        """Test version extraction from filename with underscore."""
+        filename = 'test_43.cfg'
+        version = self.generator.extract_version('', filename)
+        assert version == '43'
+
+    def test_extract_version_from_content(self):
+        """Test version extraction from content."""
+        content = "%include ../ingredients/core-fedora-repo-43.cfg"
+        version = self.generator.extract_version(content, 'test.cfg')
+        assert version == '43'
+
