@@ -1,0 +1,31 @@
+# Hypervisor base post-installation configuration
+
+%post --nochroot --log=/mnt/sysimage/root/hypervisor-base-post.log # Beginning of %post section. Those commands are executed outside the chroot environment. Logging is enabled to help with post-installation troubleshooting
+
+# Load kernel modules by adding vfio, vfio_pci, vfio_iommu_type1, vfio_virqfd
+echo "vfio" > /mnt/sysimage/etc/modules-load.d/vfio.conf
+echo "vfio-pci" > /mnt/sysimage/etc/modules-load.d/vfio-pci.conf
+echo "vfio_iommu_type1" > /mnt/sysimage/etc/modules-load.d/vfio_iommu_type1.conf
+echo "vfio_virqfd" > /mnt/sysimage/etc/modules-load.d/vfio_virqfd.conf
+
+mkdir /mnt/sysimage/var/lib/libvirt/isos # Create a directory to store iso images. SELinux is already taking this one into account. 
+
+# wget https://boot.netboot.xyz/ipxe/netboot.xyz.iso -P /mnt/sysimage/var/lib/libvirt/isos/ # fetch netboot.xyz iso and store it to the newly created iso directory
+
+# # virsh commands fail in a kickstart environment (chroot or not it seems). would need to fetch a script and execute post-launch with a delay, for example using a systemd unit 
+# virsh pool-define-as isos dir - - - - /mnt/sysimage/var/lib/libvirt/isos/ # Make libvirt aware of this new directory by creating a so-called 'pool'.
+# virsh pool-build isos # Build the pool
+# virsh pool-start isos # Start it
+# virsh pool-autostart isos # Set-it to autostart
+
+# fetch custom script and make it executable
+# wget https://raw.githubusercontent.com/PhyllomeOS/phyllomeos/main/post-first-startup-scripts/virtualization-tweaks-root-needed.sh -P /mnt/sysimage/usr/local/bin/
+# chmod +x /mnt/sysimage/usr/local/bin/virtualization-tweaks-root-needed.sh
+
+# wget https://raw.githubusercontent.com/PhyllomeOS/xml-definition-for-domains/main/xml/system/linux.xml
+# virsh define linux.xml
+
+# wget https://raw.githubusercontent.com/PhyllomeOS/xml-definition-for-domains/main/xml/system/windows.xml
+# virsh define windows.xml
+
+%end # End of the %post section

@@ -1,0 +1,3 @@
+# Network configuration
+
+network  --onboot=yes --bootproto=dhcp --device=link --activate --hostname=phyllome-alpha # Configure network devices, enable them at boot time device and sets a particular hostname. "link" selects the first device reaching an up state

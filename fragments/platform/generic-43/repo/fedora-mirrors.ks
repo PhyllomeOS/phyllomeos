@@ -1,0 +1,5 @@
+# Fedora 43 repositories
+
+repo --name=fedora --mirrorlist=https://mirrors.fedoraproject.org/mirrorlist?repo=fedora-43&arch=x86_64 # Official Fedora mirror
+repo --name=updates --mirrorlist=https://mirrors.fedoraproject.org/mirrorlist?repo=updates-released-f43&arch=x86_64 # Official Fedora updates mirror
+url --mirrorlist=https://mirrors.fedoraproject.org/mirrorlist?repo=fedora-43&arch=x86_64 # Official Fedora updates mirror

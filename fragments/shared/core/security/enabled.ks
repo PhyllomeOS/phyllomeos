@@ -1,0 +1,5 @@
+# Security configuration - enabled mode
+
+rootpw --lock # No root login from the console
+selinux --enforcing # Set SELinux to enforcing mode
+firewall --enabled # Enable firewall

@@ -1,0 +1,25 @@
+# Anaconda tools and kernel packages for live media
+
+%packages # Beginning of the package section. Include weak dependencies. Description courtesy of the Fedora project
+
+@anaconda-tools
+
+# Explicitly specified here:
+# <notting> walters: because otherwise dependency loops cause yum issues.
+kernel
+kernel-modules
+kernel-modules-extra
+
+# Need aajohan-comfortaa-fonts for the SVG rnotes images
+aajohan-comfortaa-fonts
+
+# Without this, initramfs generation during live image creation fails: #1242586
+dracut-live
+
+# anaconda needs the locales available to run for different locales
+glibc-all-langpacks
+
+# provide the livesys scripts
+livesys-scripts
+
+%end

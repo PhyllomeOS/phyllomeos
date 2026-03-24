@@ -63,10 +63,10 @@ class TestRecipeGenerator:
                                                   storage='standard',
                                                   security='secure')
         assert '# A recipe for a virtual desktop' in content
-        assert '%include ../ingredients/core.cfg' in content
-        assert '%include ../ingredients/base-desktop-gnome.cfg' in content
-        assert '%include ../ingredients/core-fedora-repo-43.cfg' in content
-        assert '%include ../ingredients/core-security-on.cfg' in content
+        assert '%ksappend fragments/shared/core/base.ks' in content
+        assert '%ksappend fragments/shared/desktop/gnome/packages.ks' in content
+        assert '%ksappend fragments/platform/generic-43/repo/fedora-mirrors.ks' in content
+        assert '%ksappend fragments/shared/core/security/enabled.ks' in content
 
     def test_generate_virtual_desktop_encrypted(self):
         """Test generating encrypted virtual desktop recipe."""
@@ -74,7 +74,7 @@ class TestRecipeGenerator:
                                                   desktop='gnome',
                                                   storage='encrypted',
                                                   security='secure')
-        assert '%include ../ingredients/core-storage-encrypted.cfg' in content
+        assert '%ksappend fragments/shared/storage/encrypted.ks' in content
 
     def test_generate_virtual_desktop_labwc(self):
         """Test generating LabWC virtual desktop recipe."""
@@ -82,8 +82,8 @@ class TestRecipeGenerator:
                                                   desktop='labwc',
                                                   storage='standard',
                                                   security='secure')
-        assert '%include ../ingredients/base-desktop-labwc.cfg' in content
-        assert '%include ../ingredients/base-desktop-gnome.cfg' not in content
+        assert '%ksappend fragments/shared/desktop/labwc/config.ks' in content
+        assert '%ksappend fragments/shared/desktop/gnome/packages.ks' not in content
 
     def test_generate_virtual_desktop_devel(self):
         """Test generating development mode virtual desktop recipe."""
@@ -91,24 +91,24 @@ class TestRecipeGenerator:
                                                   desktop='gnome',
                                                   storage='standard',
                                                   security='devel')
-        assert '%include ../ingredients/core-security-off.cfg' in content
-        assert '%include ../ingredients/core-security-on.cfg' not in content
+        assert '%ksappend fragments/shared/core/security/disabled.ks' in content
+        assert '%ksappend fragments/shared/core/security/enabled.ks' not in content
 
     def test_generate_virtual_server(self):
         """Test generating virtual server recipe."""
         content = self.generator.generate_recipe('virtual-server', 'rawhide',
                                                   security='secure')
         assert '# A recipe for a virtual server' in content
-        assert '%include ../ingredients/base-desktop-gnome.cfg' not in content
-        assert '%include ../ingredients/core-initial-setup-server.cfg' in content
+        assert '%ksappend fragments/shared/desktop/gnome/packages.ks' not in content
+        assert '%ksappend fragments/shared/initial-setup/server/config.ks' in content
 
     def test_generate_desktop_hypervisor_amd(self):
         """Test generating AMD CPU hypervisor recipe."""
         content = self.generator.generate_recipe('desktop-hypervisor', 'rawhide',
                                                   cpu='amdcpu',
                                                   security='secure')
-        assert '%include ../ingredients/base-hypervisor-amdcpu.cfg' in content
-        assert '%include ../ingredients/base-hypervisor-intelcpu.cfg' not in content
+        assert '%ksappend fragments/shared/hypervisor/amdcpu.ks' in content
+        assert '%ksappend fragments/shared/hypervisor/intelcpu.ks' not in content
 
     def test_generate_desktop_hypervisor_intel_gpu(self):
         """Test generating Intel CPU+GPU hypervisor recipe."""
@@ -116,8 +116,8 @@ class TestRecipeGenerator:
                                                   cpu='intelcpu',
                                                   gpu='intelgpu',
                                                   security='secure')
-        assert '%include ../ingredients/base-hypervisor-intelcpu.cfg' in content
-        assert '%include ../ingredients/base-hypervisor-intelgpu.cfg' in content
+        assert '%ksappend fragments/shared/hypervisor/intelcpu.ks' in content
+        assert '%ksappend fragments/shared/hypervisor/intelgpu.ks' in content
 
     def test_generate_live_desktop(self):
         """Test generating live desktop recipe."""
@@ -125,16 +125,16 @@ class TestRecipeGenerator:
                                                   desktop='gnome',
                                                   security='secure')
         assert '# A recipe for a live desktop' in content
-        assert '%include ../ingredients/live-core.cfg' in content
-        assert '%include ../ingredients/live-core-storage.cfg' in content
+        assert '%ksappend fragments/shared/live/core/base.ks' in content
+        assert '%ksappend fragments/shared/live/core/storage.ks' in content
 
     def test_generate_live_server(self):
         """Test generating live server recipe."""
         content = self.generator.generate_recipe('live-server', 'rawhide',
                                                   security='secure')
         assert '# A recipe for a live server' in content
-        assert '%include ../ingredients/live-core.cfg' in content
-        assert '%include ../ingredients/core-initial-setup-server.cfg' in content
+        assert '%ksappend fragments/shared/live/core/base.ks' in content
+        assert '%ksappend fragments/shared/initial-setup/server/config.ks' in content
 
     def test_no_duplicate_includes(self):
         """Test that duplicate includes are prevented."""
@@ -142,18 +142,18 @@ class TestRecipeGenerator:
                                                   cpu='intelcpu',
                                                   gpu='intelgpu',
                                                   security='secure')
-        includes = [line for line in content.split('\n') if line.startswith('%include')]
+        includes = [line for line in content.split('\n') if line.startswith('%ksappend')]
         paths = [line.split()[1] for line in includes]
-        assert len(paths) == len(set(paths)), "Found duplicate includes"
+        assert len(paths) == len(set(paths)), "Found duplicate %ksappend entries"
 
     def test_missing_ingredient_detection(self):
-        """Test that missing ingredients are detected."""
+        """Test that missing fragments are detected."""
         content = self.generator.generate_recipe('virtual-desktop', '43',
                                                   desktop='gnome',
                                                   storage='standard',
                                                   security='secure')
         issues = self.generator.validate_recipe(content)
-        assert issues == [], f"Found missing ingredients: {issues}"
+        assert issues == [], f"Found missing fragments: {issues}"
 
     def test_filename_generation_standard(self):
         """Test filename generation for standard configuration."""
@@ -329,7 +329,7 @@ keyboard --evgrd
 
     def test_extract_version_from_content(self):
         """Test version extraction from content."""
-        content = "%include ../ingredients/core-fedora-repo-43.cfg"
+        content = "%ksappend fragments/platform/generic-43/repo/fedora-mirrors.ks"
         version = self.generator.extract_version(content, 'test.cfg')
         assert version == '43'
 

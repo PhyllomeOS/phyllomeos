@@ -1,0 +1,8 @@
+# Live session configuration
+
+%post --log=/mnt/sysimage/root/post-live-session.log # Beginning of the post-installation section. Add logging.
+
+# set livesys session type
+sed -i 's/^livesys_session=.*/livesys_session="gnome"/' /etc/sysconfig/livesys
+
+%end

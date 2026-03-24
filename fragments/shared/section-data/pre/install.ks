@@ -1,0 +1,5 @@
+# Pre-installation kickstart section
+
+%pre --log=/mnt/sysimage/root/pre-install.log Beginning of the pre-installation section. Log all messages to a given file
+
+%end # End of the %post section

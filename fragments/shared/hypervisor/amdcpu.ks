@@ -1,0 +1,9 @@
+# AMD CPU optimization for hypervisor
+
+%post --nochroot --log=/mnt/sysimage/root/hypervisor-amdcpu-post.log # Beginning of %post section. Those commands are executed outside the chroot environment. Logging is enabled to help with post-installation troubleshooting
+
+sed -i 's/\(quiet\)/\1 iommu=pt rd.driver.pre=vfio-pci/i' /mnt/sysimage/etc/default/grub # Load kernel modules in GRUB. 
+
+echo "options kvm_amd nested=1" >> /mnt/sysimage/etc/modprobe.d/kvm.conf # Add support for nested virtualization
+
+%end # End of the %post section

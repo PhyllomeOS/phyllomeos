@@ -1,0 +1,626 @@
+#!/usr/bin/env python3
+"""
+Recipe Generator for Phyllome OS Kickstart Files
+
+Generates .cfg recipe files from templates and YAML manifest.
+"""
+
+import argparse
+import sys
+import yaml
+from pathlib import Path
+from typing import Dict, List, Optional, Any
+
+
+# Deprecated/removed command mappings for Fedora 43 (F42) and rawhide
+DEPRECATED_COMMANDS: Dict[str, Dict[str, str]] = {
+    'authconfig': {
+        'status': 'removed',
+        'removed_in': 'F34',
+        'alternative': 'authselect',
+        'message': 'authconfig was removed in Fedora 34. Use authselect instead.'
+    },
+    'keyboard': {
+        'status': 'deprecated',
+        'deprecated_in': 'F18',
+        'alternative': 'keyboard --vckeymap',
+        'message': 'keyboard command is deprecated. Use keyboard --vckeymap instead.'
+    },
+    'langsupport': {
+        'status': 'deprecated',
+        'deprecated_in': 'F21',
+        'alternative': 'lang',
+        'message': 'langsupport is deprecated. Use lang command instead.'
+    },
+    'nfs': {
+        'status': 'deprecated',
+        'deprecated_in': 'F23',
+        'alternative': 'repo --name=nfs',
+        'message': 'nfs command is deprecated. Use repo command instead.'
+    },
+    'parted': {
+        'status': 'deprecated',
+        'deprecated_in': 'F13',
+        'alternative': 'part',
+        'message': 'parted command is deprecated. Use part command instead.'
+    },
+}
+
+
+def _import_pykickstart():
+    """Import pykickstart modules, returns None if not available."""
+    try:
+        from pykickstart.parser import KickstartParser
+        from pykickstart.version import makeVersion
+        from pykickstart.version import DEVEL
+        from pykickstart.errors import KickstartParseError, KickstartError
+        return {
+            'parser': KickstartParser,
+            'makeVersion': makeVersion,
+            'DEVEL': DEVEL,
+            'KickstartParseError': KickstartParseError,
+            'KickstartError': KickstartError
+        }
+    except ImportError:
+        return None
+
+
+class RecipeGenerator:
+    """Generate kickstart recipes from templates and modifiers."""
+
+    def __init__(self, ingredients_dir: Path, templates_file: Path):
+        # Resolve ingredients_dir relative to the project root (parent of scripts/)
+        self.project_root = Path(__file__).parent.parent
+        self.ingredients_dir = self.project_root / ingredients_dir
+        self.templates = self.load_templates(templates_file)
+
+    def get_ksversion(self, version: str) -> Optional[str]:
+        """Map Phyllome OS version to pykickstart version string."""
+        if version == 'rawhide':
+            return None
+        else:
+            return f'F{int(version) - 1}'
+
+    def load_templates(self, path: Path) -> Dict:
+        """Load recipe templates from YAML file."""
+        try:
+            # Template path could be:
+            # - Absolute path (already resolved)
+            # - Relative path (resolve relative to project root)
+            if path.is_absolute():
+                template_path = path
+            else:
+                template_path = self.project_root / 'scripts' / path
+            with open(template_path) as f:
+                data = yaml.safe_load(f)
+            return data['templates']
+        except FileNotFoundError:
+            print(f"Error: Templates file not found: {template_path}", file=sys.stderr)
+            sys.exit(2)
+        except yaml.YAMLError as e:
+            print(f"Error: Invalid YAML in {template_path}: {e}", file=sys.stderr)
+            sys.exit(2)
+
+    def validate_template(self, template: Dict) -> List[str]:
+        """Validate template structure and ingredient existence."""
+        errors = []
+
+        # Check required keys
+        required_keys = ['description', 'base', 'required']
+        for key in required_keys:
+            if key not in template:
+                errors.append(f"Missing required key: {key}")
+
+        # Validate base ingredient exists
+        if 'base' in template:
+            base_path = self.ingredients_dir / f"{template['base']}.cfg"
+            if not base_path.exists():
+                errors.append(f"Base ingredient not found: {template['base']}.cfg")
+
+        # Validate required ingredients exist
+        for item in template.get('required', []):
+            if isinstance(item, dict):
+                inc_name = list(item.values())[0]
+            else:
+                inc_name = item
+            inc_path = self.ingredients_dir / f"{inc_name}.cfg"
+            if not inc_path.exists():
+                errors.append(f"Required ingredient not found: {inc_name}.cfg")
+
+        # Validate optional ingredient values
+        for opt_key, opt_config in template.get('optional', {}).items():
+            if isinstance(opt_config, dict):
+                for value, inc_name in opt_config.items():
+                    inc_path = self.ingredients_dir / f"{inc_name}.cfg"
+                    if not inc_path.exists():
+                        errors.append(f"Optional ingredient not found: {inc_name}.cfg (for {opt_key}={value})")
+            elif isinstance(opt_config, list):
+                for inc_name in opt_config:
+                    inc_path = self.ingredients_dir / f"{inc_name}.cfg"
+                    if not inc_path.exists():
+                        errors.append(f"Optional ingredient not found: {inc_name}.cfg (in list)")
+
+        return errors
+
+    def validate_manifest(self, manifest: Dict) -> List[str]:
+        """Validate manifest structure."""
+        errors = []
+
+        if 'recipes' not in manifest:
+            errors.append("Manifest missing 'recipes' key")
+            return errors
+
+        for recipe_config in manifest['recipes']:
+            if 'name' not in recipe_config:
+                errors.append("Recipe config missing 'name' key")
+            if 'variants' not in recipe_config:
+                errors.append(f"Recipe '{recipe_config.get('name', 'unnamed')}' missing 'variants' key")
+                continue
+
+            for variant in recipe_config['variants']:
+                if 'version' not in variant:
+                    errors.append(f"Recipe '{recipe_config['name']}' variant missing 'version'")
+
+        return errors
+
+    def generate_recipe(self, recipe_type: str, version: str, **modifiers) -> str:
+        """Generate a recipe from template with modifiers."""
+        if recipe_type not in self.templates:
+            print(f"Error: Unknown recipe type: {recipe_type}", file=sys.stderr)
+            sys.exit(1)
+
+        template = self.templates[recipe_type]
+
+        # Validate template
+        errors = self.validate_template(template)
+        if errors:
+            print(f"Error: Invalid template '{recipe_type}':", file=sys.stderr)
+            for error in errors:
+                print(f"  - {error}", file=sys.stderr)
+            sys.exit(1)
+
+        lines = self.build_header(template['description'], recipe_type, version, modifiers)
+        lines.extend(self.build_includes(template, version, modifiers))
+
+        return '\n'.join(lines)
+
+    def build_header(self, description: str, recipe_type: str, 
+                     version: str, modifiers: Dict) -> List[str]:
+        """Build the ASCII art header and description."""
+        header = [
+            "#            __          ____                        ____  _____",
+            "#     ____  / /_  __  __/ / /___  ____ ___  ___     / __ \\/ ___/",
+            "#    / __ \\/ __ \\/ / / / / / __ \\/ __ `__ \\/ _ \\   / / / /\\__ \\",
+            "#   / /_/ / / / / /_/ / / / /_/ / / / / / /  __/  / /_/ /___/ /",
+            "#  / .___/_/ /_/\\__, /_/_/\\____/_/ /_/ /_/\\___/   \\____//____/",
+            "# /_/          /____/",
+            "",
+            f"# {description}",
+            "",
+        ]
+        return header
+
+    def build_includes(self, template: Dict, version: str, modifiers: Dict) -> List[str]:
+        """Build %include lines from template and modifiers."""
+        includes = []
+        seen = set()  # Track to prevent duplicates
+        # Add version to modifiers for template processing
+        modifiers = modifiers.copy()
+        modifiers['version'] = version
+
+        # Add required includes
+        for item in template.get('required', []):
+            if isinstance(item, dict):
+                inc_name = list(item.values())[0]
+            else:
+                inc_name = item
+
+            inc_file = f"{inc_name}.cfg"
+            if inc_file not in seen:
+                includes.append(f"%include ../ingredients/{inc_file}")
+                seen.add(inc_file)
+
+        # Add optional includes based on modifiers
+        for opt_key, opt_config in template.get('optional', {}).items():
+            if opt_key in modifiers:
+                value = modifiers[opt_key]
+                if isinstance(opt_config, dict):
+                    if value in opt_config:
+                        inc_file = f"{opt_config[value]}.cfg"
+                        if inc_file not in seen:
+                            includes.append(f"%include ../ingredients/{inc_file}")
+                            seen.add(inc_file)
+                elif isinstance(opt_config, list) and value is True:
+                    for item in opt_config:
+                        inc_file = f"{item}.cfg"
+                        if inc_file not in seen:
+                            includes.append(f"%include ../ingredients/{inc_file}")
+                            seen.add(inc_file)
+
+        # Handle special modifiers (CPU, GPU)
+        for mod_key, mod_value in modifiers.items():
+            if mod_key in template.get('modifiers', {}):
+                mod_config = template['modifiers'][mod_key]
+                if isinstance(mod_config, dict) and mod_value in mod_config:
+                    inc_file = f"{mod_config[mod_value]}.cfg"
+                    if inc_file not in seen:
+                        includes.append(f"%include ../ingredients/{inc_file}")
+                        seen.add(inc_file)
+
+        return includes
+
+    def validate_recipe(self, content: str) -> List[str]:
+        """Validate recipe content, return list of warnings/errors."""
+        issues = []
+        includes = [line for line in content.split('\n') if line.startswith('%include')]
+        
+        # Check for duplicate includes
+        seen = set()
+        for inc in includes:
+            parts = inc.split()
+            if len(parts) < 2:
+                continue
+            path = parts[1]
+            if path in seen:
+                issues.append(f"Duplicate include: {path}")
+            seen.add(path)
+
+        # Check ingredient existence
+        for inc in includes:
+            parts = inc.split()
+            if len(parts) < 2:
+                continue
+            path = parts[1]
+            inc_path = self.ingredients_dir / path
+            if not inc_path.exists():
+                issues.append(f"Missing ingredient: {path}")
+
+        return issues
+
+    def validate_recipe_semantic(self, content: str, version: str) -> List[str]:
+        """Validate recipe using pykickstart parser with version-specific checks."""
+        issues = []
+        
+        modules = _import_pykickstart()
+        if modules is None:
+            issues.append("Warning: pykickstart not installed, skipping semantic validation")
+            return issues
+        
+        KickstartParser = modules['parser']
+        makeVersion = modules['makeVersion']
+        KickstartParseError = modules['KickstartParseError']
+        KickstartError = modules['KickstartError']
+        
+        ks_version_str = self.get_ksversion(version)
+        if ks_version_str:
+            ks_version = makeVersion(ks_version_str)
+        else:
+            ks_version = makeVersion(modules['DEVEL'])
+        
+        try:
+            parser = KickstartParser(ks_version)
+            parser.readKickstartFromString(content)
+        except KickstartParseError as e:
+            issues.append(f"Syntax error line {e.lineno}: {e.message}")
+        except KickstartError as e:
+            issues.append(f"Validation error: {str(e)}")
+        except Exception as e:
+            issues.append(f"Unexpected error during parsing: {str(e)}")
+        
+        # Check for deprecated commands in the content
+        issues.extend(self._check_deprecated_commands(content))
+        
+        return issues
+
+    def _check_deprecated_commands(self, content: str) -> List[str]:
+        """Check for deprecated and removed commands with suggestions."""
+        issues = []
+        
+        for line_num, line in enumerate(content.split('\n'), start=1):
+            # Skip comments and empty lines
+            stripped = line.strip()
+            if not stripped or stripped.startswith('#'):
+                continue
+            
+            # Extract command (first word after % if in section, or just the first word)
+            if stripped.startswith('%'):
+                continue  # Skip section headers
+            
+            parts = stripped.split()
+            if not parts:
+                continue
+            
+            cmd = parts[0]
+            
+            if cmd in DEPRECATED_COMMANDS:
+                cmd_info = DEPRECATED_COMMANDS[cmd]
+                status = cmd_info['status']
+                msg = cmd_info['message']
+                
+                if status == 'removed':
+                    issues.append(f"ERROR: Line {line_num}: {msg}")
+                else:
+                    issues.append(f"Warning: Line {line_num}: {msg}")
+        
+        return issues
+
+    def extract_version(self, content: str, filename: str) -> Optional[str]:
+        """Extract Fedora version from recipe content or filename."""
+        import re
+        filename_match = re.search(r'(?:_|-)(43|rawhide)(?:_|-|.cfg|.yaml|$)', filename)
+        if filename_match:
+            return filename_match.group(1)
+        
+        for line in content.split('\n'):
+            if 'core-fedora-repo-43' in line:
+                return '43'
+            elif 'core-fedora-repo-rawhide' in line:
+                return 'rawhide'
+        
+        return None
+
+    def generate_filename(self, recipe_type: str, version: str, **modifiers) -> str:
+        """Generate recipe filename from parameters."""
+        # Map modifiers to filename components
+        parts = [recipe_type.replace('_', '-')]
+        
+        # Add CPU/GPU first (hypervisors)
+        if modifiers.get('cpu') and modifiers.get('cpu') != 'generic':
+            parts.append(modifiers['cpu'])
+        if modifiers.get('gpu') and modifiers.get('gpu') != 'none':
+            parts.append(modifiers['gpu'])
+        
+        # Add desktop (non-GNOME only, since GNOME is default)
+        if modifiers.get('desktop') and modifiers['desktop'] != 'gnome':
+            parts.append(modifiers['desktop'])
+        
+        # Add version
+        parts.append(str(version))
+        
+        # Add hypervisor suffix (only when hypervisor is enabled)
+        if modifiers.get('hypervisor'):
+            parts.append('hypervisor')
+        
+        # Add security suffix (devel only, since secure is default)
+        if modifiers.get('security') == 'devel':
+            parts.append('devel')
+        
+        # Add storage suffix (encrypted only, since standard is default)
+        if modifiers.get('storage') == 'encrypted':
+            parts.append('encrypted')
+        
+        return '_'.join(parts) + '.cfg'
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description='Generate Phyllome OS kickstart recipes from templates',
+        formatter_class=argparse.RawDescriptionHelpFormatter
+    )
+    
+    # Global options
+    # Use __file__ to find the scripts directory, then go up to project root
+    SCRIPTS_DIR = Path(__file__).resolve().parent
+    PROJECT_ROOT = SCRIPTS_DIR.parent
+    
+    parser.add_argument('--ingredients', '-i',
+                        type=Path, default=PROJECT_ROOT / 'ingredients',
+                        help='Ingredients directory (default: parent/ingredients)')
+    parser.add_argument('--templates', '-t',
+                        type=Path, default=SCRIPTS_DIR / 'recipe_templates.yaml',
+                        help='Templates YAML file (default: parent/recipe_templates.yaml)')
+    
+    # Batch mode
+    parser.add_argument('--manifest', '-m',
+                        type=Path, help='Manifest YAML for batch generation')
+    parser.add_argument('--output-dir', '-d',
+                        type=Path, default=Path(__file__).parent / 'recipes',
+                        help='Output directory (batch generation, default: parent/recipes)')
+    parser.add_argument('--dry-run', '-n',
+                        action='store_true',
+                        help='Show what would be generated without writing files')
+    
+    # Single generation mode
+    parser.add_argument('--type', '-T',
+                        help='Recipe type (e.g., virtual-desktop)')
+    parser.add_argument('--output', '-o',
+                        type=Path, help='Output file (single generation)')
+    
+    # Recipe parameters
+    parser.add_argument('--version', '-v',
+                        choices=['43', 'rawhide'], default='rawhide',
+                        help='Fedora version (default: rawhide)')
+    parser.add_argument('--desktop',
+                        choices=['gnome', 'labwc'],
+                        help='Desktop environment (default: gnome)')
+    parser.add_argument('--storage',
+                        choices=['standard', 'encrypted'],
+                        help='Storage type (default: standard)')
+    parser.add_argument('--security',
+                        choices=['secure', 'devel'],
+                        help='Security mode (default: secure)')
+    parser.add_argument('--cpu',
+                        choices=['generic', 'amdcpu', 'intelcpu'],
+                        help='CPU optimization')
+    parser.add_argument('--gpu',
+                        choices=['none', 'intelgpu'],
+                        default='none',
+                        help='GPU passthrough (default: none)')
+    
+    # Validation mode
+    parser.add_argument('--validate', '-V',
+                        nargs='+',
+                        help='Validate recipe files')
+    
+    # Strict mode for CI
+    parser.add_argument('--strict',
+                        action='store_true',
+                        help='Treat warnings as errors (CI mode)')
+    
+    args = parser.parse_args()
+
+    # Initialize generator
+    generator = RecipeGenerator(args.ingredients, args.templates)
+
+    # Validation mode
+    if args.validate:
+        all_issues = []
+        for recipe_path in args.validate:
+            try:
+                with open(recipe_path) as f:
+                    content = f.read()
+                issues = generator.validate_recipe(content)
+                
+                # Extract version and perform semantic validation
+                filename = Path(recipe_path).stem
+                version = generator.extract_version(content, filename)
+                if version:
+                    semantic_issues = generator.validate_recipe_semantic(content, version)
+                    issues.extend(semantic_issues)
+                else:
+                    issues.append("Warning: Could not determine version, skipping semantic validation")
+                
+                if issues:
+                    all_issues.append((recipe_path, issues))
+            except FileNotFoundError:
+                print(f"Error: Recipe not found: {recipe_path}", file=sys.stderr)
+                sys.exit(2)
+        
+        if all_issues:
+            print("=== Recipe Validation Report ===", file=sys.stderr)
+            for path, issues in all_issues:
+                print(f"\n{path}:", file=sys.stderr)
+                error_count = sum(1 for i in issues if 'ERROR' in i)
+                warning_count = sum(1 for i in issues if 'Warning:' in i)
+                
+                if error_count > 0:
+                    for issue in issues:
+                        if 'ERROR' in issue:
+                            print(f"  {issue}", file=sys.stderr)
+                
+                if warning_count > 0:
+                    for issue in issues:
+                        if 'Warning:' in issue:
+                            print(f"  {issue}", file=sys.stderr)
+                
+                if error_count == 0 and warning_count == 0:
+                    print(f"  No issues found (file exists)", file=sys.stderr)
+            
+            print(f"\nSummary:", file=sys.stderr)
+            print(f"  - {len(all_issues)} recipe(s) checked", file=sys.stderr)
+            
+            total_errors = sum(len([i for i in issues if 'ERROR' in i]) for _, issues in all_issues)
+            total_warnings = sum(len([i for i in issues if 'Warning:' in i]) for _, issues in all_issues)
+            print(f"  - {total_errors} error(s), {total_warnings} warning(s)", file=sys.stderr)
+            
+            # Strict mode: treat warnings as errors
+            if args.strict and total_warnings > 0:
+                print("\nStrict mode: Warnings treated as errors", file=sys.stderr)
+                sys.exit(1)
+            
+            if total_errors > 0:
+                sys.exit(1)
+        else:
+            print("All recipes validated successfully")
+            sys.exit(0)
+
+    # Batch generation mode
+    if args.manifest:
+        try:
+            with open(args.manifest) as f:
+                manifest = yaml.safe_load(f)
+        except FileNotFoundError:
+            print(f"Error: Manifest file not found: {args.manifest}", file=sys.stderr)
+            sys.exit(2)
+        except yaml.YAMLError as e:
+            print(f"Error: Invalid YAML in manifest: {e}", file=sys.stderr)
+            sys.exit(2)
+
+        # Validate manifest
+        errors = generator.validate_manifest(manifest)
+        if errors:
+            print(f"Error: Invalid manifest:", file=sys.stderr)
+            for error in errors:
+                print(f"  - {error}", file=sys.stderr)
+            sys.exit(1)
+
+        # Generate all recipes
+        for recipe_config in manifest.get('recipes', []):
+            recipe_type = recipe_config['name']
+            if recipe_type not in generator.templates:
+                print(f"Error: Unknown recipe type in manifest: {recipe_type}", file=sys.stderr)
+                sys.exit(1)
+
+            for variant in recipe_config.get('variants', []):
+                version = variant['version']
+                modifiers = {k: v for k, v in variant.items() if k not in ['version']}
+
+                content = generator.generate_recipe(recipe_type, version, **modifiers)
+
+                if args.validate and not args.dry_run:
+                    issues = generator.validate_recipe(content)
+                    semantic_issues = generator.validate_recipe_semantic(content, version)
+                    all_issues = issues + semantic_issues
+                    if all_issues:
+                        print(f"Validation issues for {recipe_type} {version}:", file=sys.stderr)
+                        for issue in issues:
+                            print(f"  - {issue}", file=sys.stderr)
+                        sys.exit(1)
+
+                filename = generator.generate_filename(recipe_type, version, **modifiers)
+                output_path = args.output_dir / filename
+
+                if args.dry_run:
+                    print(f"Would generate: {output_path}")
+                else:
+                    print(f"Generating: {output_path}")
+                    with open(output_path, 'w') as f:
+                        f.write(content)
+
+        sys.exit(0)
+
+    # Single generation mode
+    if args.type:
+        modifiers = {
+            'desktop': args.desktop if args.desktop and args.desktop != 'gnome' else None,
+            'storage': args.storage if args.storage != 'standard' else None,
+            'security': args.security if args.security != 'secure' else None,
+            'cpu': args.cpu if args.cpu and args.cpu != 'generic' else None,
+            'gpu': args.gpu if args.gpu and args.gpu != 'none' else None,
+        }
+        # Filter out None/False values
+        modifiers = {k: v for k, v in modifiers.items() if v is not None}
+
+        content = generator.generate_recipe(args.type, args.version, **modifiers)
+
+        if args.validate:
+            issues = generator.validate_recipe(content)
+            semantic_issues = generator.validate_recipe_semantic(content, args.version)
+            all_issues = issues + semantic_issues
+            if all_issues:
+                print("Validation issues:", file=sys.stderr)
+                for issue in issues:
+                    print(f"  - {issue}", file=sys.stderr)
+                sys.exit(1)
+            else:
+                print("Validation passed")
+
+        if args.output:
+            if args.dry_run:
+                print(f"Would write to: {args.output}")
+            else:
+                with open(args.output, 'w') as f:
+                    f.write(content)
+                print(f"Generated: {args.output}")
+        else:
+            print(content)
+
+        sys.exit(0)
+
+    # No mode specified, show help
+    parser.print_help()
+    sys.exit(1)
+
+
+if __name__ == '__main__':
+    main()

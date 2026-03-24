@@ -102,7 +102,7 @@ class RecipeGenerator:
             sys.exit(2)
 
     def validate_template(self, template: Dict) -> List[str]:
-        """Validate template structure and ingredient existence."""
+        """Validate template structure and fragment existence."""
         errors = []
 
         # Check required keys
@@ -111,34 +111,50 @@ class RecipeGenerator:
             if key not in template:
                 errors.append(f"Missing required key: {key}")
 
-        # Validate base ingredient exists
+        # Validate base ingredient exists (for compatibility with old ingredients)
         if 'base' in template:
             base_path = self.ingredients_dir / f"{template['base']}.cfg"
             if not base_path.exists():
                 errors.append(f"Base ingredient not found: {template['base']}.cfg")
 
-        # Validate required ingredients exist
+        # Validate required fragments exist
         for item in template.get('required', []):
             if isinstance(item, dict):
-                inc_name = list(item.values())[0]
+                fragment_path = list(item.values())[0]
             else:
-                inc_name = item
-            inc_path = self.ingredients_dir / f"{inc_name}.cfg"
-            if not inc_path.exists():
-                errors.append(f"Required ingredient not found: {inc_name}.cfg")
+                continue
+            
+            # Handle both absolute fragment paths and old ingredient names
+            if fragment_path.startswith('fragments/'):
+                full_path = self.project_root / fragment_path
+            else:
+                full_path = self.ingredients_dir / f"{fragment_path}.cfg"
+            
+            if not full_path.exists():
+                errors.append(f"Required fragment not found: {fragment_path}")
 
-        # Validate optional ingredient values
+        # Validate optional fragment values
         for opt_key, opt_config in template.get('optional', {}).items():
             if isinstance(opt_config, dict):
-                for value, inc_name in opt_config.items():
-                    inc_path = self.ingredients_dir / f"{inc_name}.cfg"
-                    if not inc_path.exists():
-                        errors.append(f"Optional ingredient not found: {inc_name}.cfg (for {opt_key}={value})")
+                for value, fragment_path in opt_config.items():
+                    if fragment_path.startswith('fragments/'):
+                        full_path = self.project_root / fragment_path
+                    elif fragment_path is None:
+                        continue
+                    else:
+                        full_path = self.ingredients_dir / f"{fragment_path}.cfg"
+                    
+                    if not full_path.exists():
+                        errors.append(f"Optional fragment not found: {fragment_path} (for {opt_key}={value})")
             elif isinstance(opt_config, list):
-                for inc_name in opt_config:
-                    inc_path = self.ingredients_dir / f"{inc_name}.cfg"
-                    if not inc_path.exists():
-                        errors.append(f"Optional ingredient not found: {inc_name}.cfg (in list)")
+                for fragment_path in opt_config:
+                    if fragment_path.startswith('fragments/'):
+                        full_path = self.project_root / fragment_path
+                    else:
+                        full_path = self.ingredients_dir / f"{fragment_path}.cfg"
+                    
+                    if not full_path.exists():
+                        errors.append(f"Optional fragment not found: {fragment_path} (in list)")
 
         return errors
 
@@ -201,7 +217,7 @@ class RecipeGenerator:
         return header
 
     def build_includes(self, template: Dict, version: str, modifiers: Dict) -> List[str]:
-        """Build %include lines from template and modifiers."""
+        """Build %ksappend lines from template and modifiers."""
         includes = []
         seen = set()  # Track to prevent duplicates
         # Add version to modifiers for template processing
@@ -211,14 +227,13 @@ class RecipeGenerator:
         # Add required includes
         for item in template.get('required', []):
             if isinstance(item, dict):
-                inc_name = list(item.values())[0]
+                fragment_path = list(item.values())[0]
             else:
-                inc_name = item
+                continue
 
-            inc_file = f"{inc_name}.cfg"
-            if inc_file not in seen:
-                includes.append(f"%include ../ingredients/{inc_file}")
-                seen.add(inc_file)
+            if fragment_path not in seen:
+                includes.append(f"%ksappend {fragment_path}")
+                seen.add(fragment_path)
 
         # Add optional includes based on modifiers
         for opt_key, opt_config in template.get('optional', {}).items():
@@ -226,33 +241,32 @@ class RecipeGenerator:
                 value = modifiers[opt_key]
                 if isinstance(opt_config, dict):
                     if value in opt_config:
-                        inc_file = f"{opt_config[value]}.cfg"
-                        if inc_file not in seen:
-                            includes.append(f"%include ../ingredients/{inc_file}")
-                            seen.add(inc_file)
+                        fragment_path = opt_config[value]
+                        if fragment_path not in seen:
+                            includes.append(f"%ksappend {fragment_path}")
+                            seen.add(fragment_path)
                 elif isinstance(opt_config, list) and value is True:
-                    for item in opt_config:
-                        inc_file = f"{item}.cfg"
-                        if inc_file not in seen:
-                            includes.append(f"%include ../ingredients/{inc_file}")
-                            seen.add(inc_file)
+                    for fragment_path in opt_config:
+                        if fragment_path not in seen:
+                            includes.append(f"%ksappend {fragment_path}")
+                            seen.add(fragment_path)
 
         # Handle special modifiers (CPU, GPU)
         for mod_key, mod_value in modifiers.items():
             if mod_key in template.get('modifiers', {}):
                 mod_config = template['modifiers'][mod_key]
                 if isinstance(mod_config, dict) and mod_value in mod_config:
-                    inc_file = f"{mod_config[mod_value]}.cfg"
-                    if inc_file not in seen:
-                        includes.append(f"%include ../ingredients/{inc_file}")
-                        seen.add(inc_file)
+                    fragment_path = mod_config[mod_value]
+                    if fragment_path and fragment_path not in seen:
+                        includes.append(f"%ksappend {fragment_path}")
+                        seen.add(fragment_path)
 
         return includes
 
     def validate_recipe(self, content: str) -> List[str]:
         """Validate recipe content, return list of warnings/errors."""
         issues = []
-        includes = [line for line in content.split('\n') if line.startswith('%include')]
+        includes = [line for line in content.split('\n') if line.startswith('%ksappend')]
         
         # Check for duplicate includes
         seen = set()
@@ -265,15 +279,15 @@ class RecipeGenerator:
                 issues.append(f"Duplicate include: {path}")
             seen.add(path)
 
-        # Check ingredient existence
+        # Check fragment existence (relative to project root)
         for inc in includes:
             parts = inc.split()
             if len(parts) < 2:
                 continue
             path = parts[1]
-            inc_path = self.ingredients_dir / path
-            if not inc_path.exists():
-                issues.append(f"Missing ingredient: {path}")
+            fragment_path = self.project_root / path
+            if not fragment_path.exists():
+                issues.append(f"Missing fragment: {path}")
 
         return issues
 
@@ -352,9 +366,15 @@ class RecipeGenerator:
             return filename_match.group(1)
         
         for line in content.split('\n'):
+            # Check for old %include references
             if 'core-fedora-repo-43' in line:
                 return '43'
             elif 'core-fedora-repo-rawhide' in line:
+                return 'rawhide'
+            # Check for new %ksappend references
+            if 'generic-43/repo' in line:
+                return '43'
+            elif 'generic-rawhide/repo' in line:
                 return 'rawhide'
         
         return None

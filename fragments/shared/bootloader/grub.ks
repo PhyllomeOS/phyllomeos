@@ -1,0 +1,3 @@
+# GRUB bootloader configuration
+
+bootsupport --timeout=1 # Set the GNU GRUB bootloader timeout to 1

@@ -1,0 +1,54 @@
+name: release
+
+on: 
+  push:
+    tags:
+      - "v*.*.*"
+
+env:
+  FEDORA_VERSION: 43
+  KICKSTART_FILE: live-desktop-hypervisor
+
+jobs:
+  checkout:
+    runs-on: fedora
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - uses: https://git.phyllo.me/devops/checkout@v5
+        with:
+          fetch-depth: 0
+   
+      - name: Initialize mock
+        run: |
+          mock -r fedora-${{ env.FEDORA_VERSION }}-x86_64 --init
+
+      - name: Install required packages
+        run: |
+          mock -r fedora-${{ env.FEDORA_VERSION }}-x86_64 --install lorax-lmc-novirt vim-minimal pykickstart livecd-tools
+
+      - name: Copy configuration file to mock
+        run: |
+          mock -r fedora-${{ env.FEDORA_VERSION }}-x86_64 --copyin dishes/${{ env.KICKSTART_FILE }} /builddir
+
+      - name: Build ISO with livemedia-creator
+        run: |
+          mock -r fedora-${{ env.FEDORA_VERSION }}-x86_64 --shell --enable-network --isolation=simple << 'EOF'
+          cd /builddir
+          livemedia-creator --ks ${{ env.KICKSTART_FILE }}.cfg --no-virt --resultdir /var/lmc --project ${{ env.KICKSTART_FILE }} --make-iso --volid ${{ env.KICKSTART_FILE }} --iso-only --iso-name ${{ env.KICKSTART_FILE }}-${{ env.FEDORA_VERSION }}.iso --releasever ${{ env.FEDORA_VERSION }} --macboot
+          EOF
+
+      - name: Release
+        uses: https://git.phyllo.me/devops/action-gh-release@v2
+        if: github.ref_type == 'tag'
+        with:
+          files: /var/lib/mock/fedora-${{ env.FEDORA_VERSION }}-x86_64/root/var/lmc/${{ env.KICKSTART_FILE }}-${{ env.FEDORA_VERSION }}.iso
+          draft: false
+          prerelease: false
+
+      - name: Cleanup mock environment
+        if: always()
+        run: |
+          mock -r fedora-${{ env.FEDORA_VERSION }}-x86_64 --clean

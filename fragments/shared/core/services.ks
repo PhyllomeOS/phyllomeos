@@ -1,0 +1,3 @@
+# System services
+
+services --enabled=NetworkManager,systemd-resolved # List of comma-separated systemd services that can be explicitly enabled

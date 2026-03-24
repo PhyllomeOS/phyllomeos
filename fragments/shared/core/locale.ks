@@ -1,0 +1,5 @@
+# Keyboard, language, and timezone configuration
+
+keyboard --xlayouts='ch (fr)' # Set keyboard layouts for Romandy
+lang en_US.UTF-8 # Set system language to American English. More languages could be supported: --addsupport=cs_CZ,de_DE,en_UK
+timezone Europe/Zurich --utc # Set system timezone to Zurich

@@ -1,0 +1,5 @@
+# Post-installation no-chroot section
+
+%post --nochroot --log=/mnt/sysimage/root/post-nochroot.log # Beginning of the post-installation section. Log all messages to a given file
+
+%end # End of the %post section

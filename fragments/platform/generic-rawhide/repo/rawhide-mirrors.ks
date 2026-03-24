@@ -1,0 +1,4 @@
+# Fedora Rawhide repositories
+
+repo --name=rawhide --mirrorlist=https://mirrors.fedoraproject.org/mirrorlist?repo=rawhide&arch=x86_64
+url --mirrorlist=https://mirrors.fedoraproject.org/mirrorlist?repo=rawhide&arch=x86_64

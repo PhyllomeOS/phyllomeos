@@ -1,0 +1,3 @@
+# Live core systemd-boot configuration
+
+bootloader --sdboot --location=none --timeout=1 # Use systemd-boot and set location to none

@@ -1,0 +1,42 @@
+name: validate-fragments
+
+on:
+  push:
+    paths:
+      - 'fragments/**/*.ks'
+  pull_request:
+    paths:
+      - 'fragments/**/*.ks'
+
+jobs:
+  validate:
+    runs-on: fedora
+    container:
+      image: git.phyllo.me/devops/fedora-runner-image:latest
+    
+    steps:
+      - uses: https://git.phyllo.me/devops/checkout@v5
+        with:
+          fetch-depth: 0
+      
+      - name: Install pykickstart
+        run: pip install pykickstart
+      
+      - name: Validate all fragments
+        run: |
+          errors=0
+          for fragment in $(find fragments -name "*.ks"); do
+            if python3 -c "
+              from pykickstart.parser import KickstartParser
+              from pykickstart.version import makeVersion, DEVEL
+              parser = KickstartParser(makeVersion(DEVEL))
+              parser.readKickstart(open('$fragment').read())
+            " 2>/dev/null; then
+              echo "✓ $fragment"
+            else
+              echo "✗ $fragment"
+              errors=$((errors + 1))
+            fi
+          done
+          echo "Fragment validation complete: $errors errors"
+          exit $errors

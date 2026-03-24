@@ -1,0 +1,9 @@
+# Intel CPU optimization for hypervisor
+
+%post --nochroot --log=/mnt/sysimage/root/hypervisor-intelcpu-post.log # Beginning of %post section. Those commands are executed outside the chroot environment. Logging is enabled to help with post-installation troubleshooting
+
+sed -i 's/\(quiet\)/\1 intel_iommu=on iommu=pt rd.driver.pre=vfio-pci/i' /mnt/sysimage/etc/default/grub # Load kernel modules in GRUB.
+
+echo "options kvm_intel nested=1" >> /mnt/sysimage/etc/modprobe.d/kvm.conf # Add support for nested virtualization on Intel CPUs
+
+%end # End of the %post section

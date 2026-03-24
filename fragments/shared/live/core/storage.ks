@@ -1,0 +1,7 @@
+# Live core storage configuration
+
+zerombr # WARNING : Dangerous command ! Will clear the Master Boot Record
+clearpart --all --initlabel # Partition clearing information. This setup uses GPT by default.
+
+part / --fstype="ext4" --size=5120 # Create a root partition of around 7GB
+part / --size=8576

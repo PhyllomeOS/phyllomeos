@@ -1,0 +1,51 @@
+name: test-generation
+
+on:
+  push:
+    paths:
+      - 'scripts/**/*.py'
+      - 'scripts/**/*.yaml'
+      - 'fragments/**/*.ks'
+  pull_request:
+    paths:
+      - 'scripts/**/*.py'
+      - 'scripts/**/*.yaml'
+
+jobs:
+  generate:
+    runs-on: fedora
+    container:
+      image: git.phyllo.me/devops/fedora-runner-image:latest
+    
+    steps:
+      - uses: https://git.phyllo.me/devops/checkout@v5
+        with:
+          fetch-depth: 0
+      
+      - name: Install dependencies
+        run: |
+          pip install PyYAML pykickstart
+      
+      - name: Generate all variants
+        run: |
+          cd scripts
+          python3 generate_recipe.py \
+            --manifest recipes_manifest.yaml \
+            --output-dir ../recipes/
+      
+      - name: Verify 16 recipes created
+        run: |
+          count=$(ls recipes/*.cfg | wc -l)
+          if [ $count -ne 16 ]; then
+            echo "Expected 16 recipes, got $count"
+            exit 1
+          fi
+          echo "✓ Generated $count recipes"
+      
+      - name: Upload generated recipes
+        uses: actions/upload-artifact@v3
+        with:
+          name: generated-recipes
+          path: recipes/
+          if-no-files-found: error
+          retention-days: 7
