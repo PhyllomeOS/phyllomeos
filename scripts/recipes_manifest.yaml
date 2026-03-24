@@ -1,0 +1,87 @@
+# Recipe Manifest for Phyllome OS
+# Define all recipe variants using generators from recipe_templates.yaml
+# Edit this file to add new variants, then run: make generate-recipes
+
+recipes:
+  # Virtual Desktop variants
+  - name: virtual-desktop
+    variants:
+      - version: 43
+        desktop: gnome
+        storage: standard
+        security: secure
+        extras: true
+      - version: 43
+        desktop: gnome
+        storage: standard
+        security: devel
+        extras: true
+      - version: 43
+        desktop: labwc
+        storage: standard
+        security: secure
+        extras: true
+      - version: rawhide
+        desktop: gnome
+        storage: standard
+        security: secure
+        extras: true
+      - version: rawhide
+        desktop: gnome
+        storage: encrypted
+        security: secure
+        extras: true
+
+  # Virtual Server variants
+  - name: virtual-server
+    variants:
+      - version: 43
+        security: secure
+        extras: true
+        post: true
+      - version: 43
+        security: devel
+        extras: true
+        post: false
+      - version: rawhide
+        security: secure
+        extras: true
+        post: true
+      - version: rawhide
+        security: devel
+        extras: true
+        post: false
+
+  # Desktop Hypervisor variants
+  - name: desktop-hypervisor
+    variants:
+      - version: rawhide
+        security: secure
+      - version: rawhide
+        cpu: amdcpu
+        security: secure
+      - version: rawhide
+        cpu: intelcpu
+        security: secure
+      - version: rawhide
+        cpu: intelcpu
+        gpu: intelgpu
+        security: secure
+
+  # Live Desktop variants
+  - name: live-desktop
+    variants:
+      - version: rawhide
+        security: secure
+        packages-hw: true
+
+  # Live Server variants
+  - name: live-server
+    variants:
+      - version: rawhide
+        security: secure
+        packages-hw: true
+      - version: rawhide
+        security: secure
+        packages-hw: true
+        hypervisor: true

@@ -1,0 +1,166 @@
+# Recipe Templates for Phyllome OS Kickstart Generator
+# Each template defines the structure for a recipe type
+# Modifiers allow variant creation without duplicating files
+
+templates:
+  # Virtual desktop recipe
+  # Modifiers: desktop (gnome|labwc), storage (standard|encrypted), 
+  #            security (secure|devel), version (43|rawhide), post (true|false)
+  virtual-desktop:
+    description: "A recipe for a virtual desktop"
+    base: core
+    required:
+      - core
+      - storage: core-storage
+      - bootloader: core-bootloader-grub
+      - locale: core-locale
+      - services: core-services
+      - network: core-network
+      - packages: core-packages
+      - initial-setup: core-initial-setup-server
+    optional:
+      security:
+        secure: core-security-on
+        devel: core-security-off
+      version:
+        "43": core-fedora-repo-43
+        "rawhide": core-fedora-repo-rawhide
+      desktop:
+        gnome: base-desktop-gnome
+        labwc: base-desktop-labwc
+      post: core-post
+      extras:
+        - base-guest-agents
+    modifiers:
+      storage:
+        standard: core-storage
+        encrypted: core-storage-encrypted
+
+  # Virtual server recipe
+  # Modifiers: security (secure|devel), version (43|rawhide), post (true|false)
+  virtual-server:
+    description: "A recipe for a virtual server"
+    base: core
+    required:
+      - core
+      - storage: core-storage
+      - bootloader: core-bootloader-grub
+      - locale: core-locale
+      - services: core-services
+      - network: core-network
+      - packages: core-packages
+      - initial-setup: core-initial-setup-server
+    optional:
+      security:
+        secure: core-security-on
+        devel: core-security-off
+      version:
+        "43": core-fedora-repo-43
+        "rawhide": core-fedora-repo-rawhide
+      post: core-post
+      extras:
+        - base-guest-agents
+    modifiers:
+      storage:
+        standard: core-storage
+        encrypted: core-storage-encrypted
+
+  # Desktop hypervisor recipe
+  # Modifiers: cpu (generic|amdcpu|intelcpu), gpu (none|intelgpu), 
+  #            security (secure|devel), version (rawhide), post (true|false)
+  desktop-hypervisor:
+    description: "A recipe for a desktop hypervisor"
+    base: core
+    required:
+      - core
+      - storage: core-storage
+      - bootloader: core-bootloader-grub
+      - locale: core-locale
+      - services: core-services
+      - network: core-network
+      - packages: core-packages
+      - packages-hw: core-packages-hardware-support
+      - initial-setup: core-initial-setup-gnome-desktop
+      - desktop: base-desktop-gnome
+      - vmm: base-desktop-virtual-machine-manager
+      - repo: core-fedora-repo-rawhide
+    optional:
+      security:
+        secure: core-security-on
+        devel: core-security-off
+      cpu:
+        generic: base-hypervisor
+        amdcpu: base-hypervisor-amdcpu
+        intelcpu: base-hypervisor-intelcpu
+      gpu:
+        intelgpu: base-hypervisor-intelgpu
+      post: core-post
+    modifiers:
+      cpu:
+        generic: base-hypervisor
+        amdcpu: base-hypervisor-amdcpu
+        intelcpu: base-hypervisor-intelcpu
+      gpu:
+        none: null
+        intelgpu: base-hypervisor-intelgpu
+      storage:
+        standard: core-storage
+        encrypted: core-storage-encrypted
+
+  # Live desktop recipe
+  # Modifiers: desktop (gnome|none), security (secure|devel), version (rawhide)
+  live-desktop:
+    description: "A recipe for a live desktop"
+    base: live-core
+    required:
+      - live-core
+      - storage: live-core-storage
+      - bootloader: live-core-bootloader-grub
+      - locale: core-locale
+      - services: core-services
+      - network: core-network
+      - packages: core-packages
+      - mandatory: live-core-mandatory-packages
+      - post: live-core-post
+      - session: live-core-post-live-session
+      - initial-setup: core-initial-setup-gnome-desktop
+      - desktop: base-desktop-gnome
+      - repo: core-fedora-repo-rawhide
+    optional:
+      security:
+        secure: core-security-on
+        devel: core-security-off
+      packages-hw: core-packages-hardware-support
+    modifiers:
+      storage:
+        standard: live-core-storage
+        encrypted: live-core-storage
+
+  # Live server recipe
+  # Modifiers: security (secure|devel), version (rawhide), hypervisor (true|false)
+  live-server:
+    description: "A recipe for a live server"
+    base: live-core
+    required:
+      - live-core
+      - storage: live-core-storage
+      - bootloader: live-core-bootloader-grub
+      - locale: core-locale
+      - services: core-services
+      - network: core-network
+      - packages: core-packages
+      - mandatory: live-core-mandatory-packages
+      - post: live-core-post
+      - session: live-core-post-live-session
+      - initial-setup: core-initial-setup-server
+      - repo: core-fedora-repo-rawhide
+    optional:
+      security:
+        secure: core-security-on
+        devel: core-security-off
+      packages-hw: core-packages-hardware-support
+      hypervisor: base-hypervisor
+    modifiers:
+      storage:
+        standard: live-core-storage
+        encrypted: live-core-storage
