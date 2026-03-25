@@ -11,7 +11,7 @@ import os
 
 # Use actual project root
 PROJECT_ROOT = Path('/home/lukas/Code/virt/phyllomeos')
-SCRIPTS_DIR = PROJECT_ROOT / 'scripts'
+RECIPE_GENERATOR_DIR = PROJECT_ROOT / 'recipe-generator'
 RECIPE_DIR = PROJECT_ROOT / 'recipes'
 FRAGMENTS_DIR = PROJECT_ROOT / 'fragments'
 CONTAINER_DIR = PROJECT_ROOT / 'tests' / 'container'
@@ -19,8 +19,8 @@ CONTAINER_DIR = PROJECT_ROOT / 'tests' / 'container'
 
 def test_generate_recipes_from_manifest():
     """Test generating all recipes from manifest."""
-    os.chdir(SCRIPTS_DIR)
-    
+    os.chdir(RECIPE_GENERATOR_DIR)
+
     result = subprocess.run(
         ['python3', 'generate_recipe.py',
          '--manifest', 'recipes_manifest.yaml',
@@ -28,7 +28,7 @@ def test_generate_recipes_from_manifest():
         capture_output=True,
         text=True
     )
-    
+
     assert result.returncode == 0, f"Recipe generation failed: {result.stderr}"
     assert 'Generating:' in result.stdout
 
@@ -51,7 +51,7 @@ def test_make_targets():
     # Test generate-recipes
     result = subprocess.run(
         ['make', 'generate-recipes'],
-        cwd=SCRIPTS_DIR,
+        cwd=RECIPE_GENERATOR_DIR,
         capture_output=True,
         text=True
     )

@@ -3,13 +3,13 @@ name: test-generation
 on:
   push:
     paths:
-      - 'scripts/**/*.py'
-      - 'scripts/**/*.yaml'
+      - 'recipe-generator/**/*.py'
+      - 'recipe-generator/**/*.yaml'
       - 'fragments/**/*.ks'
   pull_request:
     paths:
-      - 'scripts/**/*.py'
-      - 'scripts/**/*.yaml'
+      - 'recipe-generator/**/*.py'
+      - 'recipe-generator/**/*.yaml'
 
 jobs:
   generate:
@@ -28,7 +28,7 @@ jobs:
       
       - name: Generate all variants
         run: |
-          cd scripts
+          cd recipe-generator
           python3 generate_recipe.py \
             --manifest recipes_manifest.yaml \
             --output-dir ../recipes/

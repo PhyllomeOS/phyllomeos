@@ -15,7 +15,7 @@ chmod +x deploy-vm.sh
 ```
 ./deploy-vm.sh
 
-Executing: ./scripts/core-count.sh
+Executing: ./deploy/core-count.sh
 System has more than 2 core (nproc --all: 6).
 [...]
 10. virtual-desktop-hypervisor

@@ -69,7 +69,6 @@ class RecipeGenerator:
     """Generate kickstart recipes from templates and modifiers."""
 
     def __init__(self, ingredients_dir: Path, templates_file: Path):
-        # Resolve ingredients_dir relative to the project root (parent of scripts/)
         self.project_root = Path(__file__).parent.parent
         self.ingredients_dir = self.project_root / ingredients_dir
         self.templates = self.load_templates(templates_file)
@@ -90,7 +89,7 @@ class RecipeGenerator:
             if path.is_absolute():
                 template_path = path
             else:
-                template_path = self.project_root / 'scripts' / path
+                template_path = self.project_root / path
             with open(template_path) as f:
                 data = yaml.safe_load(f)
             return data['templates']
@@ -419,7 +418,6 @@ def main():
     )
     
     # Global options
-    # Use __file__ to find the scripts directory, then go up to project root
     SCRIPTS_DIR = Path(__file__).resolve().parent
     PROJECT_ROOT = SCRIPTS_DIR.parent
     
@@ -428,14 +426,14 @@ def main():
                         help='Ingredients directory (default: parent/ingredients)')
     parser.add_argument('--templates', '-t',
                         type=Path, default=SCRIPTS_DIR / 'recipe_templates.yaml',
-                        help='Templates YAML file (default: parent/recipe_templates.yaml)')
+                        help='Templates YAML file (default: ./recipe_templates.yaml)')
     
     # Batch mode
     parser.add_argument('--manifest', '-m',
                         type=Path, help='Manifest YAML for batch generation')
     parser.add_argument('--output-dir', '-d',
-                        type=Path, default=Path(__file__).parent / 'recipes',
-                        help='Output directory (batch generation, default: parent/recipes)')
+                        type=Path, default=SCRIPTS_DIR / 'recipes',
+                        help='Output directory (batch generation, default: ./recipes)')
     parser.add_argument('--dry-run', '-n',
                         action='store_true',
                         help='Show what would be generated without writing files')

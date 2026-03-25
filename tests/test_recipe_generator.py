@@ -3,11 +3,9 @@
 import pytest
 from pathlib import Path
 import sys
-import os
 
-# Add scripts directory to path
-SCRIPTS_DIR = Path(__file__).parent.parent / 'scripts'
-sys.path.insert(0, str(SCRIPTS_DIR))
+RECIPE_GENERATOR_DIR = Path(__file__).parent.parent / 'recipe-generator'
+sys.path.insert(0, str(RECIPE_GENERATOR_DIR))
 
 from generate_recipe import RecipeGenerator
 
@@ -19,7 +17,11 @@ class TestRecipeGenerator:
 
     def setup_method(self):
         """Set up test fixtures."""
-        self.generator = RecipeGenerator(Path('ingredients'), Path('recipe_templates.yaml'))
+        project_root = Path(__file__).parent.parent
+        self.generator = RecipeGenerator(
+            project_root / 'ingredients',
+            project_root / 'recipe-generator' / 'recipe_templates.yaml'
+        )
 
     def test_template_loading(self):
         """Test that templates are loaded correctly."""

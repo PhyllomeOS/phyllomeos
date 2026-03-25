@@ -25,13 +25,13 @@ validate-recipes:
 		--validate ../recipes/*.cfg
 
 test:
-	python3 -m pytest tests/ -v --tb=short
+	python3 -m pytest ../tests/ -v --tb=short
 
 test-integration:
-	python3 -m pytest tests/integration/ -v --tb=short
+	python3 -m pytest ../tests/integration/ -v --tb=short
 
 test-container:
-	podman build -t phyllo/test-runner tests/container/
+	podman build -t phyllo/test-runner ../tests/container/
 	podman run --rm -v .:/phyllomeos:ro phyllo/test-runner
 
 clean:

@@ -21,7 +21,7 @@ Phyllome OS uses a **fragment-driven** kickstart generation system:
 ```
 fragments/ (54 .ks files)
     ↓ (modular snippets)
-scripts/generate_recipe.py
+recipe-generator/generate_recipe.py
     ↓ (YAML templates + manifest)
 recipes/ (16 auto-generated .cfg)
     ↓ (ksflatten)
@@ -40,14 +40,16 @@ VMs and ISO images
 | `recipes/` | Generated recipes | Manifest-driven compositions |
 | `dishes/` | Flattened kickstarts | Ready-to-deploy artifacts |
 | `ingredients/` | Legacy building blocks | 35 `.cfg` files (legacy) |
-| `scripts/` | Automation tools | `generate_recipe.py`, Makefile |
+| `recipe-generator/` | Recipe generation | `generate_recipe.py`, YAML configs, Makefile |
+| `deploy/` | Deployment scripts | Bash automation tools |
+| `bin/` | Executables | Wrapper scripts (e.g., `generate-recipe`) |
 
 ### Data Flow
 
 1. **Fragments** (`fragments/**/*.ks`) - Small, reusable kickstart snippets
-2. **Templates** (`scripts/recipe_templates.yaml`) - Define recipe structures
-3. **Manifest** (`scripts/recipes_manifest.yaml`) - Specify variants (version, desktop, storage, etc.)
-4. **Generator** (`scripts/generate_recipe.py`) - Composes fragments via `%ksappend` directives
+2. **Templates** (`recipe-generator/recipe_templates.yaml`) - Define recipe structures
+3. **Manifest** (`recipe-generator/recipes_manifest.yaml`) - Specify variants (version, desktop, storage, etc.)
+4. **Generator** (`recipe-generator/generate_recipe.py`) - Composes fragments via `%ksappend` directives
 5. **Recipes** (`recipes/*.cfg`) - Generated kickstart files with fragment references
 6. **Flattening** (`ksflatten`) - Resolves `%ksappend` into single dish file
 7. **Deployment** (`virt-install`) - Creates VMs from dish files
@@ -169,7 +171,7 @@ EOF
 
 ### Fragment Validation Script
 
-Create `scripts/validate-fragment.sh`:
+Create `deploy/validate-fragment.sh`:
 
 ```bash
 #!/bin/bash
@@ -205,7 +207,7 @@ Recipes are generated from templates and the manifest file. This section covers 
 
 ### Manifest Editing
 
-**File:** `scripts/recipes_manifest.yaml`
+**File:** `recipe-generator/recipes_manifest.yaml`
 
 The manifest defines all recipe variants using modifiers from templates.
 
@@ -252,7 +254,7 @@ recipes:
 
 ### Template Editing
 
-**File:** `scripts/recipe_templates.yaml`
+**File:** `recipe-generator/recipe_templates.yaml`
 
 Templates define the structure and fragment composition for each recipe type.
 
@@ -551,7 +553,7 @@ done
 **File:** `.gitea/workflows/test-generation.yaml`
 
 **Triggers:**
-- Push to `scripts/**/*.py` or `scripts/**/*.yaml`
+- Push to `recipe-generator/**/*.py` or `recipe-generator/**/*.yaml`
 - Pull request with script changes
 
 **Steps:**
@@ -609,12 +611,12 @@ luanti
 EOF
 
 # Step 2: Add to recipe template
-# Edit scripts/recipe_templates.yaml
+# Edit recipe-generator/recipe_templates.yaml
 # Add to 'required' section:
 #   - luanti: fragments/shared/packages/luanti.ks
 
 # Step 3: Regenerate recipes
-cd scripts
+cd recipe-generator
 make generate-recipes
 
 # Step 4: Validate
@@ -637,12 +639,12 @@ plasma-workspace
 EOF
 
 # Step 2: Add to template
-# Edit scripts/recipe_templates.yaml
+# Edit recipe-generator/recipe_templates.yaml
 # Add to optional/desktop section:
 #   kde: fragments/shared/desktop/kde/packages.ks
 
 # Step 3: Add variant to manifest
-# Edit scripts/recipes_manifest.yaml
+# Edit recipe-generator/recipes_manifest.yaml
 # Add variant:
 #   - version: 43
 #     desktop: kde
@@ -660,7 +662,7 @@ make test
 
 ```bash
 # Step 1: Add template to recipe_templates.yaml
-cat >> scripts/recipe_templates.yaml << 'EOF'
+cat >> recipe-generator/recipe_templates.yaml << 'EOF'
 
   minimal-server:
     description: "A minimal server recipe"
@@ -681,7 +683,7 @@ cat >> scripts/recipe_templates.yaml << 'EOF'
 EOF
 
 # Step 2: Add variant to recipes_manifest.yaml
-cat >> scripts/recipes_manifest.yaml << 'EOF'
+cat >> recipe-generator/recipes_manifest.yaml << 'EOF'
 
   - name: minimal-server
     variants:
@@ -729,7 +731,7 @@ luanti
 %end
 ```
 
-**Template:** `scripts/recipe_templates.yaml`
+**Template:** `recipe-generator/recipe_templates.yaml`
 ```yaml
 templates:
   virtual-desktop:

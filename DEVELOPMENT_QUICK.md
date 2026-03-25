@@ -10,7 +10,7 @@ sudo dnf install qemu libvirt virt-install pykickstart
 pip install PyYAML pytest
 
 # Verify setup
-cd scripts && make generate-recipes && make test
+cd recipe-generator && make generate-recipes && make test
 ```
 
 ## Core Workflows
@@ -28,17 +28,17 @@ new-package
 ### Add to Recipe
 
 ```bash
-# Edit scripts/recipe_templates.yaml to include fragment
-# Edit scripts/recipes_manifest.yaml to add variant
+# Edit recipe-generator/recipe_templates.yaml to include fragment
+# Edit recipe-generator/recipes_manifest.yaml to add variant
 
 # Regenerate
-cd scripts && make generate-recipes && make validate-recipes
+cd recipe-generator && make generate-recipes && make validate-recipes
 ```
 
 ### Run Tests
 
 ```bash
-cd scripts
+cd recipe-generator
 make test                    # All tests
 make test-integration        # Integration only
 make test-container          # Containerized
@@ -60,7 +60,7 @@ done
 ## Architecture
 
 ```
-fragments/ (54 .ks) → generate_recipe.py → recipes/ (16 .cfg) → ksflatten → dishes/ (28 .cfg)
+fragments/ (54 .ks) → recipe-generator/generate_recipe.py → recipes/ (16 .cfg) → ksflatten → dishes/ (28 .cfg)
 ```
 
 See `DEVELOPMENT.md` Section 1 for detailed architecture overview.
