@@ -1,5 +1,6 @@
-# Guest agents for virtual machines (base)
+# Guest agents for virtual machines
 
 %packages --exclude-weakdeps
 qemu-guest-agent
+spice-vdagent
 %end

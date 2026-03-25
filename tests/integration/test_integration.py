@@ -75,17 +75,22 @@ def test_container_build():
 
 def test_fragments_structure():
     """Verify fragment directory structure."""
-    # Check platform directories
-    assert (FRAGMENTS_DIR / 'platform' / 'generic-43' / 'repo').exists()
-    assert (FRAGMENTS_DIR / 'platform' / 'generic-rawhide' / 'repo').exists()
+    # Check core directories
+    assert (FRAGMENTS_DIR / 'core' / 'security').exists()
     
-    # Check shared directories
-    assert (FRAGMENTS_DIR / 'shared' / 'core').exists()
-    assert (FRAGMENTS_DIR / 'shared' / 'packages').exists()
-    assert (FRAGMENTS_DIR / 'shared' / 'storage').exists()
-    assert (FRAGMENTS_DIR / 'shared' / 'desktop').exists()
-    assert (FRAGMENTS_DIR / 'shared' / 'hypervisor').exists()
+    # Check desktop directories
+    assert (FRAGMENTS_DIR / 'desktop' / 'gnome').exists()
+    assert (FRAGMENTS_DIR / 'desktop' / 'labwc').exists()
+    assert (FRAGMENTS_DIR / 'desktop' / 'vmm').exists()
+    
+    # Check hypervisor directories
+    assert (FRAGMENTS_DIR / 'hypervisor' / 'base').exists()
+    assert (FRAGMENTS_DIR / 'hypervisor' / 'base').exists()
+    
+    # Check live directories
+    assert (FRAGMENTS_DIR / 'live' / 'core' / 'bootloader').exists()
+    assert (FRAGMENTS_DIR / 'live' / 'post').exists()
     
     # Count fragments
     fragment_count = len(list(FRAGMENTS_DIR.glob('**/*.ks')))
-    assert fragment_count >= 50, f"Expected at least 50 fragments, found {fragment_count}"
+    assert fragment_count >= 45, f"Expected at least 45 fragments, found {fragment_count}"

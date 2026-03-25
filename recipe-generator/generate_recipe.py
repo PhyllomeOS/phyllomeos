@@ -10,6 +10,7 @@ import sys
 import yaml
 from pathlib import Path
 from typing import Dict, List, Optional, Any
+from itertools import product
 
 
 # Deprecated/removed command mappings for Fedora 43 (F42) and rawhide
@@ -308,8 +309,10 @@ class RecipeGenerator:
         
         # Handle modifiers section
         for mod_key, mod_value in modifiers.items():
-            if mod_key in template.get('modifiers', {}):
-                mod_config = template['modifiers'][mod_key]
+            # Normalize key: convert underscores to hyphens for template lookup
+            mod_key_normalized = mod_key.replace('_', '-')
+            if mod_key_normalized in template.get('modifiers', {}):
+                mod_config = template['modifiers'][mod_key_normalized]
                 
                 # Handle nested dict modifiers
                 if isinstance(mod_config, dict) and isinstance(mod_value, str):
@@ -460,6 +463,8 @@ class RecipeGenerator:
         """Generate recipe filename from parameters."""
         # Extract variant subname if present
         variant_subname = modifiers.get('variant_subname', '')
+        if not variant_subname:
+            variant_subname = modifiers.get('variant_type', '')
         
         # Build base parts
         parts = [recipe_type.replace('_', '-')]
@@ -468,10 +473,13 @@ class RecipeGenerator:
         if variant_subname and variant_subname in ['desktop', 'server', 'hypervisor', 'hypervisor-desktop']:
             parts.append(variant_subname)
         
-        # Add hypervisor-type (list, first type only for filename)
-        if modifiers.get('hypervisor-type') and isinstance(modifiers['hypervisor-type'], list):
-            types = modifiers['hypervisor-type']
-            parts.extend(types)
+        # Add hypervisor-type (list or single value for filename)
+        if modifiers.get('hypervisor_type'):
+            ht = modifiers['hypervisor_type']
+            if isinstance(ht, list):
+                parts.extend(ht)
+            else:
+                parts.append(ht)
         
         # Add desktop (non-GNOME only, since GNOME is default)
         if modifiers.get('desktop') and modifiers['desktop'] != 'gnome':
@@ -481,7 +489,7 @@ class RecipeGenerator:
         parts.append(str(version))
         
         # Add security suffix (devel only, since secure is default)
-        if modifiers.get('security') == 'devel':
+        if modifiers.get('security') == 'off':
             parts.append('devel')
         
         # Add storage suffix (encrypted only, since standard is default)
@@ -489,6 +497,36 @@ class RecipeGenerator:
             parts.append('encrypted')
         
         return '_'.join(parts) + '.cfg'
+
+
+    def expand_variants(self, variants: List[Dict]) -> List[Dict]:
+        """Expand variants with list values into individual variants."""
+        expanded = []
+        
+        for variant in variants:
+            list_keys = {}
+            scalar_keys = {}
+            
+            for key, value in variant.items():
+                if isinstance(value, list):
+                    list_keys[key] = value
+                else:
+                    scalar_keys[key] = value
+            
+            if not list_keys:
+                expanded.append(variant)
+                continue
+            
+            keys = list(list_keys.keys())
+            values_product = product(*[list_keys[k] for k in keys])
+            
+            for combo in values_product:
+                new_variant = scalar_keys.copy()
+                for i, key in enumerate(keys):
+                    new_variant[key] = combo[i]
+                expanded.append(new_variant)
+        
+        return expanded
 
 
 def main():
@@ -650,7 +688,9 @@ def main():
                 print(f"Error: Unknown recipe type in manifest: {recipe_type}", file=sys.stderr)
                 sys.exit(1)
 
-            for variant in recipe_config.get('variants', []):
+            variants = recipe_config.get('variants', [])
+            variants = generator.expand_variants(variants)
+            for variant in variants:
                 version = variant['version']
                 # Build modifiers dict (exclude 'name', 'version')
                 modifiers = {k: v for k, v in variant.items() if k not in ['name', 'version']}

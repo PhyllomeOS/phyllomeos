@@ -20,6 +20,7 @@ templates:
       - hand-picked: fragments/packages/hand-picked.ks
     optional:
       hardware-support: fragments/packages/hardware-support.ks
+      guest-agents: fragments/guest-agents/base.ks
       variant_type:
         desktop:
         server:
@@ -31,9 +32,6 @@ templates:
       storage:
         standard: fragments/storage/standard.ks
         encrypted: fragments/storage/encrypted.ks
-      bootloader:
-        grub: fragments/bootloader/grub.ks
-        systemd-boot: fragments/bootloader/systemd-boot.ks
       desktop:
         gnome:
           - fragments/desktop/gnome/config.ks
@@ -43,10 +41,12 @@ templates:
           - fragments/desktop/labwc/config.ks
       security:
         secure: fragments/core/security/enabled.ks
-        devel: fragments/core/security/disabled.ks
+        "off": fragments/core/security/disabled.ks
       initial-setup:
         server: fragments/initial-setup/server/config.ks
         desktop: fragments/initial-setup/desktop/config.ks
+        gnome: fragments/initial-setup/gnome/config.ks
+        generic-wayland: fragments/initial-setup/generic-wayland/config.ks
       hypervisor-type:
         amdcpu: fragments/hypervisor/amdcpu.ks
         intelcpu: fragments/hypervisor/intelcpu.ks
@@ -56,11 +56,9 @@ templates:
           - fragments/hypervisor/base/packages.ks
           - fragments/hypervisor/base/services.ks
           - fragments/hypervisor/base/post-scripts.ks
-          - fragments/guest-agents/base.ks
         desktop:
           - fragments/packages/virtual-machine-manager/packages.ks
           - fragments/packages/virtual-machine-manager/post-scripts.ks
-          - fragments/guest-agents/gui.ks
 
   # Live recipe - for live-desktop or live-server
   live:
@@ -69,22 +67,24 @@ templates:
     required:
       - live-core: fragments/live/core/base.ks
       - storage: fragments/live/core/storage.ks
-      - bootloader: fragments/bootloader/grub.ks
+      - bootloader: fragments/live/core/bootloader/grub.ks
       - locale: fragments/core/locale.ks
       - services: fragments/core/services.ks
       - network: fragments/core/network.ks
       - packages: fragments/live/core/packages.ks
       - post: fragments/live/post/base.ks
       - session: fragments/live/post/session.ks
+      - rpmfusion-nonfree: fragments/repo/rpmfusion-nonfree.ks
     optional:
       variant_type:
         desktop:
         server:
+      hardware-support: fragments/packages/hardware-support.ks
+      guest-agents: fragments/guest-agents/base.ks
+      hypervisor: fragments/live/hypervisor.ks
       security:
         secure: fragments/core/security/enabled.ks
-        devel: fragments/core/security/disabled.ks
-      hardware-support: fragments/packages/hardware-support.ks
-      hypervisor: fragments/live/hypervisor.ks
+        "off": fragments/core/security/disabled.ks
     modifiers:
       version:
         "43": fragments/repo/fedora-43-mirrors.ks
@@ -93,5 +93,5 @@ templates:
         standard: fragments/live/core/storage.ks
         encrypted: fragments/live/core/storage.ks
       bootloader:
-        grub: fragments/bootloader/grub.ks
-        systemd-boot: fragments/bootloader/systemd-boot.ks
+        grub: fragments/live/core/bootloader/grub.ks
+        systemd-boot: fragments/live/core/bootloader/systemd-boot.ks

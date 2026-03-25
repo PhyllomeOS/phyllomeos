@@ -1,134 +1,78 @@
 # Recipe Manifest for Phyllome OS
 # Define all recipe variants using generators from recipe_templates.yaml
 # Edit this file to add new variants, then run: make generate-recipes
+#
+# Supported syntax:
+# - Single values: version: "43"
+# - List values: version: ["43", "rawhide"] (expands to multiple variants)
+# - List modifiers: hypervisor-type: ["amdcpu", "intelcpu"] (expands to separate variants)
 
 recipes:
   # Install variants - desktop
   - name: install
     variants:
       - name: desktop
-        version: "43"
+        version: ["43", "rawhide"]
         desktop: gnome
-        storage: standard
+        storage: ["standard", "encrypted"]
         bootloader: grub
-        security: secure
-        hardware-support: true
+        hardware-support: [true, false]
+        guest-agents: [true, false]
         initial-setup: server
-      - name: desktop
-        version: "43"
-        desktop: gnome
-        storage: standard
-        bootloader: grub
-        security: devel
-        hardware-support: true
-        initial-setup: server
-      - name: desktop
-        version: "43"
-        desktop: labwc
-        storage: standard
-        bootloader: grub
-        security: secure
-        hardware-support: true
-        initial-setup: server
-      - name: desktop
-        version: "rawhide"
-        desktop: gnome
-        storage: standard
-        bootloader: grub
-        security: secure
-        hardware-support: true
-        initial-setup: server
-      - name: desktop
-        version: "rawhide"
-        desktop: gnome
-        storage: encrypted
-        bootloader: grub
-        security: secure
-        hardware-support: true
-        initial-setup: server
+        security: [secure, 'off']
 
-  # Install variants - server (minimal, no desktop packages)
+  # Install variants - server
   - name: install
     variants:
       - name: server
-        version: "43"
-        storage: standard
+        version: ["43", "rawhide"]
+        storage: ["standard", "encrypted"]
         bootloader: grub
-        security: secure
-        hardware-support: true
+        hardware-support: [true, false]
+        guest-agents: [true, false]
         initial-setup: server
-      - name: server
-        version: "43"
-        storage: standard
-        bootloader: grub
-        security: devel
-        hardware-support: true
-        initial-setup: server
-      - name: server
-        version: "rawhide"
-        storage: standard
-        bootloader: grub
-        security: secure
-        hardware-support: true
-        initial-setup: server
-      - name: server
-        version: "rawhide"
-        storage: standard
-        bootloader: grub
-        security: devel
-        hardware-support: true
-        initial-setup: server
+        security: [secure, 'off']
 
-  # Install variants - hypervisor
+  # Install variants - server hypervisor
   - name: install
     variants:
-       - name: hypervisor
-         version: "rawhide"
-         storage: standard
-         bootloader: grub
-         security: secure
-         hardware-support: true
-         hypervisor: base
-         hypervisor-type:
-           - amdcpu
-       - name: hypervisor
-         version: "rawhide"
-         storage: standard
-         bootloader: grub
-         security: secure
-         hardware-support: true
-         hypervisor: base
-         hypervisor-type:
-           - intelcpu
+      - name: hypervisor
+        version: ["43", "rawhide"]
+        storage: ["standard", "encrypted"]
+        bootloader: grub
+        hardware-support: [true, false]
+        guest-agents: [true, false]
+        hypervisor: base
+        hypervisor-type: ["amdcpu", "intelcpu"]
+        initial-setup: server
+        security: [secure, 'off']
 
-  # Install variants - hypervisor with desktop
+  # Install variants - desktop-hypervisor
   - name: install
     variants:
-      - name: hypervisor-desktop
-        version: "rawhide"
+      - name: desktop-hypervisor
+        version: ["43", "rawhide"]
         desktop: gnome
-        storage: standard
+        storage: ["standard", "encrypted"]
         bootloader: grub
-        security: secure
-        hardware-support: true
+        hardware-support: [true, false]
         hypervisor: desktop
-        hypervisor-type:
-          - intelcpu
-          - intelgpu
-        initial-setup: desktop
+        hypervisor-type: ["amdcpu", "intelcpu"]
+        initial-setup: server
+        security: [secure, 'off']
 
   # Live variants - desktop
   - name: live
     variants:
       - name: desktop
         version: "rawhide"
-        security: secure
-        hardware-support: true
+        hardware-support: [true, false]
+        guest-agents: [true, false]
 
   # Live variants - server
   - name: live
     variants:
       - name: server
         version: "rawhide"
-        security: secure
-        hardware-support: true
+        hardware-support: [true, false]
+        guest-agents: [true, false]
