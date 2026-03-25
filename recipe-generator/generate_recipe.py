@@ -464,8 +464,8 @@ class RecipeGenerator:
         # Build base parts
         parts = [recipe_type.replace('_', '-')]
         
-        # Add variant subname for install variants (desktop, server, hypervisor)
-        if variant_subname and variant_subname in ['desktop', 'server', 'hypervisor']:
+        # Add variant subname for install variants (desktop, server, hypervisor, hypervisor-desktop)
+        if variant_subname and variant_subname in ['desktop', 'server', 'hypervisor', 'hypervisor-desktop']:
             parts.append(variant_subname)
         
         # Add hypervisor-type (list, first type only for filename)

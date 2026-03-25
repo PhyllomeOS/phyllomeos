@@ -26,16 +26,16 @@ class TestRecipeGenerator:
     def test_template_loading(self):
         """Test that templates are loaded correctly."""
         assert isinstance(self.generator.templates, dict)
-        assert len(self.generator.templates) == 5
-        assert 'virtual-desktop' in self.generator.templates
-        assert 'virtual-server' in self.generator.templates
-        assert 'desktop-hypervisor' in self.generator.templates
-        assert 'live-desktop' in self.generator.templates
-        assert 'live-server' in self.generator.templates
+        assert len(self.generator.templates) == 2
+        assert 'install' in self.generator.templates
+        assert 'install' in self.generator.templates
+        assert 'install' in self.generator.templates
+        assert 'live' in self.generator.templates
+        assert 'live' in self.generator.templates
 
     def test_validate_template_success(self):
         """Test validation of valid templates."""
-        template = self.generator.templates['virtual-desktop']
+        template = self.generator.templates['install']
         errors = self.generator.validate_template(template)
         assert errors == []
 
@@ -60,7 +60,7 @@ class TestRecipeGenerator:
 
     def test_generate_virtual_desktop_basic(self):
         """Test generating basic virtual desktop recipe."""
-        content = self.generator.generate_recipe('virtual-desktop', '43',
+        content = self.generator.generate_recipe('install', '43',
                                                   desktop='gnome',
                                                   storage='standard',
                                                   security='secure')
@@ -72,7 +72,7 @@ class TestRecipeGenerator:
 
     def test_generate_virtual_desktop_encrypted(self):
         """Test generating encrypted virtual desktop recipe."""
-        content = self.generator.generate_recipe('virtual-desktop', 'rawhide',
+        content = self.generator.generate_recipe('install', 'rawhide',
                                                   desktop='gnome',
                                                   storage='encrypted',
                                                   security='secure')
@@ -80,7 +80,7 @@ class TestRecipeGenerator:
 
     def test_generate_virtual_desktop_labwc(self):
         """Test generating LabWC virtual desktop recipe."""
-        content = self.generator.generate_recipe('virtual-desktop', '43',
+        content = self.generator.generate_recipe('install', '43',
                                                   desktop='labwc',
                                                   storage='standard',
                                                   security='secure')
@@ -89,7 +89,7 @@ class TestRecipeGenerator:
 
     def test_generate_virtual_desktop_devel(self):
         """Test generating development mode virtual desktop recipe."""
-        content = self.generator.generate_recipe('virtual-desktop', '43',
+        content = self.generator.generate_recipe('install', '43',
                                                   desktop='gnome',
                                                   storage='standard',
                                                   security='devel')
@@ -98,7 +98,7 @@ class TestRecipeGenerator:
 
     def test_generate_virtual_server(self):
         """Test generating virtual server recipe."""
-        content = self.generator.generate_recipe('virtual-server', 'rawhide',
+        content = self.generator.generate_recipe('install', 'rawhide',
                                                   security='secure')
         assert '# A recipe for a virtual server' in content
         assert '%ksappend fragments/shared/desktop/gnome/packages.ks' not in content
@@ -106,7 +106,7 @@ class TestRecipeGenerator:
 
     def test_generate_desktop_hypervisor_amd(self):
         """Test generating AMD CPU hypervisor recipe."""
-        content = self.generator.generate_recipe('desktop-hypervisor', 'rawhide',
+        content = self.generator.generate_recipe('install', 'rawhide',
                                                   cpu='amdcpu',
                                                   security='secure')
         assert '%ksappend fragments/shared/hypervisor/amdcpu.ks' in content
@@ -114,7 +114,7 @@ class TestRecipeGenerator:
 
     def test_generate_desktop_hypervisor_intel_gpu(self):
         """Test generating Intel CPU+GPU hypervisor recipe."""
-        content = self.generator.generate_recipe('desktop-hypervisor', 'rawhide',
+        content = self.generator.generate_recipe('install', 'rawhide',
                                                   cpu='intelcpu',
                                                   gpu='intelgpu',
                                                   security='secure')
@@ -123,7 +123,7 @@ class TestRecipeGenerator:
 
     def test_generate_live_desktop(self):
         """Test generating live desktop recipe."""
-        content = self.generator.generate_recipe('live-desktop', 'rawhide',
+        content = self.generator.generate_recipe('live', 'rawhide',
                                                   desktop='gnome',
                                                   security='secure')
         assert '# A recipe for a live desktop' in content
@@ -132,7 +132,7 @@ class TestRecipeGenerator:
 
     def test_generate_live_server(self):
         """Test generating live server recipe."""
-        content = self.generator.generate_recipe('live-server', 'rawhide',
+        content = self.generator.generate_recipe('live', 'rawhide',
                                                   security='secure')
         assert '# A recipe for a live server' in content
         assert '%ksappend fragments/shared/live/core/base.ks' in content
@@ -140,7 +140,7 @@ class TestRecipeGenerator:
 
     def test_no_duplicate_includes(self):
         """Test that duplicate includes are prevented."""
-        content = self.generator.generate_recipe('desktop-hypervisor', 'rawhide',
+        content = self.generator.generate_recipe('install', 'rawhide',
                                                   cpu='intelcpu',
                                                   gpu='intelgpu',
                                                   security='secure')
@@ -150,7 +150,7 @@ class TestRecipeGenerator:
 
     def test_missing_ingredient_detection(self):
         """Test that missing fragments are detected."""
-        content = self.generator.generate_recipe('virtual-desktop', '43',
+        content = self.generator.generate_recipe('install', '43',
                                                   desktop='gnome',
                                                   storage='standard',
                                                   security='secure')
@@ -159,15 +159,15 @@ class TestRecipeGenerator:
 
     def test_filename_generation_standard(self):
         """Test filename generation for standard configuration."""
-        filename = self.generator.generate_filename('virtual-desktop', '43',
+        filename = self.generator.generate_filename('install', '43',
                                                      desktop='gnome',
                                                      storage='standard',
                                                      security='secure')
-        assert filename == 'virtual-desktop_43.cfg'
+        assert filename == 'install_desktop_43.cfg'
 
     def test_filename_generation_encrypted(self):
         """Test filename generation for encrypted storage."""
-        filename = self.generator.generate_filename('virtual-desktop', 'rawhide',
+        filename = self.generator.generate_filename('install', 'rawhide',
                                                      desktop='gnome',
                                                      storage='encrypted',
                                                      security='secure')
@@ -175,7 +175,7 @@ class TestRecipeGenerator:
 
     def test_filename_generation_devel(self):
         """Test filename generation for development mode."""
-        filename = self.generator.generate_filename('virtual-desktop', '43',
+        filename = self.generator.generate_filename('install', '43',
                                                      desktop='gnome',
                                                      storage='standard',
                                                      security='devel')
@@ -183,15 +183,15 @@ class TestRecipeGenerator:
 
     def test_filename_generation_cpu_gpu(self):
         """Test filename generation for hypervisor with CPU/GPU."""
-        filename = self.generator.generate_filename('desktop-hypervisor', 'rawhide',
+        filename = self.generator.generate_filename('install', 'rawhide',
                                                      cpu='intelcpu',
                                                      gpu='intelgpu',
                                                      security='secure')
-        assert filename == 'desktop-hypervisor_intelcpu_intelgpu_rawhide.cfg'
+        assert filename == 'install_hypervisor_intelcpu_intelgpu_rawhide.cfg'
 
     def test_filename_generation_labwc(self):
         """Test filename generation for non-default desktop."""
-        filename = self.generator.generate_filename('virtual-desktop', '43',
+        filename = self.generator.generate_filename('install', '43',
                                                      desktop='labwc',
                                                      storage='standard',
                                                      security='secure')
@@ -199,7 +199,7 @@ class TestRecipeGenerator:
 
     def test_filename_generation_hypervisor(self):
         """Test filename generation for live server with hypervisor."""
-        filename = self.generator.generate_filename('live-server', 'rawhide',
+        filename = self.generator.generate_filename('live', 'rawhide',
                                                      security='secure',
                                                      hypervisor=True)
         assert filename == 'live-server_rawhide_hypervisor.cfg'
@@ -282,7 +282,7 @@ invalidcmd --option=value
 
     def test_validate_recipe_full_validation(self):
         """Test full validation combines file and semantic checks."""
-        content = self.generator.generate_recipe('virtual-desktop', '43',
+        content = self.generator.generate_recipe('install', '43',
                                                   desktop='gnome',
                                                   storage='standard',
                                                   security='secure')

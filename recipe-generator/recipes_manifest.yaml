@@ -82,34 +82,40 @@ recipes:
   # Install variants - hypervisor
   - name: install
     variants:
-      - name: hypervisor
+       - name: hypervisor
+         version: "rawhide"
+         storage: standard
+         bootloader: grub
+         security: secure
+         hardware-support: true
+         hypervisor: base
+         hypervisor-type:
+           - amdcpu
+       - name: hypervisor
+         version: "rawhide"
+         storage: standard
+         bootloader: grub
+         security: secure
+         hardware-support: true
+         hypervisor: base
+         hypervisor-type:
+           - intelcpu
+
+  # Install variants - hypervisor with desktop
+  - name: install
+    variants:
+      - name: hypervisor-desktop
         version: "rawhide"
+        desktop: gnome
         storage: standard
         bootloader: grub
         security: secure
         hardware-support: true
-        hypervisor: true
-        hypervisor-type:
-          - amdcpu
-      - name: hypervisor
-        version: "rawhide"
-        storage: standard
-        bootloader: grub
-        security: secure
-        hardware-support: true
-        hypervisor: true
-        hypervisor-type:
-          - intelcpu
-      - name: hypervisor
-        version: "rawhide"
-        storage: standard
-        bootloader: grub
-        security: secure
-        hardware-support: true
-        hypervisor: true
+        hypervisor: desktop
         hypervisor-type:
           - intelcpu
           - intelgpu
+        initial-setup: desktop
 
   # Live variants - desktop
   - name: live

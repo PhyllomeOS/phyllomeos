@@ -24,13 +24,6 @@ templates:
         desktop:
         server:
         hypervisor:
-          - fragments/hypervisor/base/packages.ks
-          - fragments/hypervisor/base/services.ks
-          - fragments/hypervisor/base/post-scripts.ks
-          - fragments/repo/rawhide-mirrors.ks
-          - fragments/packages/virtual-machine-manager/packages.ks
-          - fragments/packages/virtual-machine-manager/post-scripts.ks
-          - fragments/guest-agents/packages.ks
     modifiers:
       version:
         "43": fragments/repo/fedora-43-mirrors.ks
@@ -58,6 +51,16 @@ templates:
         amdcpu: fragments/hypervisor/amdcpu.ks
         intelcpu: fragments/hypervisor/intelcpu.ks
         intelgpu: fragments/hypervisor/intelgpu.ks
+      hypervisor:
+        base:
+          - fragments/hypervisor/base/packages.ks
+          - fragments/hypervisor/base/services.ks
+          - fragments/hypervisor/base/post-scripts.ks
+          - fragments/guest-agents/base.ks
+        desktop:
+          - fragments/packages/virtual-machine-manager/packages.ks
+          - fragments/packages/virtual-machine-manager/post-scripts.ks
+          - fragments/guest-agents/gui.ks
 
   # Live recipe - for live-desktop or live-server
   live:
