@@ -7,7 +7,7 @@ recipes:
   - name: install
     variants:
       - name: desktop
-        version: 43
+        version: "43"
         desktop: gnome
         storage: standard
         bootloader: grub
@@ -15,7 +15,7 @@ recipes:
         hardware-support: true
         initial-setup: server
       - name: desktop
-        version: 43
+        version: "43"
         desktop: gnome
         storage: standard
         bootloader: grub
@@ -23,7 +23,7 @@ recipes:
         hardware-support: true
         initial-setup: server
       - name: desktop
-        version: 43
+        version: "43"
         desktop: labwc
         storage: standard
         bootloader: grub
@@ -31,7 +31,7 @@ recipes:
         hardware-support: true
         initial-setup: server
       - name: desktop
-        version: rawhide
+        version: "rawhide"
         desktop: gnome
         storage: standard
         bootloader: grub
@@ -39,7 +39,7 @@ recipes:
         hardware-support: true
         initial-setup: server
       - name: desktop
-        version: rawhide
+        version: "rawhide"
         desktop: gnome
         storage: encrypted
         bootloader: grub
@@ -51,28 +51,28 @@ recipes:
   - name: install
     variants:
       - name: server
-        version: 43
+        version: "43"
         storage: standard
         bootloader: grub
         security: secure
         hardware-support: true
         initial-setup: server
       - name: server
-        version: 43
+        version: "43"
         storage: standard
         bootloader: grub
         security: devel
         hardware-support: true
         initial-setup: server
       - name: server
-        version: rawhide
+        version: "rawhide"
         storage: standard
         bootloader: grub
         security: secure
         hardware-support: true
         initial-setup: server
       - name: server
-        version: rawhide
+        version: "rawhide"
         storage: standard
         bootloader: grub
         security: devel
@@ -83,7 +83,7 @@ recipes:
   - name: install
     variants:
       - name: hypervisor
-        version: rawhide
+        version: "rawhide"
         storage: standard
         bootloader: grub
         security: secure
@@ -92,7 +92,7 @@ recipes:
         hypervisor-type:
           - amdcpu
       - name: hypervisor
-        version: rawhide
+        version: "rawhide"
         storage: standard
         bootloader: grub
         security: secure
@@ -101,7 +101,7 @@ recipes:
         hypervisor-type:
           - intelcpu
       - name: hypervisor
-        version: rawhide
+        version: "rawhide"
         storage: standard
         bootloader: grub
         security: secure
@@ -115,7 +115,7 @@ recipes:
   - name: live
     variants:
       - name: desktop
-        version: rawhide
+        version: "rawhide"
         security: secure
         hardware-support: true
 
@@ -123,6 +123,6 @@ recipes:
   - name: live
     variants:
       - name: server
-        version: rawhide
+        version: "rawhide"
         security: secure
         hardware-support: true

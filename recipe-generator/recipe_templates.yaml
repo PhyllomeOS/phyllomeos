@@ -9,89 +9,86 @@ templates:
     description: "An install recipe for desktop, server, or hypervisor"
     base: core
     required:
-      - core: fragments/shared/core/base.ks
-      - storage: fragments/shared/storage/standard.ks
-      - bootloader: fragments/shared/bootloader/grub.ks
-      - locale: fragments/shared/core/locale.ks
-      - services: fragments/shared/core/services.ks
-      - network: fragments/shared/core/network.ks
-      - packages: fragments/shared/packages/core-group.ks
-      - fedora-remix: fragments/shared/packages/fedora-remix.ks
-      - hand-picked: fragments/shared/packages/hand-picked.ks
+      - core: fragments/core/base.ks
+      - storage: fragments/storage/standard.ks
+      - bootloader: fragments/bootloader/grub.ks
+      - locale: fragments/core/locale.ks
+      - services: fragments/core/services.ks
+      - network: fragments/core/network.ks
+      - packages: fragments/packages/core-group.ks
+      - fedora-remix: fragments/packages/fedora-remix.ks
+      - hand-picked: fragments/packages/hand-picked.ks
     optional:
-      hardware-support: fragments/shared/packages/hardware-support.ks
+      hardware-support: fragments/packages/hardware-support.ks
       variant_type:
         desktop:
-          - fragments/shared/desktop/gnome/packages.ks
-          - fragments/shared/desktop/gnome/post-scripts.ks
         server:
         hypervisor:
-          - fragments/shared/hypervisor/base/packages.ks
-          - fragments/shared/hypervisor/base/services.ks
-          - fragments/shared/hypervisor/base/post-scripts.ks
-          - fragments/platform/generic-rawhide/repo/rawhide-mirrors.ks
-          - fragments/shared/packages/virtual-machine-manager/packages.ks
-          - fragments/shared/packages/virtual-machine-manager/post-scripts.ks
-          - fragments/shared/guest-agents/packages.ks
+          - fragments/hypervisor/base/packages.ks
+          - fragments/hypervisor/base/services.ks
+          - fragments/hypervisor/base/post-scripts.ks
+          - fragments/repo/rawhide-mirrors.ks
+          - fragments/packages/virtual-machine-manager/packages.ks
+          - fragments/packages/virtual-machine-manager/post-scripts.ks
+          - fragments/guest-agents/packages.ks
     modifiers:
       version:
-        "43": fragments/platform/generic-43/repo/fedora-mirrors.ks
-        "rawhide": fragments/platform/generic-rawhide/repo/rawhide-mirrors.ks
+        "43": fragments/repo/fedora-43-mirrors.ks
+        "rawhide": fragments/repo/rawhide-mirrors.ks
       storage:
-        standard: fragments/shared/storage/standard.ks
-        encrypted: fragments/shared/storage/encrypted.ks
+        standard: fragments/storage/standard.ks
+        encrypted: fragments/storage/encrypted.ks
       bootloader:
-        grub: fragments/shared/bootloader/grub.ks
-        systemd-boot: fragments/shared/bootloader/systemd-boot.ks
+        grub: fragments/bootloader/grub.ks
+        systemd-boot: fragments/bootloader/systemd-boot.ks
       desktop:
         gnome:
-          - fragments/shared/desktop/gnome/config.ks
-          - fragments/shared/desktop/gnome/packages.ks
-          - fragments/shared/desktop/gnome/post-scripts.ks
+          - fragments/desktop/gnome/config.ks
+          - fragments/desktop/gnome/packages.ks
+          - fragments/desktop/gnome/post-scripts.ks
         labwc:
-          - fragments/shared/desktop/labwc/config.ks
+          - fragments/desktop/labwc/config.ks
       security:
-        secure: fragments/shared/core/security/enabled.ks
-        devel: fragments/shared/core/security/disabled.ks
+        secure: fragments/core/security/enabled.ks
+        devel: fragments/core/security/disabled.ks
       initial-setup:
-        server: fragments/shared/initial-setup/server/config.ks
-        desktop: fragments/shared/initial-setup/desktop/config.ks
+        server: fragments/initial-setup/server/config.ks
+        desktop: fragments/initial-setup/desktop/config.ks
       hypervisor-type:
-        amdcpu: fragments/shared/hypervisor/amdcpu.ks
-        intelcpu: fragments/shared/hypervisor/intelcpu.ks
-        intelgpu: fragments/shared/hypervisor/intelgpu.ks
+        amdcpu: fragments/hypervisor/amdcpu.ks
+        intelcpu: fragments/hypervisor/intelcpu.ks
+        intelgpu: fragments/hypervisor/intelgpu.ks
 
   # Live recipe - for live-desktop or live-server
   live:
     description: "A live recipe for live-desktop or live-server"
     base: live-core
     required:
-      - live-core: fragments/shared/live/core/base.ks
-      - storage: fragments/shared/live/core/storage.ks
-      - bootloader: fragments/shared/bootloader/grub.ks
-      - locale: fragments/shared/core/locale.ks
-      - services: fragments/shared/core/services.ks
-      - network: fragments/shared/core/network.ks
-      - packages: fragments/shared/live/core/packages.ks
-      - post: fragments/shared/live/post/base.ks
-      - session: fragments/shared/live/post/session.ks
+      - live-core: fragments/live/core/base.ks
+      - storage: fragments/live/core/storage.ks
+      - bootloader: fragments/bootloader/grub.ks
+      - locale: fragments/core/locale.ks
+      - services: fragments/core/services.ks
+      - network: fragments/core/network.ks
+      - packages: fragments/live/core/packages.ks
+      - post: fragments/live/post/base.ks
+      - session: fragments/live/post/session.ks
     optional:
       variant_type:
         desktop:
-          - fragments/shared/desktop/gnome/packages.ks
         server:
       security:
-        secure: fragments/shared/core/security/enabled.ks
-        devel: fragments/shared/core/security/disabled.ks
-      hardware-support: fragments/shared/packages/hardware-support.ks
-      hypervisor: fragments/shared/live/hypervisor.ks
+        secure: fragments/core/security/enabled.ks
+        devel: fragments/core/security/disabled.ks
+      hardware-support: fragments/packages/hardware-support.ks
+      hypervisor: fragments/live/hypervisor.ks
     modifiers:
       version:
-        "43": fragments/platform/generic-43/repo/fedora-mirrors.ks
-        "rawhide": fragments/platform/generic-rawhide/repo/rawhide-mirrors.ks
+        "43": fragments/repo/fedora-43-mirrors.ks
+        "rawhide": fragments/repo/rawhide-mirrors.ks
       storage:
-        standard: fragments/shared/live/core/storage.ks
-        encrypted: fragments/shared/live/core/storage.ks
+        standard: fragments/live/core/storage.ks
+        encrypted: fragments/live/core/storage.ks
       bootloader:
-        grub: fragments/shared/bootloader/grub.ks
-        systemd-boot: fragments/shared/bootloader/systemd-boot.ks
+        grub: fragments/bootloader/grub.ks
+        systemd-boot: fragments/bootloader/systemd-boot.ks
