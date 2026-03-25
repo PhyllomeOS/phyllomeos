@@ -4,183 +4,94 @@
 # Fragment paths use relative paths from project root
 
 templates:
-  # Virtual desktop recipe
-  # Modifiers: desktop (gnome|labwc), storage (standard|encrypted), 
-  #            security (secure|devel), version (43|rawhide), post (true|false)
-  virtual-desktop:
-    description: "A recipe for a virtual desktop"
+  # Install recipe - for desktop, server, or hypervisor
+  install:
+    description: "An install recipe for desktop, server, or hypervisor"
     base: core
     required:
       - core: fragments/shared/core/base.ks
       - storage: fragments/shared/storage/standard.ks
-      - bootloader: fragments/platform/generic-43/bootloader/grub.ks
+      - bootloader: fragments/shared/bootloader/grub.ks
       - locale: fragments/shared/core/locale.ks
       - services: fragments/shared/core/services.ks
       - network: fragments/shared/core/network.ks
       - packages: fragments/shared/packages/core-group.ks
       - fedora-remix: fragments/shared/packages/fedora-remix.ks
       - hand-picked: fragments/shared/packages/hand-picked.ks
-      - initial-setup: fragments/shared/initial-setup/server/config.ks
     optional:
-      security:
-        secure: fragments/shared/core/security/enabled.ks
-        devel: fragments/shared/core/security/disabled.ks
+      hardware-support: fragments/shared/packages/hardware-support.ks
+      variant_type:
+        desktop:
+          - fragments/shared/desktop/gnome/packages.ks
+          - fragments/shared/desktop/gnome/post-scripts.ks
+        server:
+        hypervisor:
+          - fragments/shared/hypervisor/base/packages.ks
+          - fragments/shared/hypervisor/base/services.ks
+          - fragments/shared/hypervisor/base/post-scripts.ks
+          - fragments/platform/generic-rawhide/repo/rawhide-mirrors.ks
+          - fragments/shared/packages/virtual-machine-manager/packages.ks
+          - fragments/shared/packages/virtual-machine-manager/post-scripts.ks
+          - fragments/shared/guest-agents/packages.ks
+    modifiers:
       version:
         "43": fragments/platform/generic-43/repo/fedora-mirrors.ks
         "rawhide": fragments/platform/generic-rawhide/repo/rawhide-mirrors.ks
+      storage:
+        standard: fragments/shared/storage/standard.ks
+        encrypted: fragments/shared/storage/encrypted.ks
+      bootloader:
+        grub: fragments/shared/bootloader/grub.ks
+        systemd-boot: fragments/shared/bootloader/systemd-boot.ks
       desktop:
-        gnome: fragments/shared/desktop/gnome/packages.ks
-        labwc: fragments/shared/desktop/labwc/config.ks
-      post: fragments/shared/section-data/post/base.ks
-      extras:
-        - fragments/shared/guest-agents/packages.ks
-    modifiers:
-      storage:
-        standard: fragments/shared/storage/standard.ks
-        encrypted: fragments/shared/storage/encrypted.ks
-      bootloader:
-        systemd-boot: fragments/platform/generic-43/bootloader/systemd-boot.ks
-
-  # Virtual server recipe
-  # Modifiers: security (secure|devel), version (43|rawhide), post (true|false)
-  virtual-server:
-    description: "A recipe for a virtual server"
-    base: core
-    required:
-      - core: fragments/shared/core/base.ks
-      - storage: fragments/shared/storage/standard.ks
-      - bootloader: fragments/platform/generic-43/bootloader/grub.ks
-      - locale: fragments/shared/core/locale.ks
-      - services: fragments/shared/core/services.ks
-      - network: fragments/shared/core/network.ks
-      - packages: fragments/shared/packages/core-group.ks
-      - fedora-remix: fragments/shared/packages/fedora-remix.ks
-      - hand-picked: fragments/shared/packages/hand-picked.ks
-      - initial-setup: fragments/shared/initial-setup/server/config.ks
-    optional:
+        gnome:
+          - fragments/shared/desktop/gnome/config.ks
+          - fragments/shared/desktop/gnome/packages.ks
+          - fragments/shared/desktop/gnome/post-scripts.ks
+        labwc:
+          - fragments/shared/desktop/labwc/config.ks
       security:
         secure: fragments/shared/core/security/enabled.ks
         devel: fragments/shared/core/security/disabled.ks
-      version:
-        "43": fragments/platform/generic-43/repo/fedora-mirrors.ks
-        "rawhide": fragments/platform/generic-rawhide/repo/rawhide-mirrors.ks
-      post: fragments/shared/section-data/post/base.ks
-      extras:
-        - fragments/shared/guest-agents/packages.ks
-    modifiers:
-      storage:
-        standard: fragments/shared/storage/standard.ks
-        encrypted: fragments/shared/storage/encrypted.ks
-      bootloader:
-        systemd-boot: fragments/platform/generic-43/bootloader/systemd-boot.ks
-
-  # Desktop hypervisor recipe
-  # Modifiers: cpu (generic|amdcpu|intelcpu), gpu (none|intelgpu), 
-  #            security (secure|devel), version (rawhide), post (true|false)
-  desktop-hypervisor:
-    description: "A recipe for a desktop hypervisor"
-    base: core
-    required:
-      - core: fragments/shared/core/base.ks
-      - storage: fragments/shared/storage/standard.ks
-      - bootloader: fragments/platform/generic-rawhide/bootloader/grub.ks
-      - locale: fragments/shared/core/locale.ks
-      - services: fragments/shared/core/services.ks
-      - network: fragments/shared/core/network.ks
-      - packages: fragments/shared/packages/core-group.ks
-      - fedora-remix: fragments/shared/packages/fedora-remix.ks
-      - hand-picked: fragments/shared/packages/hand-picked.ks
-      - hardware-support: fragments/shared/packages/hardware-support.ks
-      - initial-setup: fragments/shared/initial-setup/desktop/config.ks
-      - desktop: fragments/shared/desktop/gnome/config.ks
-      - desktop-gnome-packages: fragments/shared/desktop/gnome/packages.ks
-      - desktop-gnome-post: fragments/shared/desktop/gnome/post-scripts.ks
-      - vmm: fragments/shared/desktop/vmm/packages.ks
-      - vmm-post: fragments/shared/desktop/vmm/post-scripts.ks
-      - repo: fragments/platform/generic-rawhide/repo/rawhide-mirrors.ks
-      - hypervisor-base-services: fragments/shared/hypervisor/base/services.ks
-      - hypervisor-base-packages: fragments/shared/hypervisor/base/packages.ks
-      - hypervisor-base-post: fragments/shared/hypervisor/base/post-scripts.ks
-    optional:
-      security:
-        secure: fragments/shared/core/security/enabled.ks
-        devel: fragments/shared/core/security/disabled.ks
-      cpu:
-        generic: fragments/shared/hypervisor/base/services.ks
+      initial-setup:
+        server: fragments/shared/initial-setup/server/config.ks
+        desktop: fragments/shared/initial-setup/desktop/config.ks
+      hypervisor-type:
         amdcpu: fragments/shared/hypervisor/amdcpu.ks
         intelcpu: fragments/shared/hypervisor/intelcpu.ks
-      gpu:
         intelgpu: fragments/shared/hypervisor/intelgpu.ks
-      post: fragments/shared/section-data/post/base.ks
-    modifiers:
-      cpu:
-        generic: fragments/shared/hypervisor/base/services.ks
-        amdcpu: fragments/shared/hypervisor/amdcpu.ks
-        intelcpu: fragments/shared/hypervisor/intelcpu.ks
-      gpu:
-        none: null
-        intelgpu: fragments/shared/hypervisor/intelgpu.ks
-      storage:
-        standard: fragments/shared/storage/standard.ks
-        encrypted: fragments/shared/storage/encrypted.ks
 
-  # Live desktop recipe
-  # Modifiers: desktop (gnome|none), security (secure|devel), version (rawhide)
-  live-desktop:
-    description: "A recipe for a live desktop"
+  # Live recipe - for live-desktop or live-server
+  live:
+    description: "A live recipe for live-desktop or live-server"
     base: live-core
     required:
       - live-core: fragments/shared/live/core/base.ks
       - storage: fragments/shared/live/core/storage.ks
-      - bootloader: fragments/platform/generic-rawhide/bootloader/grub.ks
+      - bootloader: fragments/shared/bootloader/grub.ks
       - locale: fragments/shared/core/locale.ks
       - services: fragments/shared/core/services.ks
       - network: fragments/shared/core/network.ks
       - packages: fragments/shared/live/core/packages.ks
-      - mandatory: fragments/shared/live/core/packages.ks
       - post: fragments/shared/live/post/base.ks
       - session: fragments/shared/live/post/session.ks
-      - initial-setup: fragments/shared/initial-setup/desktop/config.ks
-      - desktop: fragments/shared/desktop/gnome/config.ks
-      - desktop-gnome-packages: fragments/shared/desktop/gnome/packages.ks
-      - desktop-gnome-post: fragments/shared/desktop/gnome/post-scripts.ks
-      - repo: fragments/platform/generic-rawhide/repo/rawhide-mirrors.ks
     optional:
+      variant_type:
+        desktop:
+          - fragments/shared/desktop/gnome/packages.ks
+        server:
       security:
         secure: fragments/shared/core/security/enabled.ks
         devel: fragments/shared/core/security/disabled.ks
-      packages-hw: fragments/shared/packages/hardware-support.ks
-      extras: fragments/shared/guest-agents/packages.ks
-    modifiers:
-      storage:
-        standard: fragments/shared/live/core/storage.ks
-        encrypted: fragments/shared/live/core/storage.ks
-
-  # Live server recipe
-  # Modifiers: security (secure|devel), version (rawhide), hypervisor (true|false)
-  live-server:
-    description: "A recipe for a live server"
-    base: live-core
-    required:
-      - live-core: fragments/shared/live/core/base.ks
-      - storage: fragments/shared/live/core/storage.ks
-      - bootloader: fragments/platform/generic-rawhide/bootloader/grub.ks
-      - locale: fragments/shared/core/locale.ks
-      - services: fragments/shared/core/services.ks
-      - network: fragments/shared/core/network.ks
-      - packages: fragments/shared/live/core/packages.ks
-      - mandatory: fragments/shared/live/core/packages.ks
-      - post: fragments/shared/live/post/base.ks
-      - session: fragments/shared/live/post/session.ks
-      - initial-setup: fragments/shared/initial-setup/server/config.ks
-      - repo: fragments/platform/generic-rawhide/repo/rawhide-mirrors.ks
-    optional:
-      security:
-        secure: fragments/shared/core/security/enabled.ks
-        devel: fragments/shared/core/security/disabled.ks
-      packages-hw: fragments/shared/packages/hardware-support.ks
+      hardware-support: fragments/shared/packages/hardware-support.ks
       hypervisor: fragments/shared/live/hypervisor.ks
     modifiers:
+      version:
+        "43": fragments/platform/generic-43/repo/fedora-mirrors.ks
+        "rawhide": fragments/platform/generic-rawhide/repo/rawhide-mirrors.ks
       storage:
         standard: fragments/shared/live/core/storage.ks
         encrypted: fragments/shared/live/core/storage.ks
+      bootloader:
+        grub: fragments/shared/bootloader/grub.ks
+        systemd-boot: fragments/shared/bootloader/systemd-boot.ks

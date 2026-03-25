@@ -136,17 +136,32 @@ class RecipeGenerator:
         for opt_key, opt_config in template.get('optional', {}).items():
             if isinstance(opt_config, dict):
                 for value, fragment_path in opt_config.items():
-                    if fragment_path.startswith('fragments/'):
-                        full_path = self.project_root / fragment_path
-                    elif fragment_path is None:
+                    # Skip None values
+                    if fragment_path is None:
                         continue
+                    # Handle lists
+                    if isinstance(fragment_path, list):
+                        for fp in fragment_path:
+                            if fp is None:
+                                continue
+                            if fp.startswith('fragments/'):
+                                full_path = self.project_root / fp
+                            else:
+                                full_path = self.ingredients_dir / f"{fp}.cfg"
+                            if not full_path.exists():
+                                errors.append(f"Optional fragment not found: {fp} (in list for {opt_key}={value})")
                     else:
-                        full_path = self.ingredients_dir / f"{fragment_path}.cfg"
-                    
-                    if not full_path.exists():
-                        errors.append(f"Optional fragment not found: {fragment_path} (for {opt_key}={value})")
+                        if fragment_path.startswith('fragments/'):
+                            full_path = self.project_root / fragment_path
+                        else:
+                            full_path = self.ingredients_dir / f"{fragment_path}.cfg"
+                        
+                        if not full_path.exists():
+                            errors.append(f"Optional fragment not found: {fragment_path} (for {opt_key}={value})")
             elif isinstance(opt_config, list):
                 for fragment_path in opt_config:
+                    if fragment_path is None:
+                        continue
                     if fragment_path.startswith('fragments/'):
                         full_path = self.project_root / fragment_path
                     else:
@@ -156,7 +171,6 @@ class RecipeGenerator:
                         errors.append(f"Optional fragment not found: {fragment_path} (in list)")
 
         return errors
-
     def validate_manifest(self, manifest: Dict) -> List[str]:
         """Validate manifest structure."""
         errors = []
@@ -175,6 +189,11 @@ class RecipeGenerator:
             for variant in recipe_config['variants']:
                 if 'version' not in variant:
                     errors.append(f"Recipe '{recipe_config['name']}' variant missing 'version'")
+                # Support explicit variant name for install variants
+                if 'name' in variant:
+                    variant_subname = variant['name']
+                else:
+                    variant_subname = ''
 
         return errors
 
@@ -238,27 +257,86 @@ class RecipeGenerator:
         for opt_key, opt_config in template.get('optional', {}).items():
             if opt_key in modifiers:
                 value = modifiers[opt_key]
-                if isinstance(opt_config, dict):
+                
+                # Case 1: opt_config is nested dict (e.g., virtualization, variant_type)
+                # and value is string/int (select from options)
+                if isinstance(opt_config, dict) and not isinstance(value, (dict, list)):
                     if value in opt_config:
                         fragment_path = opt_config[value]
-                        if fragment_path not in seen:
+                        if isinstance(fragment_path, list):
+                            for fp in fragment_path:
+                                if fp is not None and fp not in seen:
+                                    includes.append(f"%ksappend {fp}")
+                                    seen.add(fp)
+                        elif fragment_path and fragment_path not in seen:
                             includes.append(f"%ksappend {fragment_path}")
                             seen.add(fragment_path)
+                
+                # Case 2: opt_config is nested dict (e.g., virtualization)
+                # and value is dict (nested structure)
+                elif isinstance(opt_config, dict) and isinstance(value, dict):
+                    for nested_key in value:
+                        if nested_key in opt_config:
+                            nested_value = opt_config[nested_key]
+                            if isinstance(nested_value, list):
+                                for fp in nested_value:
+                                    if fp is not None and fp not in seen:
+                                        includes.append(f"%ksappend {fp}")
+                                        seen.add(fp)
+                            elif nested_value is not None and nested_value not in seen:
+                                includes.append(f"%ksappend {nested_value}")
+                                seen.add(nested_value)
+                
+                # Case 3: opt_config is nested dict, value is boolean (additive)
+                elif isinstance(opt_config, dict) and isinstance(value, bool) and value:
+                    for nested_key, nested_value in opt_config.items():
+                        if isinstance(nested_value, list):
+                            for fp in nested_value:
+                                if fp is not None and fp not in seen:
+                                    includes.append(f"%ksappend {fp}")
+                                    seen.add(fp)
+                        elif nested_value is not None and nested_value not in seen:
+                            includes.append(f"%ksappend {nested_value}")
+                            seen.add(nested_value)
+                
+                # Case 4: opt_config is list, value is boolean (boolean flag)
                 elif isinstance(opt_config, list) and value is True:
                     for fragment_path in opt_config:
-                        if fragment_path not in seen:
+                        if fragment_path is not None and fragment_path not in seen:
                             includes.append(f"%ksappend {fragment_path}")
                             seen.add(fragment_path)
-
-        # Handle special modifiers (CPU, GPU)
+        
+        # Handle modifiers section
         for mod_key, mod_value in modifiers.items():
             if mod_key in template.get('modifiers', {}):
                 mod_config = template['modifiers'][mod_key]
-                if isinstance(mod_config, dict) and mod_value in mod_config:
-                    fragment_path = mod_config[mod_value]
-                    if fragment_path and fragment_path not in seen:
-                        includes.append(f"%ksappend {fragment_path}")
-                        seen.add(fragment_path)
+                
+                # Handle nested dict modifiers
+                if isinstance(mod_config, dict) and isinstance(mod_value, str):
+                    if mod_value in mod_config:
+                        fragment_path = mod_config[mod_value]
+                        if isinstance(fragment_path, list):
+                            for fp in fragment_path:
+                                if fp is not None and fp not in seen:
+                                    includes.append(f"%ksappend {fp}")
+                                    seen.add(fp)
+                        elif fragment_path and fragment_path not in seen:
+                            includes.append(f"%ksappend {fragment_path}")
+                            seen.add(fragment_path)
+                
+                # Handle list modifiers
+                elif isinstance(mod_config, dict) and isinstance(mod_value, list):
+                    for item in mod_value:
+                        if item in mod_config:
+                            fragment_path = mod_config[item]
+                            if isinstance(fragment_path, list):
+                                for fp in fragment_path:
+                                    if fp is not None and fp not in seen:
+                                        includes.append(f"%ksappend {fp}")
+                                        seen.add(fp)
+                            elif fragment_path and fragment_path not in seen:
+                                includes.append(f"%ksappend {fragment_path}")
+                                seen.add(fragment_path)
 
         return includes
 
@@ -380,14 +458,20 @@ class RecipeGenerator:
 
     def generate_filename(self, recipe_type: str, version: str, **modifiers) -> str:
         """Generate recipe filename from parameters."""
-        # Map modifiers to filename components
+        # Extract variant subname if present
+        variant_subname = modifiers.get('variant_subname', '')
+        
+        # Build base parts
         parts = [recipe_type.replace('_', '-')]
         
-        # Add CPU/GPU first (hypervisors)
-        if modifiers.get('cpu') and modifiers.get('cpu') != 'generic':
-            parts.append(modifiers['cpu'])
-        if modifiers.get('gpu') and modifiers.get('gpu') != 'none':
-            parts.append(modifiers['gpu'])
+        # Add variant subname for install variants (desktop, server, hypervisor)
+        if variant_subname and variant_subname in ['desktop', 'server', 'hypervisor']:
+            parts.append(variant_subname)
+        
+        # Add hypervisor-type (list, first type only for filename)
+        if modifiers.get('hypervisor-type') and isinstance(modifiers['hypervisor-type'], list):
+            types = modifiers['hypervisor-type']
+            parts.extend(types)
         
         # Add desktop (non-GNOME only, since GNOME is default)
         if modifiers.get('desktop') and modifiers['desktop'] != 'gnome':
@@ -395,10 +479,6 @@ class RecipeGenerator:
         
         # Add version
         parts.append(str(version))
-        
-        # Add hypervisor suffix (only when hypervisor is enabled)
-        if modifiers.get('hypervisor'):
-            parts.append('hypervisor')
         
         # Add security suffix (devel only, since secure is default)
         if modifiers.get('security') == 'devel':
@@ -450,6 +530,7 @@ def main():
                         help='Fedora version (default: rawhide)')
     parser.add_argument('--desktop',
                         choices=['gnome', 'labwc'],
+                        default='gnome',
                         help='Desktop environment (default: gnome)')
     parser.add_argument('--storage',
                         choices=['standard', 'encrypted'],
@@ -571,7 +652,16 @@ def main():
 
             for variant in recipe_config.get('variants', []):
                 version = variant['version']
-                modifiers = {k: v for k, v in variant.items() if k not in ['version']}
+                # Build modifiers dict (exclude 'name', 'version')
+                modifiers = {k: v for k, v in variant.items() if k not in ['name', 'version']}
+                # Extract subname (variant name) if present, otherwise empty
+                variant_subname = variant.get('name', '')
+                # Use variant_name as variant_type modifier
+                if variant_subname:
+                    modifiers['variant_type'] = variant_subname
+                # Add variant_subname to modifiers for generate_filename
+                if variant_subname:
+                    modifiers['variant_subname'] = variant_subname
 
                 content = generator.generate_recipe(recipe_type, version, **modifiers)
 
@@ -600,7 +690,8 @@ def main():
     # Single generation mode
     if args.type:
         modifiers = {
-            'desktop': args.desktop if args.desktop and args.desktop != 'gnome' else None,
+            'variant_type': 'desktop',
+            'desktop': args.desktop if args.desktop else None,
             'storage': args.storage if args.storage != 'standard' else None,
             'security': args.security if args.security != 'secure' else None,
             'cpu': args.cpu if args.cpu and args.cpu != 'generic' else None,

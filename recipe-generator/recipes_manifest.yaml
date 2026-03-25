@@ -3,85 +3,126 @@
 # Edit this file to add new variants, then run: make generate-recipes
 
 recipes:
-  # Virtual Desktop variants
-  - name: virtual-desktop
+  # Install variants - desktop
+  - name: install
     variants:
-      - version: 43
+      - name: desktop
+        version: 43
         desktop: gnome
         storage: standard
+        bootloader: grub
         security: secure
-        extras: true
-      - version: 43
+        hardware-support: true
+        initial-setup: server
+      - name: desktop
+        version: 43
         desktop: gnome
         storage: standard
+        bootloader: grub
         security: devel
-        extras: true
-      - version: 43
+        hardware-support: true
+        initial-setup: server
+      - name: desktop
+        version: 43
         desktop: labwc
         storage: standard
+        bootloader: grub
         security: secure
-        extras: true
-      - version: rawhide
+        hardware-support: true
+        initial-setup: server
+      - name: desktop
+        version: rawhide
         desktop: gnome
         storage: standard
+        bootloader: grub
         security: secure
-        extras: true
-      - version: rawhide
+        hardware-support: true
+        initial-setup: server
+      - name: desktop
+        version: rawhide
         desktop: gnome
         storage: encrypted
+        bootloader: grub
         security: secure
-        extras: true
+        hardware-support: true
+        initial-setup: server
 
-  # Virtual Server variants
-  - name: virtual-server
+  # Install variants - server (minimal, no desktop packages)
+  - name: install
     variants:
-      - version: 43
+      - name: server
+        version: 43
+        storage: standard
+        bootloader: grub
         security: secure
-        extras: true
-        post: true
-      - version: 43
+        hardware-support: true
+        initial-setup: server
+      - name: server
+        version: 43
+        storage: standard
+        bootloader: grub
         security: devel
-        extras: true
-        post: false
-      - version: rawhide
+        hardware-support: true
+        initial-setup: server
+      - name: server
+        version: rawhide
+        storage: standard
+        bootloader: grub
         security: secure
-        extras: true
-        post: true
-      - version: rawhide
+        hardware-support: true
+        initial-setup: server
+      - name: server
+        version: rawhide
+        storage: standard
+        bootloader: grub
         security: devel
-        extras: true
-        post: false
+        hardware-support: true
+        initial-setup: server
 
-  # Desktop Hypervisor variants
-  - name: desktop-hypervisor
+  # Install variants - hypervisor
+  - name: install
     variants:
-      - version: rawhide
+      - name: hypervisor
+        version: rawhide
+        storage: standard
+        bootloader: grub
         security: secure
-      - version: rawhide
-        cpu: amdcpu
-        security: secure
-      - version: rawhide
-        cpu: intelcpu
-        security: secure
-      - version: rawhide
-        cpu: intelcpu
-        gpu: intelgpu
-        security: secure
-
-  # Live Desktop variants
-  - name: live-desktop
-    variants:
-      - version: rawhide
-        security: secure
-        packages-hw: true
-
-  # Live Server variants
-  - name: live-server
-    variants:
-      - version: rawhide
-        security: secure
-        packages-hw: true
-      - version: rawhide
-        security: secure
-        packages-hw: true
+        hardware-support: true
         hypervisor: true
+        hypervisor-type:
+          - amdcpu
+      - name: hypervisor
+        version: rawhide
+        storage: standard
+        bootloader: grub
+        security: secure
+        hardware-support: true
+        hypervisor: true
+        hypervisor-type:
+          - intelcpu
+      - name: hypervisor
+        version: rawhide
+        storage: standard
+        bootloader: grub
+        security: secure
+        hardware-support: true
+        hypervisor: true
+        hypervisor-type:
+          - intelcpu
+          - intelgpu
+
+  # Live variants - desktop
+  - name: live
+    variants:
+      - name: desktop
+        version: rawhide
+        security: secure
+        hardware-support: true
+
+  # Live variants - server
+  - name: live
+    variants:
+      - name: server
+        version: rawhide
+        security: secure
+        hardware-support: true

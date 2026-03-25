@@ -16,6 +16,7 @@ install-deps:
 	pip install -r requirements.txt
 
 generate-recipes:
+	rm -f ../recipes/*.cfg
 	python generate_recipe.py \
 		--manifest recipes_manifest.yaml \
 		--output-dir ../recipes/

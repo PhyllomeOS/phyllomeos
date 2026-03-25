@@ -1,10 +1,14 @@
-# Hypervisor package inclusion for live server
+# Live desktop hypervisor configuration
 
-%packages --exclude-weakdeps
-
+# Enable virtualization support in live environment
+%packages
 qemu-kvm
-libvirt
 libvirt-client
 virt-install
+%end
 
+%post --erroronfail
+# Setup libvirt for live environment
+mkdir -p /var/lib/libvirt
+systemctl enable libvirtd
 %end

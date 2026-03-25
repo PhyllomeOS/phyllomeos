@@ -1,0 +1,25 @@
+# Initial setup - GNOME desktop mode
+
+firstboot --enable # Initial Setup will start after the first reboot
+
+%packages --exclude-weakdeps # Beginning of the packages section. Excludes weak package dependencies.
+
+# TO BE TESTED -> initial-setup-gui # Graphical user interface for the initial-setup utility
+# TO BE TESTED -> initial-setup-gui-wayland-generic.x86_64 # Run the initial-setup GUI in Wayland
+gnome-initial-setup # Add GNOME initial setup too to let user create local account.
+
+%end # End of the packages section
+
+# %post --nochroot --log=/mnt/sysimage/root/initial-setup-gnome.log # Beginning of %post section. Those commands are executed outside the chroot environment. Add logging.
+# 
+# truncate -s 0 /mnt/sysimage/usr/share/gnome-initial-setup/vendor.conf # remove content of vendor.conf so that all options are made available
+# 
+# ## Append lines to existing vendor.conf file, so that options are skipped upon reboot
+# cat >> /mnt/sysimage/usr/share/gnome-initial-setup/vendor.conf<< EOF
+# [pages]
+# skip=privacy
+# [goa]
+# providers=local-first!
+# EOF
+# 
+# %end # End of the %post section
