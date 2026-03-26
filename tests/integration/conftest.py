@@ -6,19 +6,18 @@ import sys
 
 # Find project root (3 levels up from integration tests)
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
-SCRIPTS_DIR = PROJECT_ROOT / 'scripts'
+SCRIPTS_DIR = PROJECT_ROOT / 'recipe-generator'
 sys.path.insert(0, str(SCRIPTS_DIR))
 
 
 @pytest.fixture
 def generator():
     """Create RecipeGenerator instance."""
-    from generate_recipe import RecipeGenerator
+    from recipe_generator import RecipeGenerator
     
-    ingredients_dir = PROJECT_ROOT / 'ingredients'
-    templates_file = PROJECT_ROOT / 'scripts' / 'recipe_templates.yaml'
+    templates_file = PROJECT_ROOT / 'recipe-generator' / 'recipe_templates.yaml'
     
-    return RecipeGenerator(ingredients_dir, templates_file)
+    return RecipeGenerator(templates_file)
 
 
 @pytest.fixture

@@ -7,7 +7,7 @@ import sys
 RECIPE_GENERATOR_DIR = Path(__file__).parent.parent / 'recipe-generator'
 sys.path.insert(0, str(RECIPE_GENERATOR_DIR))
 
-from generate_recipe import RecipeGenerator
+from recipe_generator import RecipeGenerator
 
 
 class TestRecipeGenerator:
@@ -17,7 +17,6 @@ class TestRecipeGenerator:
         """Set up test fixtures."""
         project_root = Path(__file__).parent.parent
         self.generator = RecipeGenerator(
-            project_root / 'ingredients',
             project_root / 'recipe-generator' / 'recipe_templates.yaml'
         )
 

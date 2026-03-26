@@ -26,7 +26,7 @@ echo ""
 
 echo "[3/3] Validating generated recipes..."
 echo "----------------------------------------"
-cd scripts
+cd recipe-generator
 python3 generate_recipe.py --validate ../recipes/*.cfg --strict
 echo "✓ Recipe validation passed!"
 echo ""

@@ -1,6 +1,5 @@
 # Recipe Templates for Phyllome OS Kickstart Generator
 # Each template defines the structure for a recipe type
-# Modifiers allow variant creation without duplicating files
 # Fragment paths use relative paths from project root
 
 templates:

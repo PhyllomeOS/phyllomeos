@@ -22,7 +22,7 @@ jobs:
       
       - name: Build test container
         run: |
-          cd scripts
+          cd recipe-generator
           podman build -t phyllo/test-runner ../tests/container/
       
       - name: Run tests in container

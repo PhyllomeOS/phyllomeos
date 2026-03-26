@@ -23,14 +23,14 @@ jobs:
       
       - name: Generate all recipes
         run: |
-          cd scripts
+          cd recipe-generator
           python3 generate_recipe.py \
             --manifest recipes_manifest.yaml \
             --output-dir ../recipes/
       
       - name: Validate recipes (strict mode)
         run: |
-          cd scripts
+          cd recipe-generator
           python3 generate_recipe.py --validate ../recipes/*.cfg --strict
   
   build-iso:

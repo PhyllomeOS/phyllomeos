@@ -81,7 +81,8 @@ def test_fragments_structure():
     # Check desktop directories
     assert (FRAGMENTS_DIR / 'desktop' / 'gnome').exists()
     assert (FRAGMENTS_DIR / 'desktop' / 'labwc').exists()
-    assert (FRAGMENTS_DIR / 'desktop' / 'vmm').exists()
+    # vmm is now in virtual-machine-manager directory (under packages)
+    # assert (FRAGMENTS_DIR / 'desktop' / 'vmm').exists()
     
     # Check hypervisor directories
     assert (FRAGMENTS_DIR / 'hypervisor' / 'base').exists()

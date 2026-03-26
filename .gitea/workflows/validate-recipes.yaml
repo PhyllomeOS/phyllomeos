@@ -23,22 +23,22 @@ jobs:
       
       - name: Generate all recipes
         run: |
-          cd scripts
+          cd recipe-generator
           make generate-recipes
       
       - name: Validate recipes (strict mode)
         run: |
-          cd scripts
+          cd recipe-generator
           python3 generate_recipe.py --validate ../recipes/*.cfg --strict
       
       - name: Run unit tests
         run: |
-          cd scripts
+          cd recipe-generator
           make test
       
       - name: Run integration tests
         run: |
-          cd scripts
+          cd recipe-generator
           make test-integration
       
       - name: Upload test results

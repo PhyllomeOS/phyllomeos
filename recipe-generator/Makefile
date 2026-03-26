@@ -23,12 +23,12 @@ install-deps:
 
 generate-recipes:
 	rm -f ../recipes/*.cfg
-	python generate_recipe.py \
+	python3 generate_recipe.py \
 		--manifest recipes_manifest.yaml \
 		--output-dir ../recipes/
 
 validate-recipes:
-	python generate_recipe.py \
+	python3 generate_recipe.py \
 		--validate ../recipes/*.cfg
 
 test:
