@@ -20,6 +20,7 @@ templates:
       - fedora-remix: fragments/packages/fedora-remix.ks
       - hand-picked: fragments/packages/hand-picked.ks
       - security: fragments/core/security/enabled.ks
+      - initial-setup: fragments/initial-setup/server/config.ks
     optional:
       hardware-support: fragments/packages/hardware-support.ks
       guest-agents: fragments/guest-agents/base.ks
