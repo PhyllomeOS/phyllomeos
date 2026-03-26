@@ -243,16 +243,22 @@ class RecipeGenerator:
         modifiers = modifiers.copy()
         modifiers['version'] = version
 
+        # Keys that can be overridden by modifiers
+        override_keys = {'security'}
+
         # Add required includes
         for item in template.get('required', []):
             if isinstance(item, dict):
+                key = list(item.keys())[0]
                 fragment_path = list(item.values())[0]
-            else:
-                continue
+                
+                # Skip required fragment if modifier overrides it
+                if key in override_keys and key in modifiers:
+                    continue
 
-            if fragment_path not in seen:
-                includes.append(f"%ksappend {fragment_path}")
-                seen.add(fragment_path)
+                if fragment_path not in seen:
+                    includes.append(f"%ksappend {fragment_path}")
+                    seen.add(fragment_path)
 
         # Add optional includes based on modifiers
         for opt_key, opt_config in template.get('optional', {}).items():
@@ -312,12 +318,31 @@ class RecipeGenerator:
             # Normalize key: convert underscores to hyphens for template lookup
             mod_key_normalized = mod_key.replace('_', '-')
             if mod_key_normalized in template.get('modifiers', {}):
-                mod_config = template['modifiers'][mod_key_normalized]
-                
-                # Handle nested dict modifiers
-                if isinstance(mod_config, dict) and isinstance(mod_value, str):
-                    if mod_value in mod_config:
-                        fragment_path = mod_config[mod_value]
+                mod_key_to_use = mod_key_normalized
+            elif mod_key in template.get('modifiers', {}):
+                mod_key_to_use = mod_key
+            else:
+                continue
+            mod_config = template['modifiers'][mod_key_to_use]
+            
+            # Handle nested dict modifiers
+            if isinstance(mod_config, dict) and isinstance(mod_value, str):
+                if mod_value in mod_config:
+                    fragment_path = mod_config[mod_value]
+                    if isinstance(fragment_path, list):
+                        for fp in fragment_path:
+                            if fp is not None and fp not in seen:
+                                includes.append(f"%ksappend {fp}")
+                                seen.add(fp)
+                    elif fragment_path and fragment_path not in seen:
+                        includes.append(f"%ksappend {fragment_path}")
+                        seen.add(fragment_path)
+            
+            # Handle list modifiers
+            elif isinstance(mod_config, dict) and isinstance(mod_value, list):
+                for item in mod_value:
+                    if item in mod_config:
+                        fragment_path = mod_config[item]
                         if isinstance(fragment_path, list):
                             for fp in fragment_path:
                                 if fp is not None and fp not in seen:
@@ -326,20 +351,6 @@ class RecipeGenerator:
                         elif fragment_path and fragment_path not in seen:
                             includes.append(f"%ksappend {fragment_path}")
                             seen.add(fragment_path)
-                
-                # Handle list modifiers
-                elif isinstance(mod_config, dict) and isinstance(mod_value, list):
-                    for item in mod_value:
-                        if item in mod_config:
-                            fragment_path = mod_config[item]
-                            if isinstance(fragment_path, list):
-                                for fp in fragment_path:
-                                    if fp is not None and fp not in seen:
-                                        includes.append(f"%ksappend {fp}")
-                                        seen.add(fp)
-                            elif fragment_path and fragment_path not in seen:
-                                includes.append(f"%ksappend {fragment_path}")
-                                seen.add(fragment_path)
 
         return includes
 

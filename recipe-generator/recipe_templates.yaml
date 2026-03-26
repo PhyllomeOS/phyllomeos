@@ -18,6 +18,7 @@ templates:
       - packages: fragments/packages/core-group.ks
       - fedora-remix: fragments/packages/fedora-remix.ks
       - hand-picked: fragments/packages/hand-picked.ks
+      - security: fragments/core/security/enabled.ks
     optional:
       hardware-support: fragments/packages/hardware-support.ks
       guest-agents: fragments/guest-agents/base.ks
