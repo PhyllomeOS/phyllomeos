@@ -28,7 +28,7 @@ HEADER_ASCII_ART = [
 class RecipeGenerator:
     """Generate kickstart recipes from templates and modifiers."""
 
-    def __init__(self, ingredients_dir_or_templates: Optional[Path] = None, templates_file: Optional[Path] = None, **kwargs):
+    def __init__(self, ingredients_dir_or_templates: Optional[Path] = None, templates_file: Optional[Path] = None):
         """Initialize RecipeGenerator.
         
         Args:
@@ -199,7 +199,7 @@ class RecipeGenerator:
 
         # Add versioned includes
         versioned = template.get('versioned', {})
-        for key, fragment_path in versioned.items():
+        for fragment_path in versioned.values():
             # Substitute {version} placeholder
             resolved_path = fragment_path.format(version=version)
             if resolved_path not in seen:
@@ -397,7 +397,7 @@ class RecipeGenerator:
 
     def get_ksversion(self, version: str) -> Optional[str]:
         """Map Phyllome OS version to pykickstart version string."""
-        return SemanticValidator()._get_ksversion(version)
+        return SemanticValidator().get_ksversion(version)
 
     def extract_version(self, content: str, filename: str) -> Optional[str]:
         """Extract Fedora version from recipe content or filename."""

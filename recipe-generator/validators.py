@@ -126,7 +126,7 @@ class SemanticValidator:
         issues = []
 
         try:
-            ks_version_str = self._get_ksversion(version)
+            ks_version_str = self.get_ksversion(version)
             if ks_version_str:
                 ks_version = makeVersion(ks_version_str)
             else:
@@ -142,7 +142,7 @@ class SemanticValidator:
 
         return issues
 
-    def _get_ksversion(self, version: str) -> Optional[str]:
+    def get_ksversion(self, version: str) -> Optional[str]:
         """Map Phyllome OS version to pykickstart version string."""
         if version == 'rawhide':
             return None
