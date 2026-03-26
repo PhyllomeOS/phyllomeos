@@ -19,60 +19,61 @@ recipes:
         hardware-support: [true, false]
         guest-agents: [true, false]
         initial-setup: server
-        security: [secure, 'off']
+        security: secure
 
   # Install variants - server
   - name: install
     variants:
       - name: server
-        version: 43
+        version: ["43", "rawhide"]
         storage: standard
         bootloader: grub
-        hardware-support: [true, false]
-        guest-agents: [true, false]
+        hardware-support: false
+        guest-agents: true
         initial-setup: server
-        security: [secure, 'off']
+        security: secure
 
   # Install variants - server hypervisor
   - name: install
     variants:
       - name: hypervisor
-        version: ["43", "rawhide"]
-        storage: ["standard", "encrypted"]
+        version: 43
+        storage: standard
         bootloader: grub
-        hardware-support: [true, false]
-        guest-agents: [true, false]
+        hardware-support: true
+        guest-agents: false
         hypervisor: base
         hypervisor_type: ["amdcpu", "intelcpu"]
         initial-setup: server
-        security: [secure, 'off']
+        security: secure
 
   # Install variants - desktop-hypervisor
   - name: install
     variants:
       - name: hypervisor-desktop
-        version: ["43", "rawhide"]
+        version: 43
         desktop: gnome
-        storage: ["standard", "encrypted"]
+        storage: standard
         bootloader: grub
-        hardware-support: [true, false]
+        hardware-support: false
+        guest-agents: true
         hypervisor: desktop
         hypervisor_type: ["amdcpu", "intelcpu"]
         initial-setup: server
-        security: [secure, 'off']
+        security: secure
 
   # Live variants - desktop
   - name: live
     variants:
       - name: desktop
-        version: "rawhide"
-        hardware-support: [true, false]
-        guest-agents: [true, false]
+        version: 43
+        hardware-support: true
+        guest-agents: false
 
   # Live variants - server
   - name: live
     variants:
       - name: server
-        version: "rawhide"
-        hardware-support: [true, false]
-        guest-agents: [true, false]
+        version: 43
+        hardware-support: true
+        guest-agents: false
