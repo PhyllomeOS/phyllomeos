@@ -243,7 +243,7 @@ class RecipeGenerator:
         modifiers['version'] = version
 
         # Keys that can be overridden by modifiers
-        override_keys = {'security', 'bootloader', 'version', 'initial-setup'}
+        override_keys = {'security', 'bootloader', 'version', 'initial-setup', 'storage'}
 
         # Add required includes
         for item in template.get('required', []):
