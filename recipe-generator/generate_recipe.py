@@ -6,11 +6,13 @@ Generates .cfg recipe files from templates and YAML manifest.
 """
 
 import argparse
+import re
 import sys
-import yaml
-from pathlib import Path
-from typing import Dict, List, Optional, Any
 from itertools import product
+from pathlib import Path
+from typing import Dict, List, Optional
+
+import yaml
 
 
 # Deprecated/removed command mappings for Fedora 43 (F42) and rawhide
@@ -48,13 +50,13 @@ DEPRECATED_COMMANDS: Dict[str, Dict[str, str]] = {
 }
 
 
-def _import_pykickstart():
+def _import_pykickstart():  # noqa: PLC0415 - Import for optional dependency
     """Import pykickstart modules, returns None if not available."""
     try:
-        from pykickstart.parser import KickstartParser
-        from pykickstart.version import makeVersion
-        from pykickstart.version import DEVEL
-        from pykickstart.errors import KickstartParseError, KickstartError
+        from pykickstart.parser import KickstartParser  # noqa: PLC0415
+        from pykickstart.version import makeVersion  # noqa: PLC0415
+        from pykickstart.version import DEVEL  # noqa: PLC0415
+        from pykickstart.errors import KickstartParseError, KickstartError  # noqa: PLC0415
         return {
             'parser': KickstartParser,
             'makeVersion': makeVersion,
@@ -91,7 +93,7 @@ class RecipeGenerator:
                 template_path = path
             else:
                 template_path = self.project_root / path
-            with open(template_path) as f:
+            with open(template_path, encoding='utf-8') as f:
                 data = yaml.safe_load(f)
             return data['templates']
         except FileNotFoundError:
@@ -150,7 +152,8 @@ class RecipeGenerator:
                             else:
                                 full_path = self.ingredients_dir / f"{fp}.cfg"
                             if not full_path.exists():
-                                errors.append(f"Optional fragment not found: {fp} (in list for {opt_key}={value})")
+                                errors.append(f"Optional fragment not found: {fp} "
+                                            f"(in list for {opt_key}={value})")
                     else:
                         if fragment_path.startswith('fragments/'):
                             full_path = self.project_root / fragment_path
@@ -158,7 +161,8 @@ class RecipeGenerator:
                             full_path = self.ingredients_dir / f"{fragment_path}.cfg"
                         
                         if not full_path.exists():
-                            errors.append(f"Optional fragment not found: {fragment_path} (for {opt_key}={value})")
+                            errors.append(f"Optional fragment not found: {fragment_path} "
+                                        f"(for {opt_key}={value})")
             elif isinstance(opt_config, list):
                 for fragment_path in opt_config:
                     if fragment_path is None:
@@ -184,18 +188,13 @@ class RecipeGenerator:
             if 'name' not in recipe_config:
                 errors.append("Recipe config missing 'name' key")
             if 'variants' not in recipe_config:
-                errors.append(f"Recipe '{recipe_config.get('name', 'unnamed')}' missing 'variants' key")
+                errors.append(f"Recipe '{recipe_config.get('name', 'unnamed')}' "
+                            "missing 'variants' key")
                 continue
 
             for variant in recipe_config['variants']:
                 if 'version' not in variant:
                     errors.append(f"Recipe '{recipe_config['name']}' variant missing 'version'")
-                # Support explicit variant name for install variants
-                if 'name' in variant:
-                    variant_subname = variant['name']
-                else:
-                    variant_subname = ''
-
         return errors
 
     def generate_recipe(self, recipe_type: str, version: str, **modifiers) -> str:
@@ -219,8 +218,8 @@ class RecipeGenerator:
 
         return '\n'.join(lines)
 
-    def build_header(self, description: str, recipe_type: str, 
-                     version: str, modifiers: Dict) -> List[str]:
+    def build_header(self, description: str, _recipe_type: str, 
+                     _version: str, _modifiers: Dict) -> List[str]:
         """Build the ASCII art header and description."""
         header = [
             "#            __          ____                        ____  _____",
@@ -391,10 +390,10 @@ class RecipeGenerator:
             issues.append("Warning: pykickstart not installed, skipping semantic validation")
             return issues
         
-        KickstartParser = modules['parser']
-        makeVersion = modules['makeVersion']
-        KickstartParseError = modules['KickstartParseError']
-        KickstartError = modules['KickstartError']
+        KickstartParser = modules['parser']  # noqa: N806 - External library class name
+        makeVersion = modules['makeVersion']  # noqa: N806 - External library function
+        KickstartParseError = modules['KickstartParseError']  # noqa: N806
+        KickstartError = modules['KickstartError']  # noqa: N806
         
         ks_version_str = self.get_ksversion(version)
         if ks_version_str:
@@ -409,7 +408,7 @@ class RecipeGenerator:
             issues.append(f"Syntax error line {e.lineno}: {e.message}")
         except KickstartError as e:
             issues.append(f"Validation error: {str(e)}")
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001 - Catch all for unexpected parser errors
             issues.append(f"Unexpected error during parsing: {str(e)}")
         
         # Check for deprecated commands in the content
@@ -451,7 +450,6 @@ class RecipeGenerator:
 
     def extract_version(self, content: str, filename: str) -> Optional[str]:
         """Extract Fedora version from recipe content or filename."""
-        import re
         filename_match = re.search(r'(?:_|-)(43|rawhide)(?:_|-|.cfg|.yaml|$)', filename)
         if filename_match:
             return filename_match.group(1)
@@ -480,7 +478,7 @@ class RecipeGenerator:
         # Build base parts
         parts = [recipe_type.replace('_', '-')]
         
-        # Add variant subname for install variants (desktop, server, hypervisor, hypervisor-desktop)
+        # Add variant_subname for install variants
         if variant_subname and variant_subname in ['desktop', 'server', 'hypervisor', 'hypervisor-desktop']:
             parts.append(variant_subname)
         
@@ -551,14 +549,15 @@ class RecipeGenerator:
 
 
 def main():
+    """Main entry point for recipe generator CLI."""
     parser = argparse.ArgumentParser(
         description='Generate Phyllome OS kickstart recipes from templates',
         formatter_class=argparse.RawDescriptionHelpFormatter
     )
     
     # Global options
-    SCRIPTS_DIR = Path(__file__).resolve().parent
-    PROJECT_ROOT = SCRIPTS_DIR.parent
+    SCRIPTS_DIR = Path(__file__).resolve().parent  # noqa: N806 - Constant
+    PROJECT_ROOT = SCRIPTS_DIR.parent  # noqa: N806 - Constant
     
     parser.add_argument('--ingredients', '-i',
                         type=Path, default=PROJECT_ROOT / 'ingredients',
@@ -626,7 +625,7 @@ def main():
         all_issues = []
         for recipe_path in args.validate:
             try:
-                with open(recipe_path) as f:
+                with open(recipe_path, encoding='utf-8') as f:
                     content = f.read()
                 issues = generator.validate_recipe(content)
                 
@@ -637,7 +636,8 @@ def main():
                     semantic_issues = generator.validate_recipe_semantic(content, version)
                     issues.extend(semantic_issues)
                 else:
-                    issues.append("Warning: Could not determine version, skipping semantic validation")
+                    issues.append("Warning: Could not determine version, "
+                                "skipping semantic validation")
                 
                 if issues:
                     all_issues.append((recipe_path, issues))
@@ -667,9 +667,11 @@ def main():
             
             print(f"\nSummary:", file=sys.stderr)
             print(f"  - {len(all_issues)} recipe(s) checked", file=sys.stderr)
-            
-            total_errors = sum(len([i for i in issues if 'ERROR' in i]) for _, issues in all_issues)
-            total_warnings = sum(len([i for i in issues if 'Warning:' in i]) for _, issues in all_issues)
+
+            total_errors = sum(len([i for i in issues if 'ERROR' in i]) 
+                             for _, issues in all_issues)
+            total_warnings = sum(len([i for i in issues if 'Warning:' in i]) 
+                               for _, issues in all_issues)
             print(f"  - {total_errors} error(s), {total_warnings} warning(s)", file=sys.stderr)
             
             # Strict mode: treat warnings as errors
@@ -686,7 +688,7 @@ def main():
     # Batch generation mode
     if args.manifest:
         try:
-            with open(args.manifest) as f:
+            with open(args.manifest, encoding='utf-8') as f:
                 manifest = yaml.safe_load(f)
         except FileNotFoundError:
             print(f"Error: Manifest file not found: {args.manifest}", file=sys.stderr)
@@ -744,7 +746,7 @@ def main():
                     print(f"Would generate: {output_path}")
                 else:
                     print(f"Generating: {output_path}")
-                    with open(output_path, 'w') as f:
+                    with open(output_path, 'w', encoding='utf-8') as f:
                         f.write(content)
 
         sys.exit(0)
@@ -780,7 +782,7 @@ def main():
             if args.dry_run:
                 print(f"Would write to: {args.output}")
             else:
-                with open(args.output, 'w') as f:
+                with open(args.output, 'w', encoding='utf-8') as f:
                     f.write(content)
                 print(f"Generated: {args.output}")
         else:
