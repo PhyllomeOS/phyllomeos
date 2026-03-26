@@ -58,8 +58,11 @@ templates:
           - fragments/hypervisor/base/services.ks
           - fragments/hypervisor/base/post-scripts.ks
         desktop:
-          - fragments/packages/virtual-machine-manager/packages.ks
-          - fragments/packages/virtual-machine-manager/post-scripts.ks
+           - fragments/packages/virtual-machine-manager/packages.ks
+           - fragments/packages/virtual-machine-manager/post-scripts.ks
+      bootloader:
+         grub: fragments/bootloader/grub.ks
+         systemd-boot: fragments/bootloader/systemd-boot.ks
 
   # Live recipe - for live-desktop or live-server
   live:
