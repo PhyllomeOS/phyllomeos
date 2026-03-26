@@ -6,6 +6,13 @@
 # - Single values: version: "43"
 # - List values: version: ["43", "rawhide"] (expands to multiple variants)
 # - List modifiers: hypervisor_type: ["amdcpu", "intelcpu"] (expands to separate variants)
+#
+# NOTE: List values create a cartesian product.
+# Example: version: ["43", "rawhide"] + storage: ["standard", "encrypted"]
+# creates 4 variants: (43,standard), (43,encrypted), (rawhide,standard), (rawhide,encrypted)
+#
+# NOTE: Boolean modifiers (guest-agents, hardware-support) only affect filename when True.
+# Multiple variants with False values will produce the same filename (last one wins).
 
 recipes:
   # Install variants - desktop

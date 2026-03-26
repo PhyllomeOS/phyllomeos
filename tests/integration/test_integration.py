@@ -37,7 +37,7 @@ def test_validate_all_generated_recipes():
     """Test validating all generated recipes."""
     # Count generated recipes
     recipe_count = len(list(RECIPE_DIR.glob('*.cfg')))
-    assert recipe_count > 0, "No recipes generated"
+    assert recipe_count > 0, f"Expected recipes, got {recipe_count}"
     
     # Validate each recipe
     for recipe_file in RECIPE_DIR.glob('*.cfg'):

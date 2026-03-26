@@ -245,3 +245,25 @@ part / --fstype="ext4" --grow
         content = ""
         issues = self.generator.validate_recipe_semantic(content, '43')
         assert issues == []
+
+    def test_filename_generation_with_guest_agents(self):
+        """Test filename includes 'virtual' when guest_agents=True."""
+        filename = self.generator.generate_filename('install', '43',
+                                                      variant_type='desktop',
+                                                      guest_agents=True)
+        assert filename == 'install_virtual_desktop_43.cfg'
+
+    def test_filename_generation_with_hardware_support(self):
+        """Test filename includes 'hardware-support' when enabled."""
+        filename = self.generator.generate_filename('install', '43',
+                                                      variant_type='desktop',
+                                                      hardware_support=True)
+        assert filename == 'install_desktop_hardware-support_43.cfg'
+
+    def test_filename_generation_with_both_modifiers(self):
+        """Test filename includes both modifiers when enabled."""
+        filename = self.generator.generate_filename('install', '43',
+                                                      variant_type='desktop',
+                                                      guest_agents=True,
+                                                      hardware_support=True)
+        assert filename == 'install_virtual_desktop_hardware-support_43.cfg'

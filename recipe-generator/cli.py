@@ -233,7 +233,6 @@ def generate_from_manifest(args: argparse.Namespace, generator: RecipeGenerator)
         sys.exit(1)
 
     # Track seen filenames to avoid overwriting duplicates
-    seen_filenames = set()
 
     # Generate all recipes
     for recipe_config in manifest.get('recipes', []):
@@ -270,11 +269,6 @@ def generate_from_manifest(args: argparse.Namespace, generator: RecipeGenerator)
             filename = generator.generate_filename(recipe_type, version, **modifiers)
             output_path = args.output_dir / filename
 
-
-            
-            if filename in seen_filenames:
-                continue  # Already generated this filename
-            seen_filenames.add(filename)
 
             if args.dry_run:
                 print(f"Would generate: {output_path}")
