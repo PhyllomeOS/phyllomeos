@@ -28,7 +28,7 @@ class TemplateValidator:
             if key not in template:
                 errors.append(f"Missing required key: {key}")
 
-        # Validate required fragments exist
+        # Validate required ingredients exist
         for item in template.get('required', []):
             if isinstance(item, dict):
                 fragment_path = list(item.values())[0]
@@ -37,18 +37,18 @@ class TemplateValidator:
 
             full_path = self.project_root / fragment_path
             if not full_path.exists():
-                errors.append(f"Required fragment not found: {fragment_path}")
+                errors.append(f"Required ingredient not found: {fragment_path}")
 
-        # Validate versioned fragments
+        # Validate versioned ingredients
         for key, fragment_path in template.get('versioned', {}).items():
             if '{version}' in fragment_path:
                 # Will be resolved at generation time
                 continue
             full_path = self.project_root / fragment_path
             if not full_path.exists():
-                errors.append(f"Versioned fragment not found: {fragment_path}")
+                errors.append(f"Versioned ingredient not found: {fragment_path}")
 
-        # Validate conditional fragments
+        # Validate conditional ingredients
         conditional = template.get('conditional', {})
         for modifier, modifier_config in conditional.items():
             if isinstance(modifier_config, dict):
@@ -60,25 +60,25 @@ class TemplateValidator:
                             if fp is not None:
                                 full_path = self.project_root / fp
                                 if not full_path.exists():
-                                    errors.append(f"Conditional fragment not found: {fp} (in list for {modifier}={value})")
+                                    errors.append(f"Conditional ingredient not found: {fp} (in list for {modifier}={value})")
                     else:
                         full_path = self.project_root / fragment_path
                         if not full_path.exists():
-                            errors.append(f"Conditional fragment not found: {fragment_path} (for {modifier}={value})")
+                            errors.append(f"Conditional ingredient not found: {fragment_path} (for {modifier}={value})")
 
-        # Validate flag fragments
+        # Validate flag ingredients
         for key, fragment_path in template.get('flags', {}).items():
             if fragment_path is None:
                 continue
             full_path = self.project_root / fragment_path
             if not full_path.exists():
-                errors.append(f"Flag fragment not found: {fragment_path}")
+                errors.append(f"Flag ingredient not found: {fragment_path}")
 
         return errors
 
 
 class ContentValidator:
-    """Validate recipe content for fragment existence and duplicates."""
+    """Validate recipe content for ingredient existence and duplicates."""
 
     def __init__(self, project_root: Path):
         self.project_root = project_root
@@ -102,15 +102,15 @@ class ContentValidator:
                 issues.append(f"Duplicate include: {path}")
             seen.add(path)
 
-        # Check fragment existence
+        # Check ingredient existence
         for inc in includes:
             parts = inc.split()
             if len(parts) < 2:
                 continue
             path = parts[1]
-            fragment_path = self.project_root / path
-            if not fragment_path.exists():
-                issues.append(f"Missing fragment: {path}")
+            ingredient_path = self.project_root / path
+            if not ingredient_path.exists():
+                issues.append(f"Missing ingredient: {path}")
 
         return issues
 

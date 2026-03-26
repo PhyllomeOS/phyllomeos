@@ -1,12 +1,12 @@
-name: validate-fragments
+name: validate-ingredients
 
 on:
   push:
     paths:
-      - 'fragments/**/*.ks'
+      - 'ingredients/**/*.ks'
   pull_request:
     paths:
-      - 'fragments/**/*.ks'
+      - 'ingredients/**/*.ks'
 
 jobs:
   validate:
@@ -22,21 +22,21 @@ jobs:
       - name: Install pykickstart
         run: pip install pykickstart
       
-      - name: Validate all fragments
+      - name: Validate all ingredients
         run: |
           errors=0
-          for fragment in $(find fragments -name "*.ks"); do
+          for ingredient in $(find ingredients -name "*.ks"); do
             if python3 -c "
               from pykickstart.parser import KickstartParser
               from pykickstart.version import makeVersion, DEVEL
               parser = KickstartParser(makeVersion(DEVEL))
-              parser.readKickstart(open('$fragment').read())
+              parser.readKickstart(open('$ingredient').read())
             " 2>/dev/null; then
-              echo "✓ $fragment"
+              echo "✓ $ingredient"
             else
-              echo "✗ $fragment"
+              echo "✗ $ingredient"
               errors=$((errors + 1))
             fi
           done
-          echo "Fragment validation complete: $errors errors"
+          echo "Ingredient validation complete: $errors errors"
           exit $errors

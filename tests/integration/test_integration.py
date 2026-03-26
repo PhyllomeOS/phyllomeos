@@ -13,7 +13,7 @@ import os
 PROJECT_ROOT = Path('/home/lukas/Code/virt/phyllomeos')
 RECIPE_GENERATOR_DIR = PROJECT_ROOT / 'recipe-generator'
 RECIPE_DIR = PROJECT_ROOT / 'recipes'
-FRAGMENTS_DIR = PROJECT_ROOT / 'fragments'
+INGREDIENTS_DIR = PROJECT_ROOT / 'ingredients'
 CONTAINER_DIR = PROJECT_ROOT / 'tests' / 'container'
 
 
@@ -73,25 +73,25 @@ def test_container_build():
         pytest.fail(f"Container build failed: {result.stderr}")
 
 
-def test_fragments_structure():
-    """Verify fragment directory structure."""
+def test_ingredients_structure():
+    """Verify ingredient directory structure."""
     # Check core directories
-    assert (FRAGMENTS_DIR / 'core' / 'security').exists()
+    assert (INGREDIENTS_DIR / 'core' / 'security').exists()
     
     # Check desktop directories
-    assert (FRAGMENTS_DIR / 'desktop' / 'gnome').exists()
-    assert (FRAGMENTS_DIR / 'desktop' / 'labwc').exists()
+    assert (INGREDIENTS_DIR / 'desktop' / 'gnome').exists()
+    assert (INGREDIENTS_DIR / 'desktop' / 'labwc').exists()
     # vmm is now in virtual-machine-manager directory (under packages)
-    # assert (FRAGMENTS_DIR / 'desktop' / 'vmm').exists()
+    # assert (INGREDIENTS_DIR / 'desktop' / 'vmm').exists()
     
     # Check hypervisor directories
-    assert (FRAGMENTS_DIR / 'hypervisor' / 'base').exists()
-    assert (FRAGMENTS_DIR / 'hypervisor' / 'base').exists()
+    assert (INGREDIENTS_DIR / 'hypervisor' / 'base').exists()
+    assert (INGREDIENTS_DIR / 'hypervisor' / 'base').exists()
     
     # Check live directories
-    assert (FRAGMENTS_DIR / 'live' / 'core' / 'bootloader').exists()
-    assert (FRAGMENTS_DIR / 'live' / 'post').exists()
+    assert (INGREDIENTS_DIR / 'live' / 'core' / 'bootloader').exists()
+    assert (INGREDIENTS_DIR / 'live' / 'post').exists()
     
-    # Count fragments
-    fragment_count = len(list(FRAGMENTS_DIR.glob('**/*.ks')))
-    assert fragment_count >= 45, f"Expected at least 45 fragments, found {fragment_count}"
+    # Count ingredients
+    ingredient_count = len(list(INGREDIENTS_DIR.glob('**/*.ks')))
+    assert ingredient_count >= 45, f"Expected at least 45 ingredients, found {ingredient_count}"

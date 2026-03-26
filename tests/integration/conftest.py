@@ -27,9 +27,9 @@ def project_root():
 
 
 @pytest.fixture
-def fragments_dir(project_root):
-    """Return fragments directory."""
-    return project_root / 'fragments'
+def ingredients_dir(project_root):
+    """Return ingredients directory."""
+    return project_root / 'ingredients'
 
 
 @pytest.fixture
@@ -39,9 +39,9 @@ def recipes_dir(project_root):
 
 
 @pytest.fixture
-def fragments(fragments_dir):
-    """List all .ks fragment files."""
-    return list(fragments_dir.glob('**/*.ks'))
+def ingredients(ingredients_dir):
+    """List all .ks ingredient files."""
+    return list(ingredients_dir.glob('**/*.ks'))
 
 
 @pytest.fixture

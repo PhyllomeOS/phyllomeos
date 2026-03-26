@@ -8,96 +8,96 @@ templates:
     description: "An install recipe for desktop, server, or hypervisor"
     base: core
     required:
-      - core: fragments/core/base.ks
-      - version: fragments/repo/fedora-43-mirrors.ks
-      - storage: fragments/storage/standard.ks
-      - bootloader: fragments/bootloader/grub.ks
-      - locale: fragments/core/locale.ks
-      - services: fragments/core/services.ks
-      - network: fragments/core/network.ks
-      - packages: fragments/packages/core-group.ks
-      - fedora-remix: fragments/packages/fedora-remix.ks
-      - hand-picked: fragments/packages/hand-picked.ks
-      - security: fragments/core/security/enabled.ks
-      - initial-setup: fragments/initial-setup/server/config.ks
+      - core: ingredients/core/base.ks
+      - version: ingredients/repo/fedora-43-mirrors.ks
+      - storage: ingredients/storage/standard.ks
+      - bootloader: ingredients/bootloader/grub.ks
+      - locale: ingredients/core/locale.ks
+      - services: ingredients/core/services.ks
+      - network: ingredients/core/network.ks
+      - packages: ingredients/packages/core-group.ks
+      - fedora-remix: ingredients/packages/fedora-remix.ks
+      - hand-picked: ingredients/packages/hand-picked.ks
+      - security: ingredients/core/security/enabled.ks
+      - initial-setup: ingredients/initial-setup/server/config.ks
     optional:
-      hardware-support: fragments/packages/hardware-support.ks
-      guest-agents: fragments/guest-agents/base.ks
+      hardware-support: ingredients/packages/hardware-support.ks
+      guest-agents: ingredients/guest-agents/base.ks
       variant_type:
         desktop:
         server:
         hypervisor:
     modifiers:
       version:
-        "43": fragments/repo/fedora-43-mirrors.ks
-        "rawhide": fragments/repo/rawhide-mirrors.ks
+        "43": ingredients/repo/fedora-43-mirrors.ks
+        "rawhide": ingredients/repo/rawhide-mirrors.ks
       storage:
-        standard: fragments/storage/standard.ks
-        encrypted: fragments/storage/encrypted.ks
+        standard: ingredients/storage/standard.ks
+        encrypted: ingredients/storage/encrypted.ks
       desktop:
         gnome:
-          - fragments/desktop/gnome/config.ks
-          - fragments/desktop/gnome/packages.ks
-          - fragments/desktop/gnome/post-scripts.ks
+          - ingredients/desktop/gnome/config.ks
+          - ingredients/desktop/gnome/packages.ks
+          - ingredients/desktop/gnome/post-scripts.ks
         labwc:
-          - fragments/desktop/labwc/config.ks
+          - ingredients/desktop/labwc/config.ks
       security:
-        secure: fragments/core/security/enabled.ks
-        "off": fragments/core/security/disabled.ks
+        secure: ingredients/core/security/enabled.ks
+        "off": ingredients/core/security/disabled.ks
       initial-setup:
-        server: fragments/initial-setup/server/config.ks
-        desktop: fragments/initial-setup/desktop/config.ks
-        gnome: fragments/initial-setup/gnome/config.ks
-        generic-wayland: fragments/initial-setup/generic-wayland/config.ks
+        server: ingredients/initial-setup/server/config.ks
+        desktop: ingredients/initial-setup/desktop/config.ks
+        gnome: ingredients/initial-setup/gnome/config.ks
+        generic-wayland: ingredients/initial-setup/generic-wayland/config.ks
       hypervisor_type:
-        amdcpu: fragments/hypervisor/amdcpu.ks
-        intelcpu: fragments/hypervisor/intelcpu.ks
-        intelgpu: fragments/hypervisor/intelgpu.ks
+        amdcpu: ingredients/hypervisor/amdcpu.ks
+        intelcpu: ingredients/hypervisor/intelcpu.ks
+        intelgpu: ingredients/hypervisor/intelgpu.ks
       hypervisor:
         base:
-          - fragments/hypervisor/base/packages.ks
-          - fragments/hypervisor/base/services.ks
-          - fragments/hypervisor/base/post-scripts.ks
+          - ingredients/hypervisor/base/packages.ks
+          - ingredients/hypervisor/base/services.ks
+          - ingredients/hypervisor/base/post-scripts.ks
         desktop:
-           - fragments/packages/virtual-machine-manager/packages.ks
-           - fragments/packages/virtual-machine-manager/post-scripts.ks
+           - ingredients/packages/virtual-machine-manager/packages.ks
+           - ingredients/packages/virtual-machine-manager/post-scripts.ks
       bootloader:
-         grub: fragments/bootloader/grub.ks
-         systemd-boot: fragments/bootloader/systemd-boot.ks
+          grub: ingredients/bootloader/grub.ks
+          systemd-boot: ingredients/bootloader/systemd-boot.ks
 
   # Live recipe - for live-desktop or live-server
   live:
     description: "A live recipe for live-desktop or live-server"
     base: live-core
     required:
-      - live-core: fragments/live/core/base.ks
-      - version: fragments/repo/fedora-43-mirrors.ks
-      - storage: fragments/live/core/storage.ks
-      - bootloader: fragments/live/core/bootloader/grub.ks
-      - locale: fragments/core/locale.ks
-      - services: fragments/core/services.ks
-      - network: fragments/core/network.ks
-      - packages: fragments/live/core/packages.ks
-      - post: fragments/live/post/base.ks
-      - session: fragments/live/post/session.ks
-      - rpmfusion-nonfree: fragments/repo/rpmfusion-nonfree.ks
+      - live-core: ingredients/live/core/base.ks
+      - version: ingredients/repo/fedora-43-mirrors.ks
+      - storage: ingredients/live/core/storage.ks
+      - bootloader: ingredients/live/core/bootloader/grub.ks
+      - locale: ingredients/core/locale.ks
+      - services: ingredients/core/services.ks
+      - network: ingredients/core/network.ks
+      - packages: ingredients/live/core/packages.ks
+      - post: ingredients/live/post/base.ks
+      - session: ingredients/live/post/session.ks
+      - rpmfusion-nonfree: ingredients/repo/rpmfusion-nonfree.ks
     optional:
       variant_type:
         desktop:
         server:
-      hardware-support: fragments/packages/hardware-support.ks
-      guest-agents: fragments/guest-agents/base.ks
-      hypervisor: fragments/live/hypervisor.ks
+      hardware-support: ingredients/packages/hardware-support.ks
+      guest-agents: ingredients/guest-agents/base.ks
+      hypervisor: ingredients/live/hypervisor.ks
       security:
-        secure: fragments/core/security/enabled.ks
-        "off": fragments/core/security/disabled.ks
+        secure: ingredients/core/security/enabled.ks
+        "off": ingredients/core/security/disabled.ks
     modifiers:
       version:
-        "43": fragments/repo/fedora-43-mirrors.ks
-        "rawhide": fragments/repo/rawhide-mirrors.ks
+        "43": ingredients/repo/fedora-43-mirrors.ks
+        "rawhide": ingredients/repo/rawhide-mirrors.ks
       storage:
-        standard: fragments/live/core/storage.ks
-        encrypted: fragments/live/core/storage.ks
+        standard: ingredients/live/core/storage.ks
+        encrypted: ingredients/live/core/storage.ks
       bootloader:
-        grub: fragments/live/core/bootloader/grub.ks
-        systemd-boot: fragments/live/core/bootloader/systemd-boot.ks
+        grub: ingredients/live/core/bootloader/grub.ks
+        systemd-boot: ingredients/live/core/bootloader/systemd-boot.ks

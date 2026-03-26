@@ -5,21 +5,21 @@ This guide covers development workflows for contributors to Phyllome OS.
 ## Table of Contents
 - [Architecture Overview](#architecture-overview)
 - [Development Environment Setup](#development-environment-setup)
-- [Fragment Development](#fragment-development)
+- [Ingredient Development](#ingredient-development)
 - [Recipe Generation](#recipe-generation)
 - [Testing](#testing)
 - [CI/CD](#cicd)
 - [Common Workflows](#common-workflows)
-- [Migration Guide: Fragment-Based Architecture](#migration-guide-fragment-based-architecture)
+- [Migration Guide: Ingredient-Based Architecture](#migration-guide-ingredient-based-architecture)
 
 ---
 
 ## Architecture Overview
 
-Phyllome OS uses a **fragment-driven** kickstart generation system:
+Phyllome OS uses a **ingredient-driven** kickstart generation system:
 
 ```
-fragments/ (54 .ks files)
+ingredients/ (54 .ks files)
     ↓ (modular snippets)
 recipe-generator/generate_recipe.py
     ↓ (YAML templates + manifest)
@@ -34,23 +34,21 @@ VMs and ISO images
 
 | Path | Purpose | Contents |
 |------|---------|----------|
-| `fragments/` | Modular kickstart snippets | 54 `.ks` files |
-| `fragments/platform/` | Version-specific configs | `generic-43/`, `generic-rawhide/` |
-| `fragments/shared/` | Common components | `core/`, `packages/`, `desktop/`, `hypervisor/`, `live/`, `initial-setup/` |
+| `ingredients/` | Modular kickstart snippets | 54 `.ks` files |
 | `recipes/` | Generated recipes | Manifest-driven compositions |
 | `dishes/` | Flattened kickstarts | Ready-to-deploy artifacts |
-| `ingredients/` | Legacy building blocks | 35 `.cfg` files (legacy) |
+| `legacy/` | Legacy building blocks | 35 `.cfg` files (legacy) |
 | `recipe-generator/` | Recipe generation | `generate_recipe.py`, YAML configs, Makefile |
 | `deploy/` | Deployment scripts | Bash automation tools |
 | `bin/` | Executables | Wrapper scripts (e.g., `generate-recipe`) |
 
 ### Data Flow
 
-1. **Fragments** (`fragments/**/*.ks`) - Small, reusable kickstart snippets
+1. **Ingredients** (`ingredients/**/*.ks`) - Small, reusable kickstart snippets
 2. **Templates** (`recipe-generator/recipe_templates.yaml`) - Define recipe structures
 3. **Manifest** (`recipe-generator/recipes_manifest.yaml`) - Specify variants (version, desktop, storage, etc.)
-4. **Generator** (`recipe-generator/generate_recipe.py`) - Composes fragments via `%ksappend` directives
-5. **Recipes** (`recipes/*.cfg`) - Generated kickstart files with fragment references
+4. **Generator** (`recipe-generator/generate_recipe.py`) - Composes ingredients via `%ksappend` directives
+5. **Recipes** (`recipes/*.cfg`) - Generated kickstart files with ingredient references
 6. **Flattening** (`ksflatten`) - Resolves `%ksappend` into single dish file
 7. **Deployment** (`virt-install`) - Creates VMs from dish files
 
@@ -96,25 +94,25 @@ make validate-recipes
 
 ## Fragment Development
 
-Fragments are modular kickstart snippets stored in `fragments/`. Each `.ks` file contains a single feature section.
+Fragments are modular kickstart snippets stored in `ingredients/`. Each `.ks` file contains a single feature section.
 
 ### Creating a New Fragment
 
 **Step 1: Choose location**
-- `fragments/shared/core/` - Base settings (security, services, networking)
-- `fragments/shared/storage/` - Partition layouts
-- `fragments/shared/packages/` - Package groups
-- `fragments/shared/desktop/` - Desktop environment configs
-- `fragments/shared/hypervisor/` - Virtualization hardware configs
-- `fragments/shared/live/` - Live system components
-- `fragments/shared/initial-setup/` - First-boot configuration
-- `fragments/platform/generic-43/` or `generic-rawhide/` - Version-specific
+- `ingredients/shared/core/` - Base settings (security, services, networking)
+- `ingredients/shared/storage/` - Partition layouts
+- `ingredients/shared/packages/` - Package groups
+- `ingredients/shared/desktop/` - Desktop environment configs
+- `ingredients/shared/hypervisor/` - Virtualization hardware configs
+- `ingredients/shared/live/` - Live system components
+- `ingredients/shared/initial-setup/` - First-boot configuration
+- `ingredients/platform/generic-43/` or `generic-rawhide/` - Version-specific
 
 **Step 2: Create the fragment file**
 
 ```bash
 # Example: Add Luanti game engine
-cat > fragments/shared/packages/luanti.ks << 'EOF'
+cat > ingredients/shared/packages/luanti.ks << 'EOF'
 %packages
 luanti
 %end
@@ -130,7 +128,7 @@ from pykickstart.version import makeVersion, DEVEL
 
 parser = KickstartParser(makeVersion(DEVEL))
 try:
-    with open('fragments/shared/packages/luanti.ks') as f:
+    with open('ingredients/shared/packages/luanti.ks') as f:
         parser.readKickstart(f.read())
     print('✓ Validation passed')
 except Exception as e:
@@ -142,9 +140,9 @@ except Exception as e:
 
 - **Pattern:** `<feature>/<subfeature>.ks`
 - **Examples:**
-  - `fragments/shared/core/security/enabled.ks`
-  - `fragments/shared/desktop/gnome/packages.ks`
-  - `fragments/platform/generic-43/repo/fedora-mirrors.ks`
+  - `ingredients/shared/core/security/enabled.ks`
+  - `ingredients/shared/desktop/gnome/packages.ks`
+  - `ingredients/platform/generic-43/repo/fedora-mirrors.ks`
 
 ### Common Fragment Types
 
@@ -264,46 +262,46 @@ templates:
   virtual-desktop:
     description: "A recipe for a virtual desktop"
     base: core
-    required:                      # Always included fragments
-      - core: fragments/shared/core/base.ks
-      - storage: fragments/shared/storage/standard.ks
-    optional:                      # Conditional fragments
+    required:                      # Always included ingredients
+      - core: ingredients/shared/core/base.ks
+      - storage: ingredients/shared/storage/standard.ks
+    optional:                      # Conditional ingredients
       security:
-        secure: fragments/shared/core/security/enabled.ks
-        devel: fragments/shared/core/security/disabled.ks
+        secure: ingredients/shared/core/security/enabled.ks
+        devel: ingredients/shared/core/security/disabled.ks
     modifiers:                     # Storage/bootloader alternatives
       storage:
-        standard: fragments/shared/storage/standard.ks
-        encrypted: fragments/shared/storage/encrypted.ks
+        standard: ingredients/shared/storage/standard.ks
+        encrypted: ingredients/shared/storage/encrypted.ks
 ```
 
 **Adding a new required fragment:**
 ```yaml
     required:
-      - core: fragments/shared/core/base.ks
-      - storage: fragments/shared/storage/standard.ks
+      - core: ingredients/shared/core/base.ks
+      - storage: ingredients/shared/storage/standard.ks
       # New fragment
-      - packages: fragments/shared/packages/hand-picked.ks
+      - packages: ingredients/shared/packages/hand-picked.ks
 ```
 
 **Adding an optional modifier:**
 ```yaml
     optional:
       security:
-        secure: fragments/shared/core/security/enabled.ks
-        devel: fragments/shared/core/security/disabled.ks
+        secure: ingredients/shared/core/security/enabled.ks
+        devel: ingredients/shared/core/security/disabled.ks
       # New optional - post-install scripts
-      post: fragments/shared/section-data/post/base.ks
+      post: ingredients/shared/section-data/post/base.ks
 ```
 
 **Adding a modifier alternative:**
 ```yaml
     modifiers:
       storage:
-        standard: fragments/shared/storage/standard.ks
-        encrypted: fragments/shared/storage/encrypted.ks
+        standard: ingredients/shared/storage/standard.ks
+        encrypted: ingredients/shared/storage/encrypted.ks
         # New storage option
-        btrfs: fragments/shared/storage/btrfs.ks
+        btrfs: ingredients/shared/storage/btrfs.ks
 ```
 
 ### Generation Workflow
@@ -361,13 +359,13 @@ cat > recipes/my-distro.cfg << 'EOF'
 %include ../ingredients/core-storage.cfg
 
 # Bootloader
-%include ../fragments/platform/generic-43/bootloader/grub.ks
+%include ../ingredients/platform/generic-43/bootloader/grub.ks
 
 # Network configuration
-%include ../fragments/shared/core/network.ks
+%include ../ingredients/shared/core/network.ks
 
 # Desktop environment
-%include ../fragments/shared/desktop/gnome/packages.ks
+%include ../ingredients/shared/desktop/gnome/packages.ks
 
 # Additional packages
 %packages
@@ -404,7 +402,7 @@ Phyllome OS uses a comprehensive test suite with 36+ tests covering unit, integr
 |-----------|-------|----------|
 | `tests/test_recipe_generator.py` | 36 | Unit tests for RecipeGenerator |
 | `tests/integration/test_integration.py` | 5+ | End-to-end workflow tests |
-| `tests/integration/test_fragments.py` | ~15 | Fragment validation |
+| `tests/integration/test_ingredients.py` | ~15 | Fragment validation |
 | `tests/integration/test_recipe_composition.py` | ~10 | Recipe generation |
 | `tests/integration/test_semantic_validation.py` | ~10 | pykickstart validation |
 | `tests/integration/test_golden_masters.py` | ~5 | Regression tests |
@@ -443,8 +441,8 @@ tests/integration/test_integration.py .....                                     
 ### Fragment Validation Test
 
 ```bash
-# Test all fragments with pykickstart
-for fragment in $(find fragments -name "*.ks"); do
+# Test all ingredients with pykickstart
+for fragment in $(find ingredients -name "*.ks"); do
     python3 -c "
 from pykickstart.parser import KickstartParser
 from pykickstart.version import makeVersion, DEVEL
@@ -470,7 +468,7 @@ def test_generate_recipe_with_new_modifier():
         security='secure'
     )
     assert '# A recipe for a virtual desktop' in content
-    assert '%ksappend fragments/shared/desktop/gnome/packages.ks' in content
+    assert '%ksappend ingredients/shared/desktop/gnome/packages.ks' in content
 ```
 
 **Integration test example:**
@@ -517,17 +515,17 @@ The project uses Gitea Actions for automated testing and building.
 
 | File | Trigger | Purpose |
 |------|---------|---------|
-| `.gitea/workflows/validate-fragments.yaml` | Push/PR fragments | Validate all 54 .ks files |
+| `.gitea/workflows/validate-ingredients.yaml` | Push/PR ingredients | Validate all 54 .ks files |
 | `.gitea/workflows/test-generation.yaml` | Push/PR scripts | Generate 16 recipes |
 | `.gitea/workflows/validate-recipes.yaml` | Push PR main | Full validation suite |
 | `.gitea/workflows/build-iso.yaml` | Push main, release | Build live ISO |
 
 ### Workflow: Validate Fragments
 
-**File:** `.gitea/workflows/validate-fragments.yaml`
+**File:** `.gitea/workflows/validate-ingredients.yaml`
 
 **Triggers:**
-- Push to any `fragments/**/*.ks` file
+- Push to any `ingredients/**/*.ks` file
 - Pull request with fragment changes
 
 **Steps:**
@@ -538,7 +536,7 @@ The project uses Gitea Actions for automated testing and building.
 
 **Local equivalent:**
 ```bash
-for fragment in $(find fragments -name "*.ks"); do
+for fragment in $(find ingredients -name "*.ks"); do
     python3 -c "
 from pykickstart.parser import KickstartParser
 from pykickstart.version import makeVersion, DEVEL
@@ -591,7 +589,7 @@ done
 | Task | Command | File |
 |------|---------|------|
 | Generate all recipes | `cd scripts && make generate-recipes` | - |
-| Validate all fragments | `for f in $(find fragments -name "*.ks"); do python3 -c "from pykickstart.parser import KickstartParser; from pykickstart.version import makeVersion, DEVEL; parser = KickstartParser(makeVersion(DEVEL)); parser.readKickstart(open('$f').read())" && echo "✓ $f"; done` | - |
+| Validate all ingredients | `for f in $(find ingredients -name "*.ks"); do python3 -c "from pykickstart.parser import KickstartParser; from pykickstart.version import makeVersion, DEVEL; parser = KickstartParser(makeVersion(DEVEL)); parser.readKickstart(open('$f').read())" && echo "✓ $f"; done` | - |
 | Run all tests | `cd scripts && make test` | - |
 | Flatten recipe to dish | `ksflatten -c recipes/X.cfg -o dishes/X.cfg` | - |
 | Deploy VM from dish | `./deploy-vm.sh` | `deploy.sh`, `deploy-distro.sh` |
@@ -604,7 +602,7 @@ done
 
 ```bash
 # Step 1: Create fragment
-cat > fragments/shared/packages/luanti.ks << 'EOF'
+cat > ingredients/shared/packages/luanti.ks << 'EOF'
 %packages
 luanti
 %end
@@ -613,7 +611,7 @@ EOF
 # Step 2: Add to recipe template
 # Edit recipe-generator/recipe_templates.yaml
 # Add to 'required' section:
-#   - luanti: fragments/shared/packages/luanti.ks
+#   - luanti: ingredients/shared/packages/luanti.ks
 
 # Step 3: Regenerate recipes
 cd recipe-generator
@@ -632,7 +630,7 @@ ksflatten -c ../recipes/virtual-desktop_43.cfg -o ../dishes/virtual-desktop_43.c
 
 ```bash
 # Step 1: Create desktop fragment
-cat > fragments/shared/desktop/kde/packages.ks << 'EOF'
+cat > ingredients/shared/desktop/kde/packages.ks << 'EOF'
 %packages
 @kde-desktop
 plasma-workspace
@@ -641,7 +639,7 @@ EOF
 # Step 2: Add to template
 # Edit recipe-generator/recipe_templates.yaml
 # Add to optional/desktop section:
-#   kde: fragments/shared/desktop/kde/packages.ks
+#   kde: ingredients/shared/desktop/kde/packages.ks
 
 # Step 3: Add variant to manifest
 # Edit recipe-generator/recipes_manifest.yaml
@@ -668,18 +666,18 @@ cat >> recipe-generator/recipe_templates.yaml << 'EOF'
     description: "A minimal server recipe"
     base: core
     required:
-      - core: fragments/shared/core/base.ks
-      - storage: fragments/shared/storage/standard.ks
-      - bootloader: fragments/platform/generic-43/bootloader/grub.ks
-      - packages: fragments/shared/packages/core-group.ks
-      - fedora-remix: fragments/shared/packages/fedora-remix.ks
+      - core: ingredients/shared/core/base.ks
+      - storage: ingredients/shared/storage/standard.ks
+      - bootloader: ingredients/platform/generic-43/bootloader/grub.ks
+      - packages: ingredients/shared/packages/core-group.ks
+      - fedora-remix: ingredients/shared/packages/fedora-remix.ks
     optional:
       security:
-        secure: fragments/shared/core/security/enabled.ks
-        devel: fragments/shared/core/security/disabled.ks
+        secure: ingredients/shared/core/security/enabled.ks
+        devel: ingredients/shared/core/security/disabled.ks
       version:
-        "43": fragments/platform/generic-43/repo/fedora-mirrors.ks
-        "rawhide": fragments/platform/generic-rawhide/repo/rawhide-mirrors.ks
+        "43": ingredients/platform/generic-43/repo/fedora-mirrors.ks
+        "rawhide": ingredients/platform/generic-rawhide/repo/rawhide-mirrors.ks
 EOF
 
 # Step 2: Add variant to recipes_manifest.yaml
@@ -724,7 +722,7 @@ luanti
 
 ### After: Fragment-Based
 
-**Fragment:** `fragments/shared/packages/luanti.ks`
+**Fragment:** `ingredients/shared/packages/luanti.ks`
 ```bash
 %packages
 luanti
@@ -736,14 +734,14 @@ luanti
 templates:
   virtual-desktop:
     required:
-      - luanti: fragments/shared/packages/luanti.ks
+      - luanti: ingredients/shared/packages/luanti.ks
 ```
 
 **Recipe:** `recipes/virtual-desktop_43.cfg`
 ```bash
 # Generated automatically
-%ksappend fragments/shared/core/base.ks
-%ksappend fragments/shared/packages/luanti.ks
+%ksappend ingredients/shared/core/base.ks
+%ksappend ingredients/shared/packages/luanti.ks
 ```
 
 ### Migration Benefits
@@ -770,7 +768,7 @@ templates:
 
 - [ ] Review all `ingredients/*.cfg` files
 - [ ] Identify reusable patterns
-- [ ] Create `fragments/shared/` for common components
+- [ ] Create `ingredients/shared/` for common components
 - [ ] Update `recipe_templates.yaml` with new structure
 - [ ] Update `recipes_manifest.yaml` for variants
 - [ ] Regenerate recipes with `make generate-recipes`
@@ -796,10 +794,10 @@ grep "^%ksappend" recipes/*.cfg | sort | uniq -d
 **2. Missing fragment error**
 
 ```
-ERROR: Missing fragment: fragments/shared/unknown/missing.ks
+ERROR: Missing fragment: ingredients/shared/unknown/missing.ks
 ```
 
-**Fix:** Verify fragment exists in `fragments/shared/`
+**Fix:** Verify fragment exists in `ingredients/shared/`
 
 **3. Deprecated command warning**
 

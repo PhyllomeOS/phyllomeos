@@ -96,7 +96,7 @@ class RecipeGenerator:
         modifiers = modifiers.copy()
         modifiers['version'] = version
 
-        # Add required includes (all fragments listed under 'required')
+        # Add required includes (all ingredients listed under 'required')
         for item in template.get('required', []):
             if isinstance(item, dict):
                 fragment_path = list(item.values())[0]

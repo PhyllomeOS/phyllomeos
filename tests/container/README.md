@@ -18,7 +18,7 @@ podman build -t phyllo/test-runner tests/container/
 podman run --rm -v .:/phyllomeos:ro phyllo/test-runner
 
 # Run specific test file
-podman run --rm -v .:/phyllomeos:ro phyllo/test-runner pytest tests/integration/test_fragments.py -v
+podman run --rm -v .:/phyllomeos:ro phyllo/test-runner pytest tests/integration/test_ingredients.py -v
 
 # Interactive mode for debugging
 podman run -it --rm -v .:/phyllomeos phyllo/test-runner bash
@@ -32,9 +32,9 @@ podman run -it --rm -v .:/phyllomeos phyllo/test-runner bash
 - **Description:** Tests for recipe generator functionality (template loading, validation, version extraction)
 
 ### Fragment Validation Tests
-- **Location:** `tests/integration/test_fragments.py`
+- **Location:** `tests/integration/test_ingredients.py`
 - **Count:** ~15 tests
-- **Description:** Validates all 54 fragments with pykickstart, checks section structure
+- **Description:** Validates all 54 ingredients with pykickstart, checks section structure
 
 ### Recipe Composition Tests
 - **Location:** `tests/integration/test_recipe_composition.py`
@@ -57,14 +57,14 @@ podman run -it --rm -v .:/phyllomeos phyllo/test-runner bash
 tests/
 ├── test_recipe_generator.py          # Unit tests (36 tests)
 ├── integration/
-│   ├── test_fragments.py             # Fragment validation (~15 tests)
+│   ├── test_ingredients.py             # Fragment validation (~15 tests)
 │   ├── test_recipe_composition.py    # Recipe generation (~10 tests)
 │   ├── test_semantic_validation.py   # pykickstart semantic (~10 tests)
 │   ├── test_golden_masters.py        # Regression tests (~5 tests)
 │   └── conftest.py                   # Pytest fixtures
 ├── fixtures/
 │   ├── expected_recipes/             # 5 golden master files
-│   └── sample_fragments/             # Test fragment samples
+│   └── sample_ingredients/             # Test fragment samples
 └── container/
     ├── Containerfile                 # Test runner container definition
     ├── run-tests.sh                  # Test entrypoint script
@@ -110,7 +110,7 @@ podman run -it --rm -v .:/phyllomeos phyllo/test-runner bash
 
 # Run tests manually
 cd /phyllomeos
-pytest tests/integration/test_fragments.py -v
+pytest tests/integration/test_ingredients.py -v
 ```
 
 ### Permission denied errors

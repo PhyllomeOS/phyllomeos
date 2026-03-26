@@ -19,7 +19,7 @@ cd recipe-generator && make generate-recipes && make test
 
 ```bash
 # Create new kickstart snippet
-cat > fragments/shared/packages/new-package.ks << 'EOF'
+cat > ingredients/shared/packages/new-package.ks << 'EOF'
 %packages
 new-package
 %end
@@ -47,7 +47,7 @@ make test-container          # Containerized
 ### Validate Fragments
 
 ```bash
-for f in $(find fragments -name "*.ks"); do
+for f in $(find ingredients -name "*.ks"); do
     python3 -c "
 from pykickstart.parser import KickstartParser
 from pykickstart.version import makeVersion, DEVEL
@@ -60,7 +60,7 @@ done
 ## Architecture
 
 ```
-fragments/ (54 .ks) → recipe-generator/generate_recipe.py → recipes/ (16 .cfg) → ksflatten → dishes/ (28 .cfg)
+ingredients/ (54 .ks) → recipe-generator/generate_recipe.py → recipes/ (16 .cfg) → ksflatten → dishes/ (28 .cfg)
 ```
 
 See `DEVELOPMENT.md` Section 1 for detailed architecture overview.

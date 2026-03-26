@@ -5,7 +5,7 @@ on:
     paths:
       - 'recipe-generator/**/*.py'
       - 'recipe-generator/**/*.yaml'
-      - 'fragments/**/*.ks'
+      - 'ingredients/**/*.ks'
   pull_request:
     paths:
       - 'recipe-generator/**/*.py'

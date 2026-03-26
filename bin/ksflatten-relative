@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Flatten kickstart recipes with relative %include paths.
-Converts %include fragments/... to %include ../fragments/... relative to recipes/ location.
+Converts %include ingredients/... to %include ../ingredients/... relative to recipes/ location.
 """
 
 import os
@@ -27,10 +27,10 @@ def flatten_recipe(recipe_path, output_path):
             if len(parts) >= 2:
                 fragment_path = parts[1]
                 # Make it relative to recipes/
-                if fragment_path.startswith('fragments/'):
+                if fragment_path.startswith('ingredients/'):
                     # Keep as relative path - it's relative to the recipe file's location
-                    # recipes/ contains recipes, fragments/ is at project root level
-                    # So from recipes/, fragments/ is ../fragments/
+                    # recipes/ contains recipes, ingredients/ is at project root level
+                    # So from recipes/, ingredients/ is ../ingredients/
                     relative_path = '../' + fragment_path
                     lines.append('%include ' + relative_path)
                 else:
