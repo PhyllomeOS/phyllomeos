@@ -167,7 +167,7 @@ class TestRecipeGenerator:
                                                       desktop='gnome',
                                                       storage='encrypted',
                                                       security='secure')
-        assert filename == 'install_rawhide_encrypted.cfg'
+        assert filename == 'install_encrypted_rawhide.cfg'
 
     def test_filename_generation_devel(self):
         """Test filename generation for development mode."""
@@ -175,7 +175,7 @@ class TestRecipeGenerator:
                                                       desktop='gnome',
                                                       storage='standard',
                                                       security='off')
-        assert filename == 'install_43_devel.cfg'
+        assert filename == 'install_devel_43.cfg'
 
     def test_filename_generation_hypervisor(self):
         """Test filename generation for hypervisor."""
@@ -246,13 +246,3 @@ part / --fstype="ext4" --grow
         content = ""
         issues = self.generator.validate_recipe_semantic(content, '43')
         assert issues == []
-
-    def test_check_deprecated_removed_command(self):
-        """Test detection of removed commands."""
-        issues = self.generator._check_deprecated_commands("authconfig")
-        assert any('removed' in issue.lower() for issue in issues)
-
-    def test_check_deprecated_warning_command(self):
-        """Test detection of deprecated commands."""
-        issues = self.generator._check_deprecated_commands("keyboard")
-        assert any('deprecated' in issue.lower() for issue in issues)

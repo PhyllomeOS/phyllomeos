@@ -807,7 +807,7 @@ ERROR: Missing fragment: fragments/shared/unknown/missing.ks
 keyboard command is deprecated. Use keyboard --vckeymap instead.
 ```
 
-**Fix:** Update fragment to use modern syntax (see `DEPRECATED_COMMANDS` in `generate_recipe.py`)
+
 
 **4. pykickstart validation fails**
 

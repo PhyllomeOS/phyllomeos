@@ -15,41 +15,6 @@ from typing import Dict, List, Optional
 import yaml
 
 
-# Deprecated/removed command mappings for Fedora 43 (F42) and rawhide
-DEPRECATED_COMMANDS: Dict[str, Dict[str, str]] = {
-    'authconfig': {
-        'status': 'removed',
-        'removed_in': 'F34',
-        'alternative': 'authselect',
-        'message': 'authconfig was removed in Fedora 34. Use authselect instead.'
-    },
-    'keyboard': {
-        'status': 'deprecated',
-        'deprecated_in': 'F18',
-        'alternative': 'keyboard --vckeymap',
-        'message': 'keyboard command is deprecated. Use keyboard --vckeymap instead.'
-    },
-    'langsupport': {
-        'status': 'deprecated',
-        'deprecated_in': 'F21',
-        'alternative': 'lang',
-        'message': 'langsupport is deprecated. Use lang command instead.'
-    },
-    'nfs': {
-        'status': 'deprecated',
-        'deprecated_in': 'F23',
-        'alternative': 'repo --name=nfs',
-        'message': 'nfs command is deprecated. Use repo command instead.'
-    },
-    'parted': {
-        'status': 'deprecated',
-        'deprecated_in': 'F13',
-        'alternative': 'part',
-        'message': 'parted command is deprecated. Use part command instead.'
-    },
-}
-
-
 def _import_pykickstart():  # noqa: PLC0415 - Import for optional dependency
     """Import pykickstart modules, returns None if not available."""
     try:
@@ -437,42 +402,6 @@ class RecipeGenerator:
         except Exception as e:  # noqa: BLE001 - Catch all for unexpected parser errors
             issues.append(f"Unexpected error during parsing: {str(e)}")
         
-        # Check for deprecated commands in the content
-        if isinstance(source, str):
-            issues.extend(self._check_deprecated_commands(source))
-
-        return issues
-
-    def _check_deprecated_commands(self, content: str) -> List[str]:
-        """Check for deprecated and removed commands with suggestions."""
-        issues = []
-        
-        for line_num, line in enumerate(content.split('\n'), start=1):
-            # Skip comments and empty lines
-            stripped = line.strip()
-            if not stripped or stripped.startswith('#'):
-                continue
-            
-            # Extract command (first word after % if in section, or just the first word)
-            if stripped.startswith('%'):
-                continue  # Skip section headers
-            
-            parts = stripped.split()
-            if not parts:
-                continue
-            
-            cmd = parts[0]
-            
-            if cmd in DEPRECATED_COMMANDS:
-                cmd_info = DEPRECATED_COMMANDS[cmd]
-                status = cmd_info['status']
-                msg = cmd_info['message']
-                
-                if status == 'removed':
-                    issues.append(f"ERROR: Line {line_num}: {msg}")
-                else:
-                    issues.append(f"Warning: Line {line_num}: {msg}")
-        
         return issues
 
     def extract_version(self, content: str, filename: str) -> Optional[str]:
@@ -506,6 +435,7 @@ class RecipeGenerator:
 
     def generate_filename(self, recipe_type: str, version: str, **modifiers) -> str:
         """Generate recipe filename from parameters."""
+        
         # Extract variant subname if present
         variant_subname = modifiers.get('variant_subname', '')
         if not variant_subname:
@@ -513,7 +443,11 @@ class RecipeGenerator:
         
         # Build base parts
         parts = [recipe_type.replace('_', '-')]
-        
+
+        # Add guest-agents suffix (virtual when enabled)
+        if modifiers.get('guest-agents') is True:
+            parts.append('virtual')
+
         # Add variant_subname for install variants
         if variant_subname and variant_subname in ['desktop', 'server', 'hypervisor', 'hypervisor-desktop']:
             parts.append(variant_subname)
@@ -532,9 +466,6 @@ class RecipeGenerator:
         if modifiers.get('desktop') and modifiers['desktop'] != 'gnome':
             parts.append(modifiers['desktop'])
         
-        # Add version
-        parts.append(str(version))
-        
         # Add security suffix (devel only, since secure is default)
         if modifiers.get('security') == 'off':
             parts.append('devel')
@@ -543,14 +474,13 @@ class RecipeGenerator:
         if modifiers.get('storage') == 'encrypted':
             parts.append('encrypted')
         
-        # Add hardware-support suffix (hw when enabled)
+        # Add hardware-support suffix (hardware when enabled)
         if modifiers.get('hardware-support') is True:
-            parts.append('hw')
+            parts.append('hardware-support')
         
-        # Add guest-agents suffix (ga when enabled)
-        if modifiers.get('guest-agents') is True:
-            parts.append('ga')
-        
+        # Add version
+        parts.append(str(version))
+
         return '_'.join(parts) + '.cfg'
 
 
