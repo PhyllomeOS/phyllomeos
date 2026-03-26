@@ -473,12 +473,14 @@ class RecipeGenerator:
         if variant_subname and variant_subname in ['desktop', 'server', 'hypervisor', 'hypervisor-desktop']:
             parts.append(variant_subname)
         
-        # Add hypervisor-type (list or single value for filename)
+        # Add hypervisor-type suffix (list or single value)
         if modifiers.get('hypervisor_type'):
             ht = modifiers['hypervisor_type']
             if isinstance(ht, list):
-                parts.extend(ht)
-            else:
+                for h in ht:
+                    if h:
+                        parts.append(h)
+            elif ht:
                 parts.append(ht)
         
         # Add desktop (non-GNOME only, since GNOME is default)
@@ -495,6 +497,14 @@ class RecipeGenerator:
         # Add storage suffix (encrypted only, since standard is default)
         if modifiers.get('storage') == 'encrypted':
             parts.append('encrypted')
+        
+        # Add hardware-support suffix (hw when enabled)
+        if modifiers.get('hardware-support') is True:
+            parts.append('hw')
+        
+        # Add guest-agents suffix (ga when enabled)
+        if modifiers.get('guest-agents') is True:
+            parts.append('ga')
         
         return '_'.join(parts) + '.cfg'
 

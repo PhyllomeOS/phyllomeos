@@ -5,7 +5,7 @@
 # Supported syntax:
 # - Single values: version: "43"
 # - List values: version: ["43", "rawhide"] (expands to multiple variants)
-# - List modifiers: hypervisor-type: ["amdcpu", "intelcpu"] (expands to separate variants)
+# - List modifiers: hypervisor_type: ["amdcpu", "intelcpu"] (expands to separate variants)
 
 recipes:
   # Install variants - desktop
@@ -25,8 +25,8 @@ recipes:
   - name: install
     variants:
       - name: server
-        version: ["43", "rawhide"]
-        storage: ["standard", "encrypted"]
+        version: 43
+        storage: standard
         bootloader: grub
         hardware-support: [true, false]
         guest-agents: [true, false]
@@ -43,21 +43,21 @@ recipes:
         hardware-support: [true, false]
         guest-agents: [true, false]
         hypervisor: base
-        hypervisor-type: ["amdcpu", "intelcpu"]
+        hypervisor_type: ["amdcpu", "intelcpu"]
         initial-setup: server
         security: [secure, 'off']
 
   # Install variants - desktop-hypervisor
   - name: install
     variants:
-      - name: desktop-hypervisor
+      - name: hypervisor-desktop
         version: ["43", "rawhide"]
         desktop: gnome
         storage: ["standard", "encrypted"]
         bootloader: grub
         hardware-support: [true, false]
         hypervisor: desktop
-        hypervisor-type: ["amdcpu", "intelcpu"]
+        hypervisor_type: ["amdcpu", "intelcpu"]
         initial-setup: server
         security: [secure, 'off']
 

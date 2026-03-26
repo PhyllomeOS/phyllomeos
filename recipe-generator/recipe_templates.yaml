@@ -47,7 +47,7 @@ templates:
         desktop: fragments/initial-setup/desktop/config.ks
         gnome: fragments/initial-setup/gnome/config.ks
         generic-wayland: fragments/initial-setup/generic-wayland/config.ks
-      hypervisor-type:
+      hypervisor_type:
         amdcpu: fragments/hypervisor/amdcpu.ks
         intelcpu: fragments/hypervisor/intelcpu.ks
         intelgpu: fragments/hypervisor/intelgpu.ks
