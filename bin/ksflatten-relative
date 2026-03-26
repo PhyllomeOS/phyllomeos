@@ -1,0 +1,92 @@
+#!/usr/bin/env python3
+"""
+Flatten kickstart recipes with relative %include paths.
+Converts %include fragments/... to %include ../fragments/... relative to recipes/ location.
+"""
+
+import os
+import sys
+import subprocess
+import tempfile
+
+
+def flatten_recipe(recipe_path, output_path):
+    """Flatten a recipe file, converting relative paths."""
+    project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    
+    # Read the recipe
+    with open(recipe_path, 'r') as f:
+        content = f.read()
+    
+    # Convert %include paths to relative (from recipes/ perspective)
+    lines = []
+    for line in content.split('\n'):
+        if line.startswith('%include '):
+            # Get the fragment path from %include path
+            parts = line.split(None, 1)
+            if len(parts) >= 2:
+                fragment_path = parts[1]
+                # Make it relative to recipes/
+                if fragment_path.startswith('fragments/'):
+                    # Keep as relative path - it's relative to the recipe file's location
+                    # recipes/ contains recipes, fragments/ is at project root level
+                    # So from recipes/, fragments/ is ../fragments/
+                    relative_path = '../' + fragment_path
+                    lines.append('%include ' + relative_path)
+                else:
+                    lines.append(line)
+            else:
+                lines.append(line)
+        else:
+            lines.append(line)
+    
+    # Write to temp file in recipes directory
+    temp_fd, temp_path = tempfile.mkstemp(suffix='.ks', dir=os.path.dirname(recipe_path))
+    
+    try:
+        os.write(temp_fd, '\n'.join(lines).encode('utf-8'))
+        os.close(temp_fd)
+        
+        # Call ksflatten
+        cmd = ['ksflatten', '-c', temp_path, '-o', output_path]
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        
+        if result.returncode != 0:
+            print(f"Error flattening {os.path.basename(recipe_path)}:", file=sys.stderr)
+            print(result.stderr, file=sys.stderr)
+            return False
+        return True
+    finally:
+        os.unlink(temp_path)
+
+
+def main():
+    if len(sys.argv) < 3:
+        print("Usage: ksflatten-relative RECIPE_DIR DISH_DIR", file=sys.stderr)
+        print("Example: ksflatten-relative recipes dishes", file=sys.stderr)
+        sys.exit(1)
+    
+    recipe_dir = sys.argv[1]
+    dish_dir = sys.argv[2]
+    
+    if not os.path.isdir(recipe_dir):
+        print(f"Error: {recipe_dir} is not a directory", file=sys.stderr)
+        sys.exit(1)
+    
+    os.makedirs(dish_dir, exist_ok=True)
+    
+    recipes = [f for f in os.listdir(recipe_dir) if f.endswith('.cfg')]
+    
+    for recipe_name in sorted(recipes):
+        recipe_path = os.path.join(recipe_dir, recipe_name)
+        dish_path = os.path.join(dish_dir, recipe_name)
+        
+        print(f"  Processing: {recipe_name}")
+        if not flatten_recipe(recipe_path, dish_path):
+            sys.exit(1)
+    
+    print("✓ All recipes flattened to dishes")
+
+
+if __name__ == '__main__':
+    main()

@@ -43,7 +43,7 @@ def test_validate_all_generated_recipes():
     for recipe_file in RECIPE_DIR.glob('*.cfg'):
         content = recipe_file.read_text()
         assert len(content) > 0, f"Recipe {recipe_file.name} is empty"
-        assert '%ksappend' in content, f"Recipe {recipe_file.name} missing %ksappend"
+        assert '%include' in content, f"Recipe {recipe_file.name} missing %include"
 
 
 def test_make_targets():

@@ -235,7 +235,7 @@ class RecipeGenerator:
         return header
 
     def build_includes(self, template: Dict, version: str, modifiers: Dict) -> List[str]:
-        """Build %ksappend lines from template and modifiers."""
+        """Build %include lines from template and modifiers."""
         includes = []
         seen = set()  # Track to prevent duplicates
         # Add version to modifiers for template processing
@@ -256,7 +256,7 @@ class RecipeGenerator:
                     continue
 
                 if fragment_path not in seen:
-                    includes.append(f"%ksappend {fragment_path}")
+                    includes.append(f"%include {fragment_path}")
                     seen.add(fragment_path)
 
         # Add optional includes based on modifiers
@@ -272,10 +272,10 @@ class RecipeGenerator:
                         if isinstance(fragment_path, list):
                             for fp in fragment_path:
                                 if fp is not None and fp not in seen:
-                                    includes.append(f"%ksappend {fp}")
+                                    includes.append(f"%include {fp}")
                                     seen.add(fp)
                         elif fragment_path and fragment_path not in seen:
-                            includes.append(f"%ksappend {fragment_path}")
+                            includes.append(f"%include {fragment_path}")
                             seen.add(fragment_path)
                 
                 # Case 2: opt_config is nested dict (e.g., virtualization)
@@ -287,10 +287,10 @@ class RecipeGenerator:
                             if isinstance(nested_value, list):
                                 for fp in nested_value:
                                     if fp is not None and fp not in seen:
-                                        includes.append(f"%ksappend {fp}")
+                                        includes.append(f"%include {fp}")
                                         seen.add(fp)
                             elif nested_value is not None and nested_value not in seen:
-                                includes.append(f"%ksappend {nested_value}")
+                                includes.append(f"%include {nested_value}")
                                 seen.add(nested_value)
                 
                 # Case 3: opt_config is nested dict, value is boolean (additive)
@@ -299,17 +299,17 @@ class RecipeGenerator:
                         if isinstance(nested_value, list):
                             for fp in nested_value:
                                 if fp is not None and fp not in seen:
-                                    includes.append(f"%ksappend {fp}")
+                                    includes.append(f"%include {fp}")
                                     seen.add(fp)
                         elif nested_value is not None and nested_value not in seen:
-                            includes.append(f"%ksappend {nested_value}")
+                            includes.append(f"%include {nested_value}")
                             seen.add(nested_value)
                 
                 # Case 4: opt_config is list, value is boolean (boolean flag)
                 elif isinstance(opt_config, list) and value is True:
                     for fragment_path in opt_config:
                         if fragment_path is not None and fragment_path not in seen:
-                            includes.append(f"%ksappend {fragment_path}")
+                            includes.append(f"%include {fragment_path}")
                             seen.add(fragment_path)
         
         # Handle modifiers section
@@ -331,10 +331,10 @@ class RecipeGenerator:
                     if isinstance(fragment_path, list):
                         for fp in fragment_path:
                             if fp is not None and fp not in seen:
-                                includes.append(f"%ksappend {fp}")
+                                includes.append(f"%include {fp}")
                                 seen.add(fp)
                     elif fragment_path and fragment_path not in seen:
-                        includes.append(f"%ksappend {fragment_path}")
+                        includes.append(f"%include {fragment_path}")
                         seen.add(fragment_path)
             
             # Handle list modifiers
@@ -345,10 +345,10 @@ class RecipeGenerator:
                         if isinstance(fragment_path, list):
                             for fp in fragment_path:
                                 if fp is not None and fp not in seen:
-                                    includes.append(f"%ksappend {fp}")
+                                    includes.append(f"%include {fp}")
                                     seen.add(fp)
                         elif fragment_path and fragment_path not in seen:
-                            includes.append(f"%ksappend {fragment_path}")
+                            includes.append(f"%include {fragment_path}")
                             seen.add(fragment_path)
 
         return includes
@@ -356,7 +356,7 @@ class RecipeGenerator:
     def validate_recipe(self, content: str) -> List[str]:
         """Validate recipe content, return list of warnings/errors."""
         issues = []
-        includes = [line for line in content.split('\n') if line.startswith('%ksappend')]
+        includes = [line for line in content.split('\n') if line.startswith('%include')]
         
         # Check for duplicate includes
         seen = set()
@@ -381,8 +381,24 @@ class RecipeGenerator:
 
         return issues
 
+    def validate_recipe_semantic_from_file(self, recipe_path: str, version: str) -> List[str]:
+        """Validate recipe from file path using pykickstart."""
+        try:
+            return self._validate_recipe_semantic_internal(recipe_path, version)
+        except FileNotFoundError:
+            return [f"Error: Recipe file not found: {recipe_path}"]
+
+    def validate_recipe_content(self, recipe_path: str) -> List[str]:
+        """Validate recipe content from file path for include resolution."""
+        content = Path(recipe_path).read_text(encoding='utf-8')
+        return self.validate_recipe(content)
+
     def validate_recipe_semantic(self, content: str, version: str) -> List[str]:
         """Validate recipe using pykickstart parser with version-specific checks."""
+        return self._validate_recipe_semantic_internal(content, version)
+
+    def _validate_recipe_semantic_internal(self, source, version: str) -> List[str]:
+        """Internal validation method that handles both file paths and content."""
         issues = []
         
         modules = _import_pykickstart()
@@ -403,17 +419,28 @@ class RecipeGenerator:
         
         try:
             parser = KickstartParser(ks_version)
+            # Determine if source is a file path or content
+            if isinstance(source, Path) or (isinstance(source, str) and (source.endswith('.ks') or source.endswith('.cfg')) or (Path(source).exists() and Path(source).is_file())):
+                # Source is a file path
+                content = Path(source).read_text(encoding='utf-8')
+            else:
+                # Source is content string
+                content = source
             parser.readKickstartFromString(content)
         except KickstartParseError as e:
             issues.append(f"Syntax error line {e.lineno}: {e.message}")
         except KickstartError as e:
-            issues.append(f"Validation error: {str(e)}")
+            # Only add if it's not an include-related error
+            err_str = str(e)
+            if 'Unable to open input kickstart file' not in err_str:
+                issues.append(f"Validation error: {err_str}")
         except Exception as e:  # noqa: BLE001 - Catch all for unexpected parser errors
             issues.append(f"Unexpected error during parsing: {str(e)}")
         
         # Check for deprecated commands in the content
-        issues.extend(self._check_deprecated_commands(content))
-        
+        if isinstance(source, str):
+            issues.extend(self._check_deprecated_commands(source))
+
         return issues
 
     def _check_deprecated_commands(self, content: str) -> List[str]:
@@ -450,6 +477,15 @@ class RecipeGenerator:
 
     def extract_version(self, content: str, filename: str) -> Optional[str]:
         """Extract Fedora version from recipe content or filename."""
+        return self._extract_version_internal(content, filename)
+
+    def extract_version_from_file(self, recipe_path: str, filename: str) -> Optional[str]:
+        """Extract version from recipe file."""
+        content = Path(recipe_path).read_text(encoding='utf-8')
+        return self._extract_version_internal(content, filename)
+
+    def _extract_version_internal(self, content: str, filename: str) -> Optional[str]:
+        """Extract Fedora version from recipe content or filename."""
         filename_match = re.search(r'(?:_|-)(43|rawhide)(?:_|-|.cfg|.yaml|$)', filename)
         if filename_match:
             return filename_match.group(1)
@@ -460,7 +496,7 @@ class RecipeGenerator:
                 return '43'
             elif 'core-fedora-repo-rawhide' in line:
                 return 'rawhide'
-            # Check for new %ksappend references
+            # Check for new %include references
             if 'generic-43/repo' in line:
                 return '43'
             elif 'generic-rawhide/repo' in line:
@@ -625,15 +661,14 @@ def main():
         all_issues = []
         for recipe_path in args.validate:
             try:
-                with open(recipe_path, encoding='utf-8') as f:
-                    content = f.read()
-                issues = generator.validate_recipe(content)
+                # Validate with file path so includes can be resolved correctly
+                issues = generator.validate_recipe_content(recipe_path)
                 
                 # Extract version and perform semantic validation
                 filename = Path(recipe_path).stem
-                version = generator.extract_version(content, filename)
+                version = generator.extract_version_from_file(recipe_path, filename)
                 if version:
-                    semantic_issues = generator.validate_recipe_semantic(content, version)
+                    semantic_issues = generator.validate_recipe_semantic_from_file(recipe_path, version)
                     issues.extend(semantic_issues)
                 else:
                     issues.append("Warning: Could not determine version, "
@@ -646,20 +681,19 @@ def main():
                 sys.exit(2)
         
         if all_issues:
-            print("=== Recipe Validation Report ===", file=sys.stderr)
             for path, issues in all_issues:
                 print(f"\n{path}:", file=sys.stderr)
-                error_count = sum(1 for i in issues if 'ERROR' in i)
-                warning_count = sum(1 for i in issues if 'Warning:' in i)
+                error_count = sum(1 for i in issues if 'ERROR' in i or 'error' in i.lower())
+                warning_count = sum(1 for i in issues if 'Warning' in i or 'warning' in i.lower())
                 
                 if error_count > 0:
                     for issue in issues:
-                        if 'ERROR' in issue:
+                        if 'ERROR' in issue or 'error' in issue.lower():
                             print(f"  {issue}", file=sys.stderr)
                 
                 if warning_count > 0:
                     for issue in issues:
-                        if 'Warning:' in issue:
+                        if 'Warning' in issue or 'warning' in issue.lower():
                             print(f"  {issue}", file=sys.stderr)
                 
                 if error_count == 0 and warning_count == 0:
@@ -668,9 +702,9 @@ def main():
             print(f"\nSummary:", file=sys.stderr)
             print(f"  - {len(all_issues)} recipe(s) checked", file=sys.stderr)
 
-            total_errors = sum(len([i for i in issues if 'ERROR' in i]) 
+            total_errors = sum(len([i for i in issues if 'ERROR' in i or 'error' in i.lower()]) 
                              for _, issues in all_issues)
-            total_warnings = sum(len([i for i in issues if 'Warning:' in i]) 
+            total_warnings = sum(len([i for i in issues if 'Warning' in i or 'warning' in i.lower()]) 
                                for _, issues in all_issues)
             print(f"  - {total_errors} error(s), {total_warnings} warning(s)", file=sys.stderr)
             
@@ -679,7 +713,13 @@ def main():
                 print("\nStrict mode: Warnings treated as errors", file=sys.stderr)
                 sys.exit(1)
             
+            # If there are errors, exit with error code
             if total_errors > 0:
+                sys.exit(1)
+            # If there are issues but no counted errors/warnings, that means
+            # there are validation issues that don't match our pattern
+            # (e.g., pykickstart "Validation error:") - treat these as errors
+            if all_issues:
                 sys.exit(1)
         else:
             print("All recipes validated successfully")

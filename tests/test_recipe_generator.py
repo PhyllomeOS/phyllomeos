@@ -60,10 +60,10 @@ class TestRecipeGenerator:
                                                   storage='standard',
                                                   security='secure')
         assert '# An install recipe for desktop, server, or hypervisor' in content
-        assert '%ksappend fragments/core/base.ks' in content
-        assert '%ksappend fragments/desktop/gnome/packages.ks' in content
-        assert '%ksappend fragments/repo/fedora-43-mirrors.ks' in content
-        assert '%ksappend fragments/core/security/enabled.ks' in content
+        assert '%include fragments/core/base.ks' in content
+        assert '%include fragments/desktop/gnome/packages.ks' in content
+        assert '%include fragments/repo/fedora-43-mirrors.ks' in content
+        assert '%include fragments/core/security/enabled.ks' in content
 
     def test_generate_virtual_desktop_encrypted(self):
         """Test generating encrypted desktop recipe."""
@@ -71,7 +71,7 @@ class TestRecipeGenerator:
                                                   desktop='gnome',
                                                   storage='encrypted',
                                                   security='secure')
-        assert '%ksappend fragments/storage/encrypted.ks' in content
+        assert '%include fragments/storage/encrypted.ks' in content
 
     def test_generate_virtual_desktop_labwc(self):
         """Test generating LabWC desktop recipe."""
@@ -79,8 +79,8 @@ class TestRecipeGenerator:
                                                   desktop='labwc',
                                                   storage='standard',
                                                   security='secure')
-        assert '%ksappend fragments/desktop/labwc/config.ks' in content
-        assert '%ksappend fragments/desktop/gnome/packages.ks' not in content
+        assert '%include fragments/desktop/labwc/config.ks' in content
+        assert '%include fragments/desktop/gnome/packages.ks' not in content
 
     def test_generate_virtual_desktop_devel(self):
         """Test generating development mode desktop recipe."""
@@ -88,7 +88,7 @@ class TestRecipeGenerator:
                                                   desktop='gnome',
                                                   storage='standard',
                                                   security='off')
-        assert '%ksappend fragments/core/security/disabled.ks' in content
+        assert '%include fragments/core/security/disabled.ks' in content
 
     def test_generate_virtual_server(self):
         """Test generating server recipe."""
@@ -96,7 +96,7 @@ class TestRecipeGenerator:
                                                   initial_setup='server',
                                                   security='secure')
         assert '# An install recipe for desktop, server, or hypervisor' in content
-        assert '%ksappend fragments/initial-setup/server/config.ks' in content
+        assert '%include fragments/initial-setup/server/config.ks' in content
 
     def test_generate_desktop_hypervisor_amd(self):
         """Test generating AMD CPU hypervisor recipe."""
@@ -105,8 +105,8 @@ class TestRecipeGenerator:
                                                   hypervisor='base',
                                                   hypervisor_type='amdcpu',
                                                   security='secure')
-        assert '%ksappend fragments/hypervisor/amdcpu.ks' in content
-        assert '%ksappend fragments/hypervisor/intelcpu.ks' not in content
+        assert '%include fragments/hypervisor/amdcpu.ks' in content
+        assert '%include fragments/hypervisor/intelcpu.ks' not in content
 
     def test_generate_desktop_hypervisor_intel_gpu(self):
         """Test generating Intel CPU+GPU hypervisor recipe."""
@@ -115,7 +115,7 @@ class TestRecipeGenerator:
                                                   hypervisor='base',
                                                   hypervisor_type='intelcpu',
                                                   security='secure')
-        assert '%ksappend fragments/hypervisor/intelcpu.ks' in content
+        assert '%include fragments/hypervisor/intelcpu.ks' in content
 
     def test_generate_live_desktop(self):
         """Test generating live desktop recipe."""
@@ -123,15 +123,15 @@ class TestRecipeGenerator:
                                                   desktop='gnome',
                                                   security='secure')
         assert '# A live recipe for live-desktop or live-server' in content
-        assert '%ksappend fragments/live/core/base.ks' in content
-        assert '%ksappend fragments/live/core/storage.ks' in content
+        assert '%include fragments/live/core/base.ks' in content
+        assert '%include fragments/live/core/storage.ks' in content
 
     def test_generate_live_server(self):
         """Test generating live server recipe."""
         content = self.generator.generate_recipe('live', 'rawhide',
                                                   security='secure')
         assert '# A live recipe for live-desktop or live-server' in content
-        assert '%ksappend fragments/live/core/base.ks' in content
+        assert '%include fragments/live/core/base.ks' in content
 
     def test_no_duplicate_includes(self):
         """Test that duplicate includes are prevented."""
@@ -140,9 +140,9 @@ class TestRecipeGenerator:
                                                   hypervisor='base',
                                                   hypervisor_type='intelcpu',
                                                   security='secure')
-        includes = [line for line in content.split('\n') if line.startswith('%ksappend')]
+        includes = [line for line in content.split('\n') if line.startswith('%include')]
         paths = [line.split()[1] for line in includes]
-        assert len(paths) == len(set(paths)), "Found duplicate %ksappend entries"
+        assert len(paths) == len(set(paths)), "Found duplicate %include entries"
 
     def test_missing_ingredient_detection(self):
         """Test that missing fragments are detected."""
