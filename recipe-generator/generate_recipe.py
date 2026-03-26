@@ -244,7 +244,7 @@ class RecipeGenerator:
         modifiers['version'] = version
 
         # Keys that can be overridden by modifiers
-        override_keys = {'security', 'bootloader'}
+        override_keys = {'security', 'bootloader', 'version'}
 
         # Add required includes
         for item in template.get('required', []):
@@ -585,8 +585,9 @@ def main():
     
     # Recipe parameters
     parser.add_argument('--version', '-v',
-                        choices=['43', 'rawhide'], default='rawhide',
-                        help='Fedora version (default: rawhide)')
+                        choices=['43', 'rawhide'], default='43',
+                        help='Fedora version (default: 43)')
+
     parser.add_argument('--desktop',
                         choices=['gnome', 'labwc'],
                         default='gnome',

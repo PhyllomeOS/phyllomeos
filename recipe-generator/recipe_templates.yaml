@@ -10,6 +10,7 @@ templates:
     base: core
     required:
       - core: fragments/core/base.ks
+      - version: fragments/repo/fedora-43-mirrors.ks
       - storage: fragments/storage/standard.ks
       - bootloader: fragments/bootloader/grub.ks
       - locale: fragments/core/locale.ks
@@ -70,6 +71,7 @@ templates:
     base: live-core
     required:
       - live-core: fragments/live/core/base.ks
+      - version: fragments/repo/fedora-43-mirrors.ks
       - storage: fragments/live/core/storage.ks
       - bootloader: fragments/live/core/bootloader/grub.ks
       - locale: fragments/core/locale.ks
