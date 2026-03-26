@@ -269,6 +269,15 @@ class RecipeGenerator:
 
         return includes
 
+    def _get_modifier(self, modifiers: dict, key: str, default=None):
+        """Get modifier value, checking both hyphenated and underscored versions."""
+        if key in modifiers:
+            return modifiers[key]
+        alt_key = key.replace('_', '-')
+        if alt_key in modifiers:
+            return modifiers[alt_key]
+        return default
+
     def generate_filename(self, recipe_type: str, version: str, **modifiers) -> str:
         """Generate recipe filename from parameters."""
 
@@ -280,9 +289,12 @@ class RecipeGenerator:
         # Build base parts
         parts = [recipe_type.replace('_', '-')]
 
-        # Add guest_agents suffix
-        if modifiers.get('guest_agents') is True:
+        # Add guest_agents suffix (for both True and False)
+        guest_agents = self._get_modifier(modifiers, 'guest_agents')
+        if guest_agents is True:
             parts.append('virtual')
+        elif guest_agents is False:
+            parts.append('bare-metal')
 
         # Add variant_subname for install variants
         if variant_subname and variant_subname in ['desktop', 'server', 'hypervisor', 'hypervisor-desktop']:
@@ -299,20 +311,34 @@ class RecipeGenerator:
                 parts.append(ht)
 
         # Add desktop (non-GNOME only, since GNOME is default)
-        if modifiers.get('desktop') and modifiers['desktop'] != 'gnome':
-            parts.append(modifiers['desktop'])
+        desktop = self._get_modifier(modifiers, 'desktop')
+        if desktop and desktop != 'gnome':
+            parts.append(desktop)
 
         # Add security suffix (devel only, since secure is default)
-        if modifiers.get('security') == 'off':
+        security = self._get_modifier(modifiers, 'security')
+        if security == 'off':
             parts.append('devel')
 
         # Add storage suffix (encrypted only, since standard is default)
-        if modifiers.get('storage') == 'encrypted':
+        storage = self._get_modifier(modifiers, 'storage')
+        if storage == 'encrypted':
             parts.append('encrypted')
 
-        # Add hardware_support suffix
-        if modifiers.get('hardware_support') is True:
-            parts.append('hardware-support')
+        # Add hardware_support suffix (for True only)
+        hardware_support = self._get_modifier(modifiers, 'hardware_support')
+        if hardware_support is True:
+            parts.append('hw')
+
+        # Add initial_setup suffix (non-server values)
+        initial_setup = self._get_modifier(modifiers, 'initial_setup')
+        if initial_setup and initial_setup != 'server':
+            parts.append(f'{initial_setup}-setup')
+
+        # Add bootloader suffix (systemd-boot only)
+        bootloader = self._get_modifier(modifiers, 'bootloader')
+        if bootloader == 'systemd-boot':
+            parts.append('systemd-boot')
 
         # Add version
         parts.append(str(version))

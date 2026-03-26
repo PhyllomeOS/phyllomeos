@@ -11,8 +11,8 @@
 # Example: version: ["43", "rawhide"] + storage: ["standard", "encrypted"]
 # creates 4 variants: (43,standard), (43,encrypted), (rawhide,standard), (rawhide,encrypted)
 #
-# NOTE: Boolean modifiers (guest-agents, hardware-support) only affect filename when True.
-# Multiple variants with False values will produce the same filename (last one wins).
+# NOTE: Boolean modifiers now generate unique filenames regardless of value (True/False).
+# Each variant combination produces a distinct filename with appropriate suffixes.
 
 recipes:
   # Install variants - desktop
