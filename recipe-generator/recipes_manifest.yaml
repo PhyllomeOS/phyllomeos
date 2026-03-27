@@ -11,15 +11,15 @@
 # Example: version: ["43", "rawhide"] + storage: ["standard", "encrypted"]
 # creates 4 variants: (43,standard), (43,encrypted), (rawhide,standard), (rawhide,encrypted)
 #
-# NOTE: Boolean modifiers now generate unique filenames regardless of value (True/False).
-# Each variant combination produces a distinct filename with appropriate suffixes.
+# NOTE: The 'name' field is for organization only and doesn't affect generated filenames.
+# The recipe type is always 'install' or 'live' from recipe_templates.yaml
 
 recipes:
-  # Install variants - desktop
-  - name: install
+  # Install desktop variants
+  - name: desktop
+    recipe_type: install
     variants:
-      - name: desktop
-        version: ["43", "rawhide"]
+      - version: ["43", "rawhide"]
         desktop: gnome
         storage: ["standard", "encrypted"]
         bootloader: grub
@@ -28,11 +28,11 @@ recipes:
         initial-setup: server
         security: secure
 
-  # Install variants - server
-  - name: install
+  # Install server variants
+  - name: server
+    recipe_type: install
     variants:
-      - name: server
-        version: ["43", "rawhide"]
+      - version: ["43", "rawhide"]
         storage: standard
         bootloader: grub
         hardware-support: false
@@ -40,11 +40,11 @@ recipes:
         initial-setup: server
         security: secure
 
-  # Install variants - server hypervisor
-  - name: install
+  # Install hypervisor variants
+  - name: hypervisor
+    recipe_type: install
     variants:
-      - name: hypervisor
-        version: 43
+      - version: 43
         storage: standard
         bootloader: grub
         hardware-support: true
@@ -54,11 +54,11 @@ recipes:
         initial-setup: server
         security: secure
 
-  # Install variants - desktop-hypervisor
-  - name: install
+  # Install desktop-hypervisor variants
+  - name: desktop-hypervisor
+    recipe_type: install
     variants:
-      - name: hypervisor-desktop
-        version: 43
+      - version: 43
         desktop: gnome
         storage: standard
         bootloader: grub
@@ -69,18 +69,18 @@ recipes:
         initial-setup: server
         security: secure
 
-  # Live variants - desktop
-  - name: live
+  # Live desktop variants
+  - name: desktop
+    recipe_type: live
     variants:
-      - name: desktop
-        version: 43
+      - version: 43
         hardware-support: true
         guest-agents: false
 
-  # Live variants - server
-  - name: live
+  # Live server variants
+  - name: server
+    recipe_type: live
     variants:
-      - name: server
-        version: 43
+      - version: 43
         hardware-support: true
         guest-agents: false

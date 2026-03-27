@@ -494,12 +494,6 @@ class RecipeGenerator:
         Returns:
             Filename string ending in .cfg
         """
-        # Extract variant subname if present
-        # Used to distinguish between desktop/server/hypervisor variants
-        variant_subname = modifiers.get('variant_subname', '')
-        if not variant_subname:
-            variant_subname = modifiers.get('variant_type', '')
-
         # Build base parts - start with recipe type
         parts = [recipe_type.replace('_', '-')]
 
@@ -511,10 +505,13 @@ class RecipeGenerator:
         elif guest_agents is False:
             parts.append('bare-metal')
 
-        # Add variant_subname for install variants
-        # Only include recognized variant types
-        if variant_subname and variant_subname in ['desktop', 'server', 'hypervisor', 'hypervisor-desktop']:
-            parts.append(variant_subname)
+        # Add hypervisor indicator if present
+        if modifiers.get('hypervisor'):
+            if modifiers.get('hypervisor') in ['base', 'desktop']:
+                if modifiers.get('desktop'):
+                    parts.append('hypervisor-desktop')
+                else:
+                    parts.append('hypervisor')
 
         # Add hypervisor_type suffix
         # For hypervisors, include the type (kvm, xen, etc.)
@@ -529,10 +526,9 @@ class RecipeGenerator:
                 # Single hypervisor type
                 parts.append(ht)
 
-        # Add desktop (non-GNOME only, since GNOME is default)
-        # GNOME is the default desktop, so we only note alternatives
+        # Add desktop
         desktop = self._get_modifier(modifiers, 'desktop')
-        if desktop and desktop != 'gnome':
+        if desktop:
             parts.append(desktop)
 
         # Add security suffix (devel only, since secure is default)
@@ -551,12 +547,15 @@ class RecipeGenerator:
         # Hardware support detection is optional
         hardware_support = self._get_modifier(modifiers, 'hardware_support')
         if hardware_support is True:
-            parts.append('hw')
+            parts.append('hardware-support')
 
         # Add initial_setup suffix (non-server values)
         # Server is default, other setup types get noted
         initial_setup = self._get_modifier(modifiers, 'initial_setup')
-        if initial_setup and initial_setup != 'server':
+        if initial_setup == 'server':
+            # Server is the default for non-desktop, non-hypervisor
+            parts.append('server')
+        elif initial_setup and initial_setup != 'server':
             parts.append(f'{initial_setup}-setup')
 
         # Add bootloader suffix (systemd-boot only)

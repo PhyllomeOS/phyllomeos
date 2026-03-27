@@ -7,10 +7,10 @@ This is a quick-reference guide for developers. For comprehensive coverage, see 
 ```bash
 # Prerequisites
 sudo dnf install qemu libvirt virt-install pykickstart
-pip install PyYAML pytest
+pip install PyYAML
 
 # Verify setup
-cd recipe-generator && make generate-recipes && make test
+cd recipe-generator && make generate-recipes 
 ```
 
 ## Core Workflows
@@ -35,13 +35,6 @@ new-package
 cd recipe-generator && make generate-recipes && make validate-recipes
 ```
 
-### Run Tests
-
-```bash
-cd recipe-generator
-make test                    # All tests
-make test-integration        # Integration only
-make test-container          # Containerized
 ```
 
 ### Validate Fragments

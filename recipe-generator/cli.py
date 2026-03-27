@@ -396,7 +396,7 @@ def generate_from_manifest(args: argparse.Namespace, generator: RecipeGenerator)
 
     # Generate all recipes from the manifest
     for recipe_config in manifest.get('recipes', []):
-        recipe_type = recipe_config['name']
+        recipe_type = recipe_config.get('recipe_type', recipe_config['name'])
         if recipe_type not in generator.templates:
             print(f"Error: Unknown recipe type in manifest: {recipe_type}", file=sys.stderr)
             sys.exit(1)
@@ -411,12 +411,8 @@ def generate_from_manifest(args: argparse.Namespace, generator: RecipeGenerator)
             # Extract version and other modifiers from variant
             version = variant['version']
             modifiers = {k: v for k, v in variant.items() if k not in ['name', 'version']}
-            variant_subname = variant.get('name', '')
-
-            # Add variant name as modifier if present
-            if variant_subname:
-                modifiers['variant_type'] = variant_subname
-                modifiers['variant_subname'] = variant_subname
+            modifiers = {k: v for k, v in variant.items() if k not in ['name', 'version']}
+            # name kept for manifest organization only, not passed to generator
 
             # Generate the recipe content
             content = generator.generate(recipe_type, version, **modifiers)
@@ -472,7 +468,7 @@ def generate_single(args: argparse.Namespace, generator: RecipeGenerator) -> Non
     # Build modifiers dictionary from command-line arguments
     # Only include non-default values to keep filenames clean
     modifiers = {
-        'variant_type': 'desktop',
+
         'desktop': args.desktop if args.desktop else None,
         'storage': args.storage if args.storage != 'standard' else None,
         'security': args.security if args.security != 'secure' else None,

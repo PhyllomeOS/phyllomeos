@@ -9,24 +9,17 @@ templates:
     base: core
     required:
       - core: ingredients/core/base.ks
-      - version: ingredients/repo/fedora-43-mirrors.ks
-      - storage: ingredients/storage/standard.ks
-      - bootloader: ingredients/bootloader/grub.ks
-      - locale: ingredients/core/locale.ks
-      - services: ingredients/core/services.ks
-      - network: ingredients/core/network.ks
-      - packages: ingredients/packages/core-group.ks
-      - fedora-remix: ingredients/packages/fedora-remix.ks
-      - hand-picked: ingredients/packages/hand-picked.ks
-      - security: ingredients/core/security/enabled.ks
-      - initial-setup: ingredients/initial-setup/server/config.ks
-    optional:
-      hardware-support: ingredients/packages/hardware-support.ks
-      guest-agents: ingredients/guest-agents/base.ks
-      variant_type:
-        desktop:
-        server:
-        hypervisor:
+      - { path: ingredients/repo/fedora-43-mirrors.ks, replaceable: true }
+      - { path: ingredients/storage/standard.ks, replaceable: true }
+      - { path: ingredients/bootloader/grub.ks, replaceable: true }
+      - ingredients/core/locale.ks
+      - ingredients/core/services.ks
+      - ingredients/core/network.ks
+      - ingredients/packages/core-group.ks
+      - ingredients/packages/fedora-remix.ks
+      - ingredients/packages/hand-picked.ks
+      - { path: ingredients/core/security/enabled.ks, replaceable: true }
+      - { path: ingredients/initial-setup/server/config.ks, replaceable: true }
     modifiers:
       version:
         "43": ingredients/repo/fedora-43-mirrors.ks
@@ -59,11 +52,14 @@ templates:
           - ingredients/hypervisor/base/services.ks
           - ingredients/hypervisor/base/post-scripts.ks
         desktop:
-           - ingredients/packages/virtual-machine-manager/packages.ks
-           - ingredients/packages/virtual-machine-manager/post-scripts.ks
+          - ingredients/packages/virtual-machine-manager/packages.ks
+          - ingredients/packages/virtual-machine-manager/post-scripts.ks
       bootloader:
-          grub: ingredients/bootloader/grub.ks
-          systemd-boot: ingredients/bootloader/systemd-boot.ks
+        grub: ingredients/bootloader/grub.ks
+        systemd-boot: ingredients/bootloader/systemd-boot.ks
+    optional:
+      hardware-support: ingredients/packages/hardware-support.ks
+      guest-agents: ingredients/guest-agents/base.ks
 
   # Live recipe - for live-desktop or live-server
   live:
@@ -71,26 +67,16 @@ templates:
     base: live-core
     required:
       - live-core: ingredients/live/core/base.ks
-      - version: ingredients/repo/fedora-43-mirrors.ks
-      - storage: ingredients/live/core/storage.ks
-      - bootloader: ingredients/live/core/bootloader/grub.ks
-      - locale: ingredients/core/locale.ks
-      - services: ingredients/core/services.ks
-      - network: ingredients/core/network.ks
-      - packages: ingredients/live/core/packages.ks
-      - post: ingredients/live/post/base.ks
-      - session: ingredients/live/post/session.ks
-      - rpmfusion-nonfree: ingredients/repo/rpmfusion-nonfree.ks
-    optional:
-      variant_type:
-        desktop:
-        server:
-      hardware-support: ingredients/packages/hardware-support.ks
-      guest-agents: ingredients/guest-agents/base.ks
-      hypervisor: ingredients/live/hypervisor.ks
-      security:
-        secure: ingredients/core/security/enabled.ks
-        "off": ingredients/core/security/disabled.ks
+      - { path: ingredients/repo/fedora-43-mirrors.ks, replaceable: true }
+      - { path: ingredients/live/core/storage.ks, replaceable: true }
+      - { path: ingredients/live/core/bootloader/grub.ks, replaceable: true }
+      - ingredients/core/locale.ks
+      - ingredients/core/services.ks
+      - ingredients/core/network.ks
+      - ingredients/live/core/packages.ks
+      - ingredients/live/post/base.ks
+      - ingredients/live/post/session.ks
+      - ingredients/repo/rpmfusion-nonfree.ks
     modifiers:
       version:
         "43": ingredients/repo/fedora-43-mirrors.ks
@@ -101,3 +87,10 @@ templates:
       bootloader:
         grub: ingredients/live/core/bootloader/grub.ks
         systemd-boot: ingredients/live/core/bootloader/systemd-boot.ks
+    optional:
+      hardware-support: ingredients/packages/hardware-support.ks
+      guest-agents: ingredients/guest-agents/base.ks
+      hypervisor: ingredients/live/hypervisor.ks
+      security:
+        secure: ingredients/core/security/enabled.ks
+        "off": ingredients/core/security/disabled.ks
