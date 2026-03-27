@@ -836,7 +836,7 @@ from pathlib import Path
 import sys
 sys.path.insert(0, '.')
 from generate_recipe import RecipeGenerator
-gen = RecipeGenerator(Path('../ingredients'), Path('recipe_templates.yaml'))
+gen = RecipeGenerator(Path('recipe_templates.yaml'))
 print('Templates:', list(gen.templates.keys()))
 "
 ```
