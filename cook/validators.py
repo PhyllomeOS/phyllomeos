@@ -72,28 +72,30 @@ class TemplateValidator:
            - Verifies 'required' key exists (base ingredients)
         
         2. Required Ingredients Check:
-           - Iterates through template['required'] list
-           - Resolves each path relative to project_root
+           - Iterates through template['required'] nested dict structure
+           - For each section and value, checks if path(s) are valid
            - Checks if the file actually exists
-           - Reports missing files as errors
         
-        3. Versioned Ingredients Check:
+        3. Modifier Ingredients Check:
+           - Checks template['modifiers'] structure
+           - For each modifier and value, checks referenced files exist
+        
+        4. Optional Ingredients Check:
+           - Checks paths in template['optional']
+           - Verifies referenced files exist on disk
+        
+        5. Versioned Ingredients Check:
            - Checks paths in template['versioned']
            - If the path contains {version}, it's deferred to generation time
            - Otherwise checks if the resolved file exists
         
-        4. Conditional Ingredients Check:
-           - Iterates through template['conditional']
-           - For each modifier and value, checks referenced files exist
-           - Handles both single paths and lists of paths
-        
-        5. Flag Ingredients Check:
+        6. Flag Ingredients Check:
            - Checks all paths in template['flags']
-           - Flags are boolean on/off switches
+           - Flags are simple boolean on/off switches
         
         Args:
-            template: The template dictionary to validate
-                     Structure: {'description': str, 'required': [...], ...}
+            template: The entire template YAML content
+                     Structure: {'name': str, 'description': str, 'required': {...}, ...}
         
         Returns:
             List of validation error strings (empty if valid)

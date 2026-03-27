@@ -103,9 +103,6 @@ def main() -> None:
                         action='store_true',
                         help='Show what would be generated without writing files')
 
-    # Single generation mode options
-    parser.add_argument('--type', '-T',
-                        help='Recipe type (e.g., virtual-desktop)')
     parser.add_argument('--output', '-o',
                         type=Path, help='Output file (single generation)')
 
@@ -167,8 +164,9 @@ def main() -> None:
         return
 
     # === SINGLE GENERATION MODE ===
-    # If --type is specified, generate one recipe with the given options
-    if args.type:
+    # If --output is specified without --manifest, generate one recipe with the given options
+    # This makes --output without --manifest trigger single generation mode
+    if args.output and not args.manifest:
         generate_single(args, generator)
         return
 
@@ -396,12 +394,8 @@ def generate_from_manifest(args: argparse.Namespace, generator: RecipeGenerator)
 
     # Generate all recipes from the manifest
     for recipe_config in manifest.get('recipes', []):
-        recipe_type = recipe_config.get('recipe_type', recipe_config['name'])
-        if recipe_type not in generator.templates:
-            print(f"Error: Unknown recipe type in manifest: {recipe_type}", file=sys.stderr)
-            sys.exit(1)
-
-        # Get variants for this recipe type
+        # No recipe_type needed - use the universal template directly
+        name = recipe_config.get('name', 'unnamed')
         variants = recipe_config.get('variants', [])
         
         # Expand list-valued variants (e.g., version: ["43", "rawhide"])
@@ -411,11 +405,10 @@ def generate_from_manifest(args: argparse.Namespace, generator: RecipeGenerator)
             # Extract version and other modifiers from variant
             version = variant['version']
             modifiers = {k: v for k, v in variant.items() if k not in ['name', 'version']}
-            modifiers = {k: v for k, v in variant.items() if k not in ['name', 'version']}
             # name kept for manifest organization only, not passed to generator
 
             # Generate the recipe content
-            content = generator.generate(recipe_type, version, **modifiers)
+            content = generator.generate(version, **modifiers)
 
             # Optional validation on generated content
             if args.validate and not args.dry_run:
@@ -423,13 +416,13 @@ def generate_from_manifest(args: argparse.Namespace, generator: RecipeGenerator)
                 semantic_issues = semantic_validator.validate(content, version)
                 all_issues = issues + semantic_issues
                 if all_issues:
-                    print(f"Validation issues for {recipe_type} {version}:", file=sys.stderr)
+                    print(f"Validation issues for {name} {version}:", file=sys.stderr)
                     for issue in issues:
                         print(f"  - {issue}", file=sys.stderr)
                     sys.exit(1)
 
             # Generate output filename based on recipe parameters
-            filename = generator.generate_filename(recipe_type, version, **modifiers)
+            filename = generator.generate_filename(version, **modifiers)
             output_path = args.output_dir / filename
 
             # Handle dry-run mode
@@ -479,7 +472,7 @@ def generate_single(args: argparse.Namespace, generator: RecipeGenerator) -> Non
     modifiers = {k: v for k, v in modifiers.items() if v is not None}
 
     # Generate the recipe
-    content = generator.generate(args.type, args.version, **modifiers)
+    content = generator.generate(args.version, **modifiers)
 
     # Optional validation
     if args.validate:

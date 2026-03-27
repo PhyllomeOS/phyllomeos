@@ -11,13 +11,12 @@
 # Example: version: ["43", "rawhide"] + storage: ["standard", "encrypted"]
 # creates 4 variants: (43,standard), (43,encrypted), (rawhide,standard), (rawhide,encrypted)
 #
-# NOTE: The 'name' field is for organization only and doesn't affect generated filenames.
-# The recipe type is always 'install' or 'live' from recipe_templates.yaml
+# NOTE: The 'name' field is no longer used with the universal template.
+# It can be kept for organization but doesn't affect generated filenames.
 
 recipes:
-  # Install desktop variants
+  # Desktop variants
   - name: desktop
-    recipe_type: install
     variants:
       - version: ["43", "rawhide"]
         desktop: gnome
@@ -28,9 +27,8 @@ recipes:
         initial-setup: server
         security: secure
 
-  # Install server variants
+  # Server variants
   - name: server
-    recipe_type: install
     variants:
       - version: ["43", "rawhide"]
         storage: standard
@@ -40,9 +38,8 @@ recipes:
         initial-setup: server
         security: secure
 
-  # Install hypervisor variants
+  # Hypervisor variants
   - name: hypervisor
-    recipe_type: install
     variants:
       - version: 43
         storage: standard
@@ -54,9 +51,8 @@ recipes:
         initial-setup: server
         security: secure
 
-  # Install desktop-hypervisor variants
+  # Desktop-hypervisor variants
   - name: desktop-hypervisor
-    recipe_type: install
     variants:
       - version: 43
         desktop: gnome
@@ -70,16 +66,14 @@ recipes:
         security: secure
 
   # Live desktop variants
-  - name: desktop
-    recipe_type: live
+  - name: desktop-live
     variants:
       - version: 43
         hardware-support: true
         guest-agents: false
 
   # Live server variants
-  - name: server
-    recipe_type: live
+  - name: server-live
     variants:
       - version: 43
         hardware-support: true

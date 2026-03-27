@@ -56,17 +56,18 @@ class RecipeGenerator:
     
     This is the core class that powers the recipe generation system. It works by:
     1. Loading template definitions from a YAML file (recipe_templates.yaml)
-    2. Taking a recipe type (like "virtual-desktop") and version (like "43")
-    3. Accepting optional modifiers (like desktop environment, storage type, security mode)
-    4. Building a list of %include directives that reference ingredient fragments
-    5. Outputting a complete kickstart file with header and include statements
-    
-    The templates define which ingredients are required, optional, conditional, or version-specific.
-    Modifiers control which optional ingredients get included based on user preferences.
+    2. The template defines all the base ingredients and modifier options
+    3. Accepting version (Fedora version) and optional modifiers
+    4. Building a list of %include directives pointing to ingredient fragments
+    5. Outputting a complete kickstart file with header and includes
+
+    Think of it as a "recipe assembler" - the template is the master recipe,
+    modifiers are your customizations, and the output is a complete installation
+    script that pulls in the right ingredient fragments.
     
     Example usage:
         generator = RecipeGenerator(Path('recipe_templates.yaml'))
-        recipe = generator.generate('virtual-desktop', '43', desktop='gnome', storage='encrypted')
+        recipe = generator.generate('43', desktop='gnome', storage='encrypted')
         # Returns a string containing the complete kickstart recipe
     """
 
@@ -83,26 +84,24 @@ class RecipeGenerator:
     def _load_templates(self, path: Path) -> Dict:
         """Load recipe templates from YAML file.
         
-        This method reads the templates YAML file and extracts the 'templates' section.
-        The YAML file contains a top-level 'templates' key with all recipe type definitions.
+        This method reads the templates YAML file and loads it as a single universal template.
+        The YAML file now contains the proteus template directly without a 'templates' wrapper.
         
         Args:
             path: Path to the templates YAML file (can be absolute or relative)
         
         Returns:
-            Dictionary mapping recipe types to their template definitions.
+            The template dictionary (entire YAML content).
             Example structure:
             {
-                'virtual-desktop': {
-                    'description': 'Virtual machine with desktop',
-                    'required': ['ingredients/base.cfg', ...],
-                    'modifiers': {'desktop': {...}, 'storage': {...}},
-                    'optional': {...},
-                    'versioned': {...},
-                    'conditional': {...},
-                    'flags': {...}
-                },
-                ...
+                'name': 'proteus',
+                'description': 'Universal template...',
+                'required': {...},
+                'modifiers': {...},
+                'optional': {...},
+                'versioned': {...},
+                'conditional': {...},
+                'flags': {...}
             }
         
         Raises:
@@ -116,8 +115,8 @@ class RecipeGenerator:
                 template_path = self.project_root / path
             with open(template_path, encoding='utf-8') as f:
                 data = yaml.safe_load(f)
-            # Extract the 'templates' section - the YAML file has this as top-level key
-            return data['templates']
+            # Return the entire YAML content as the single universal template
+            return data
         except FileNotFoundError:
             print(f"Error: Templates file not found: {template_path}")
             exit(2)
@@ -125,16 +124,13 @@ class RecipeGenerator:
             print(f"Error: Invalid YAML in {template_path}: {e}")
             exit(2)
 
-    def generate(self, recipe_type: str, version: str, **modifiers) -> str:
+    def generate(self, version: str, **modifiers) -> str:
         """Generate a complete kickstart recipe from a template with modifiers.
         
-        This is the main entry point for recipe generation. It takes a recipe type
-        (like "virtual-desktop"), a Fedora version, and any number of modifier options,
-        then returns a complete kickstart file as a string.
+        This is the main entry point for recipe generation. It takes a Fedora version
+        and any number of modifier options, then returns a complete kickstart file as a string.
         
         Args:
-            recipe_type: The type of recipe to generate. Must match a key in the templates.
-                        Examples: 'virtual-desktop', 'server', 'hypervisor'
             version: Fedora version string, typically '43' or 'rawhide'.
                     This affects which versioned ingredients are included.
             **modifiers: Keyword arguments for recipe customization:
@@ -153,13 +149,9 @@ class RecipeGenerator:
             - %include directives for all required and selected ingredients
             
         Raises:
-            SystemExit: If the recipe_type is not found in templates
+            SystemExit: If the template is invalid or missing required ingredients
         """
-        if recipe_type not in self.templates:
-            print(f"Error: Unknown recipe type: {recipe_type}")
-            exit(1)
-
-        template = self.templates[recipe_type]
+        template = self.templates
 
         # Build the output in two parts:
         # 1. Header with ASCII art and description
@@ -180,13 +172,13 @@ class RecipeGenerator:
         describes what type of system it will install.
         
         Args:
-            description: Human-readable description of the recipe type
-                        (e.g., "Virtual desktop environment")
+            description: Human-readable description of the template
+                        (e.g., "Universal template for generating kickstart recipes")
         
         Returns:
             List of strings representing the header lines, including:
             - The ASCII art banner (from HEADER_ASCII_ART constant)
-            - A comment line with the recipe description
+            - A comment line with the template description
             - An empty line to separate header from content
         """
         header = HEADER_ASCII_ART.copy()
@@ -240,18 +232,44 @@ class RecipeGenerator:
 
         # === 1. REQUIRED INGREDIENTS ===
         # These are always included, regardless of user options
-        # Example: base system, bootloader, partition scheme
-        for item in template.get('required', []):
-            if isinstance(item, dict):
-                # Dict format allows conditional logic within required
-                fragment_path = list(item.values())[0]
-            else:
-                # Simple string path
-                fragment_path = item
-
-            if fragment_path not in seen:
-                includes.append(f"%include {fragment_path}")
-                seen.add(fragment_path)
+        # The template uses nested dict structure: required[section][value] = path or [paths]
+        # For each section, use either:
+        # - A modifier value that overrides the default
+        # - The default value from the first/only key in the section
+        
+        for section_name, section_config in template.get('required', {}).items():
+            if isinstance(section_config, dict):
+                # Find the value to use for this section
+                # Check modifiers first, then use default
+                default_value = None
+                override_value = None
+                
+                # Get the default value (first key in dict, or only key)
+                keys = list(section_config.keys())
+                if keys:
+                    default_value = keys[0]
+                
+                # Check if any modifier overrides this section
+                for mod_key, mod_value in modifiers.items():
+                    mod_key_normalized = mod_key.replace("_", "-")
+                    if mod_key_normalized == section_name and isinstance(mod_value, str):
+                        if mod_value in section_config:
+                            override_value = mod_value
+                            break
+                
+                # Use override if available, otherwise use default
+                value_to_use = override_value if override_value else default_value
+                
+                if value_to_use and value_to_use in section_config:
+                    fragment_path = section_config[value_to_use]
+                    if isinstance(fragment_path, list):
+                        for fp in fragment_path:
+                            if fp is not None and fp not in seen:
+                                includes.append(f"%include {fp}")
+                                seen.add(fp)
+                    elif fragment_path and fragment_path not in seen:
+                        includes.append(f"%include {fragment_path}")
+                        seen.add(fragment_path)
 
         # === 2. MODIFIER INGREDIENTS ===
         # Process user-specified options like desktop, storage, security
@@ -437,9 +455,10 @@ class RecipeGenerator:
             mod_key_normalized = mod_key.replace('_', '-')
             if mod_key_normalized in template.get('flags', {}):
                 fragment_path = template['flags'][mod_key_normalized]
-                if mod_value is True and fragment_path not in seen:
-                    includes.append(f"%include {fragment_path}")
-                    seen.add(fragment_path)
+                if mod_value is True:
+                    if fragment_path not in seen:
+                        includes.append(f"%include {fragment_path}")
+                        seen.add(fragment_path)
 
         return includes
 
@@ -467,36 +486,42 @@ class RecipeGenerator:
             return modifiers[alt_key]
         return default
 
-    def generate_filename(self, recipe_type: str, version: str, **modifiers) -> str:
+    def generate_filename(self, version: str, **modifiers) -> str:
         """Generate recipe filename from parameters.
         
         Creates a descriptive filename that encodes the recipe's configuration.
         This allows users to identify what a recipe does just from its name.
         
-        Filename format:
-        {recipe_type}-{guest_type}-{variant}-{desktop}-{security}-{storage}-{version}.cfg
+        Filename format (using Approach A - primary modifier first):
+        {primary_modifier}-{other_modifiers}-{version}.cfg
         
         Examples:
-        - virtual-desktop_gnome_43.cfg
-        - server_encrypted_43.cfg
-        - hypervisor_kvm_devel_43.cfg
+        - gnome_43.cfg (desktop=gnome is primary modifier)
+        - encrypted_43.cfg (storage=encrypted is primary modifier)
+        - server_43.cfg (initial_setup=server with no desktop)
+        - gnome_encrypted_43.cfg (when multiple modifiers are set)
         
-        The method only adds suffixes for non-default values:
-        - GNOME is default → only add if different (labwc)
-        - secure is default → only add if devel
-        - standard is default → only add if encrypted
+        The method prioritizes modifiers to create intuitive filenames:
+        - If `desktop` is present, it becomes the primary modifier
+        - Otherwise, `storage` or `initial_setup` can be primary
+        - `version` is always included at the end
         
         Args:
-            recipe_type: Base recipe type (e.g., 'virtual-desktop')
             version: Fedora version (e.g., '43' or 'rawhide')
             **modifiers: All the modifier values that affect the recipe
         
         Returns:
             Filename string ending in .cfg
         """
-        # Build base parts - start with recipe type
-        parts = [recipe_type.replace('_', '-')]
-
+        # Build base parts - start with version (required)
+        parts = []
+        
+        # Determine primary modifier (Approach A)
+        # If desktop is present, use it as primary modifier
+        desktop = self._get_modifier(modifiers, 'desktop')
+        if desktop:
+            parts.append(desktop)
+        
         # Add guest_agents suffix (for both True and False)
         # Distinguishes between virtual machines and bare metal installs
         guest_agents = self._get_modifier(modifiers, 'guest_agents')
@@ -516,7 +541,7 @@ class RecipeGenerator:
         # Add hypervisor_type suffix
         # For hypervisors, include the type (kvm, xen, etc.)
         if modifiers.get('hypervisor_type'):
-            ht = modifiers['hypervisor_type']
+            ht = modifiers.get('hypervisor_type')
             if isinstance(ht, list):
                 # Multiple hypervisor types
                 for h in ht:
@@ -525,17 +550,6 @@ class RecipeGenerator:
             elif ht:
                 # Single hypervisor type
                 parts.append(ht)
-
-        # Add desktop
-        desktop = self._get_modifier(modifiers, 'desktop')
-        if desktop:
-            parts.append(desktop)
-
-        # Add security suffix (devel only, since secure is default)
-        # Security defaults to 'secure', so only 'devel' gets noted
-        security = self._get_modifier(modifiers, 'security')
-        if security == 'off':
-            parts.append('devel')
 
         # Add storage suffix (encrypted only, since standard is default)
         # Standard storage is default, encrypted gets noted
@@ -552,10 +566,7 @@ class RecipeGenerator:
         # Add initial_setup suffix (non-server values)
         # Server is default, other setup types get noted
         initial_setup = self._get_modifier(modifiers, 'initial_setup')
-        if initial_setup == 'server':
-            # Server is the default for non-desktop, non-hypervisor
-            parts.append('server')
-        elif initial_setup and initial_setup != 'server':
+        if initial_setup and initial_setup != 'server':
             parts.append(f'{initial_setup}-setup')
 
         # Add bootloader suffix (systemd-boot only)
@@ -564,7 +575,7 @@ class RecipeGenerator:
         if bootloader == 'systemd-boot':
             parts.append('systemd-boot')
 
-        # Add version - always included
+        # Add version - always included at the end
         parts.append(str(version))
 
         # Join all parts with underscores and add .cfg extension

@@ -14,14 +14,19 @@ are used in batch recipe generation mode. It has two main responsibilities:
 
 Manifest Example:
     recipes:
-      - name: virtual-desktop
+      - name: desktop
         variants:
           - version: 43
             desktop: gnome
+            storage: encrypted
           - version: ["43", "rawhide"]
             storage: ["standard", "encrypted"]
     
-    The above would generate 4 recipes (2 versions × 2 storage types).
+    The above would generate 3 recipes (1 desktop + 2 rawhide variants).
+
+With the universal template (proteus), recipes are generated using a single
+template that supports all system types. The 'name' field is purely for
+organization and doesn't affect the generated filenames.
 
 The key insight is that list values in variants represent "multiple values for
 this field", and we want to generate one recipe for each combination. This is
@@ -89,9 +94,10 @@ class ManifestProcessor:
         This method performs schema-level validation of a manifest dictionary.
         It checks that:
         1. The top-level 'recipes' key exists
-        2. Each recipe configuration has a 'name' field
+        2. Each recipe configuration has a 'name' field (for organization only)
         3. Each recipe configuration has a 'variants' field
         4. Each variant has a 'version' field
+        5. No 'recipe_type' field exists (old format, removed with universal template)
         
         This is a basic structural check that catches obvious errors before
         trying to process the manifest. It doesn't validate the content of
@@ -117,6 +123,11 @@ class ManifestProcessor:
             if 'variants' not in recipe_config:
                 errors.append(f"Recipe '{recipe_config.get('name', 'unnamed')}' "
                             "missing 'variants' key")
+            
+            # Check for old recipe_type field (which is no longer used)
+            if 'recipe_type' in recipe_config:
+                errors.append(f"Recipe '{recipe_config.get('name', 'unnamed')}' "
+                            "has 'recipe_type' field which is no longer used with universal template")
 
         return errors
 

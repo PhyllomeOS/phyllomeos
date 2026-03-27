@@ -5,8 +5,11 @@ the recipe generator. It follows the common Python pattern of having a script
 that can be run directly or imported as a module.
 
 Usage:
-    # Run as script
-    python generate_recipe.py --type virtual-desktop --version 43 --output output.cfg
+    # Run as script for single generation
+    python generate_recipe.py --output my-recipe.cfg --version 43 --desktop gnome
+    
+    # Or using the universal template with modifiers
+    python generate_recipe.py --output single.cfg --version 43 --guest-agents true
     
     # Or from another Python script
     from generate_recipe import main
