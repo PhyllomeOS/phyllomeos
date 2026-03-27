@@ -1,5 +1,23 @@
-#!/usr/bin/env python3
-"""Entry point for the recipe generator."""
+"""Entry point for the recipe generator.
+
+This is a simple wrapper script that provides the main entry point for running
+the recipe generator. It follows the common Python pattern of having a script
+that can be run directly or imported as a module.
+
+Usage:
+    # Run as script
+    python generate_recipe.py --type virtual-desktop --version 43 --output output.cfg
+    
+    # Or from another Python script
+    from generate_recipe import main
+    main()
+
+This module doesn't do any processing itself - it delegates to the cli.main()
+function which handles all the actual work. The separation allows for:
+- Easy command-line execution (this file is the entry point)
+- Module imports without triggering execution
+- Clean separation of concerns (cli.py handles CLI, this just delegates)
+"""
 
 from cli import main
 
