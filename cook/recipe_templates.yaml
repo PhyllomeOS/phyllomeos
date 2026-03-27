@@ -1,0 +1,96 @@
+# Recipe Templates for Phyllome OS Kickstart Generator
+# Each template defines the structure for a recipe type
+# Fragment paths use relative paths from project root
+
+templates:
+  # Install recipe - for desktop, server, or hypervisor
+  install:
+    description: "An install recipe for desktop, server, or hypervisor"
+    base: core
+    required:
+      - core: core/base.ks
+      - { path: repo/fedora-43-mirrors.ks, replaceable: true }
+      - { path: storage/standard.ks, replaceable: true }
+      - { path: bootloader/grub.ks, replaceable: true }
+      - core/locale.ks
+      - core/services.ks
+      - core/network.ks
+      - packages/core-group.ks
+      - packages/fedora-remix.ks
+      - packages/hand-picked.ks
+      - { path: core/security/enabled.ks, replaceable: true }
+      - { path: initial-setup/server/config.ks, replaceable: true }
+    modifiers:
+      version:
+        "43": repo/fedora-43-mirrors.ks
+        "rawhide": repo/rawhide-mirrors.ks
+      storage:
+        standard: storage/standard.ks
+        encrypted: storage/encrypted.ks
+      desktop:
+        gnome:
+          - desktop/gnome/config.ks
+          - desktop/gnome/packages.ks
+          - desktop/gnome/post-scripts.ks
+        labwc:
+          - desktop/labwc/config.ks
+      security:
+        secure: core/security/enabled.ks
+        "off": core/security/disabled.ks
+      initial-setup:
+        server: initial-setup/server/config.ks
+        desktop: initial-setup/desktop/config.ks
+        gnome: initial-setup/gnome/config.ks
+        generic-wayland: initial-setup/generic-wayland/config.ks
+      hypervisor_type:
+        amdcpu: hypervisor/amdcpu.ks
+        intelcpu: hypervisor/intelcpu.ks
+        intelgpu: hypervisor/intelgpu.ks
+      hypervisor:
+        base:
+          - hypervisor/base/packages.ks
+          - hypervisor/base/services.ks
+          - hypervisor/base/post-scripts.ks
+        desktop:
+          - packages/virtual-machine-manager/packages.ks
+          - packages/virtual-machine-manager/post-scripts.ks
+      bootloader:
+        grub: bootloader/grub.ks
+        systemd-boot: bootloader/systemd-boot.ks
+    optional:
+      hardware-support: packages/hardware-support.ks
+      guest-agents: guest-agents/base.ks
+
+  # Live recipe - for live-desktop or live-server
+  live:
+    description: "A live recipe for live-desktop or live-server"
+    base: live-core
+    required:
+      - live-core: live/core/base.ks
+      - { path: repo/fedora-43-mirrors.ks, replaceable: true }
+      - { path: live/core/storage.ks, replaceable: true }
+      - { path: live/core/bootloader/grub.ks, replaceable: true }
+      - core/locale.ks
+      - core/services.ks
+      - core/network.ks
+      - live/core/packages.ks
+      - live/post/base.ks
+      - live/post/session.ks
+      - repo/rpmfusion-nonfree.ks
+    modifiers:
+      version:
+        "43": repo/fedora-43-mirrors.ks
+        "rawhide": repo/rawhide-mirrors.ks
+      storage:
+        standard: live/core/storage.ks
+        encrypted: live/core/storage.ks
+      bootloader:
+        grub: live/core/bootloader/grub.ks
+        systemd-boot: live/core/bootloader/systemd-boot.ks
+    optional:
+      hardware-support: packages/hardware-support.ks
+      guest-agents: guest-agents/base.ks
+      hypervisor: live/hypervisor.ks
+      security:
+        secure: core/security/enabled.ks
+        "off": core/security/disabled.ks
