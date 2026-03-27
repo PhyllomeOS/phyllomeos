@@ -25,7 +25,7 @@ recipes:
         hardware-support: [true, false]
         guest-agents: [true, false]
         initial-setup: server
-        security: ["enabled", "disabled"]
+        security: enabled
 
   # Server variants
   - name: server
