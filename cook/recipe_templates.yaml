@@ -13,8 +13,7 @@ required:
   bootloader:
     "grub": bootloader/grub.ks
   storage:
-    "standard": storage/standard.ks
-    "encrypted": storage/encrypted.ks
+    "ext4": storage/standard.ks
   locale:
     "fr_CH": core/locale.ks 
   services:
@@ -34,6 +33,8 @@ required:
 modifiers:
   repository: 
     "rawhide": repo/rawhide-mirrors.ks
+  storage:
+    "encrypted": storage/encrypted.ks
   security:
     "disabled": core/security/disabled.ks
   initial-setup:

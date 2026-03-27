@@ -12,21 +12,26 @@ help:
 	@echo "  clean             - Remove generated recipes"
 	@echo "  install-deps      - Install Python dependencies"
 
-all: generate-recipes validate-recipes clean-dishes flatten-dishes
-	@echo "✓ All recipes generated, validated, and flattened to dishes"
+all: generate-recipes flatten-dishes validate-recipes
+	@echo "✓ All recipes generated, flattened, and validated"
 
 install-deps:
 	pip install -r requirements.txt
 
 generate-recipes:
-	rm -f recipes/*.cfg
-	python3 generate_recipe.py \
+	@rm -f recipes/*.cfg
+	@python3 generate_recipe.py \
 		--manifest recipes_manifest.yaml \
 		--output-dir recipes/
 
 validate-recipes:
-	python3 generate_recipe.py \
-		--validate recipes/*.cfg
+	@echo "Validating recipes..."
+	@for f in dishes/*.cfg; do \
+		if [ -f "$$f" ]; then \
+			echo "  Processing: $$(basename $$f)"; \
+			ksflatten -c "$$f" -o /dev/null 2>&1 && echo "    ✓ OK" || { echo "    ✗ FAILED"; exit 1; }; \
+		fi; \
+	done
 
 flatten-dishes:
 	@echo "Flattening recipes to dishes..."

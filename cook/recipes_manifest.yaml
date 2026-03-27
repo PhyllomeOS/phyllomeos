@@ -21,11 +21,11 @@ recipes:
       - version: ["43", "rawhide"]
         desktop: gnome
         storage: ["standard", "encrypted"]
-        bootloader: grub
+        bootloader: ["grub", "systemd-boot"]
         hardware-support: [true, false]
         guest-agents: [true, false]
         initial-setup: server
-        security: secure
+        security: ["enabled", "disabled"]
 
   # Server variants
   - name: server
