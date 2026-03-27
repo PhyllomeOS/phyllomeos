@@ -12,7 +12,7 @@ help:
 	@echo "  clean             - Remove generated recipes"
 	@echo "  install-deps      - Install Python dependencies"
 
-all: generate-recipes validate-recipes flatten-dishes
+all: generate-recipes validate-recipes clean-dishes flatten-dishes
 	@echo "✓ All recipes generated, validated, and flattened to dishes"
 
 install-deps:
