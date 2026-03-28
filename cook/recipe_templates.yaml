@@ -7,7 +7,7 @@ name: proteus
 description: "Universal template to generate kickstart recipes for a server, a desktop or a hypervisor system"
 required:
   repository: 
-    "f43": repo/fedora-43-mirrors.ks
+    "43": repo/fedora-43-mirrors.ks
   core:
     "base": core/base.ks
   bootloader:
