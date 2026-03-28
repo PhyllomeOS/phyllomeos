@@ -25,7 +25,6 @@ recipes:
         hardware-support: [true, false]
         guest-agents: [true, false]
         initial-setup: server
-        security: enabled
 
   # Server variants
   - name: server
@@ -36,7 +35,6 @@ recipes:
         hardware-support: false
         guest-agents: true
         initial-setup: server
-        security: secure
 
   # Hypervisor variants
   - name: hypervisor
@@ -49,7 +47,6 @@ recipes:
         hypervisor: base
         hypervisor_type: ["amdcpu", "intelcpu"]
         initial-setup: server
-        security: secure
 
   # Desktop-hypervisor variants
   - name: desktop-hypervisor
@@ -63,7 +60,6 @@ recipes:
         hypervisor: desktop
         hypervisor_type: ["amdcpu", "intelcpu"]
         initial-setup: server
-        security: secure
 
   # Live desktop variants
   - name: desktop-live
