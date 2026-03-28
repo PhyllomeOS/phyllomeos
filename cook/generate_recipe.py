@@ -190,17 +190,17 @@ def get_optional_ingredients(variant):
 def generate_filename(variant, group_name=None):
     """Generate filename from variant configuration."""
     parts = []
-    
-    # Desktop (if not using hypervisor, it's "bare-metal")
+
+    # Guest agents
+    if variant.get('guest-agents'):
+        parts.append('virtual')
+
+    # Desktop
     desktop = variant.get('desktop')
     if desktop:
         parts.append(desktop)
-    
-    # Add "bare-metal" for non-hypervisor desktop or server variants
-    if desktop and not variant.get('hypervisor') and not variant.get('hypervisor_type'):
-        parts.append('bare-metal')
-    
-    # Hypervisor type - add before storage/bootloader for hypervisor variants
+
+    # Hypervisor type
     if variant.get('hypervisor'):
         parts.append(f"hypervisor-{variant['hypervisor']}")
     
@@ -211,21 +211,17 @@ def generate_filename(variant, group_name=None):
     if variant.get('storage') == 'encrypted':
         parts.append('encrypted')
     
-    # Bootloader (only for non-live variants)
+    # Bootloader
     if variant.get('bootloader') == 'systemd-boot':
         parts.append('systemd-boot')
-    
+
     # Hardware support
     if variant.get('hardware-support'):
         parts.append('hardware-support')
-    
-    # Guest agents (only for live variants)
-    if variant.get('guest-agents'):
-        parts.append('guest-agents')
-    
+        
     # Security (only if not default)
     if variant.get('security') == 'disabled':
-        parts.append('disabled')
+        parts.append('security-disabled')
     
     # Add group name if specified (for uniqueness)
     if group_name and group_name in ['desktop-live', 'server-live']:
