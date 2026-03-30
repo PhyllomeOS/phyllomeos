@@ -3,12 +3,12 @@
 # Edit this file to add new variants, then run: make generate-recipes
 #
 # Supported syntax:
-# - Single values: version: "43"
-# - List values: version: ["43", "rawhide"] (expands to multiple variants)
+# - Single values: repository: "43"
+# - List values: repository: ["43", "rawhide"] (expands to multiple variants)
 # - List modifiers: hypervisor_type: ["amdcpu", "intelcpu"] (expands to separate variants)
 #
 # NOTE: List values create a cartesian product.
-# Example: version: ["43", "rawhide"] + storage: ["standard", "encrypted"]
+# Example: repository: ["43", "rawhide"] + storage: ["standard", "encrypted"]
 # creates 4 variants: (43,standard), (43,encrypted), (rawhide,standard), (rawhide,encrypted)
 #
 # NOTE: The 'name' field is no longer used with the universal template.
@@ -18,59 +18,55 @@ recipes:
   # Desktop variants
   - name: desktop
     variants:
-      - version: ["43", "rawhide"]
+      - repository: ["43", "rawhide"]
         desktop: gnome
         storage: ["standard", "encrypted"]
         bootloader: ["grub", "systemd-boot"]
         hardware-support: [true, false]
         guest-agents: [true, false]
-        initial-setup: server
 
-  # Server variants
-  - name: server
-    variants:
-      - version: ["43", "rawhide"]
-        storage: standard
-        bootloader: grub
-        hardware-support: false
-        guest-agents: true
-        initial-setup: server
-
-  # Hypervisor variants
-  - name: hypervisor
-    variants:
-      - version: 43
-        storage: standard
-        bootloader: grub
-        hardware-support: true
-        guest-agents: false
-        hypervisor: base
-        hypervisor_type: ["amdcpu", "intelcpu"]
-        initial-setup: server
-
-  # Desktop-hypervisor variants
-  - name: desktop-hypervisor
-    variants:
-      - version: 43
-        desktop: gnome
-        storage: standard
-        bootloader: grub
-        hardware-support: false
-        guest-agents: true
-        hypervisor: desktop
-        hypervisor_type: ["amdcpu", "intelcpu"]
-        initial-setup: server
-
-  # Live desktop variants
-  - name: desktop-live
-    variants:
-      - version: 43
-        hardware-support: true
-        guest-agents: false
-
-  # Live server variants
-  - name: server-live
-    variants:
-      - version: 43
-        hardware-support: true
-        guest-agents: false
+#  # Server variants
+#  - name: server
+#    variants:
+#      - repository: ["43", "rawhide"]
+#        storage: standard
+#        bootloader: grub
+#        hardware-support: false
+#        guest-agents: true
+#
+#  # Hypervisor variants
+#  - name: hypervisor
+#    variants:
+#      - repository: 43
+#        storage: standard
+#        bootloader: grub
+#        hardware-support: true
+#        guest-agents: false
+#        hypervisor: base
+#        hypervisor_type: ["amdcpu", "intelcpu"]
+#
+#  # Desktop-hypervisor variants
+#  - name: desktop-hypervisor
+#    variants:
+#      - repository: 43
+#        desktop: gnome
+#        storage: standard
+#        bootloader: grub
+#        hardware-support: false
+#        guest-agents: true
+#        hypervisor: desktop
+#        hypervisor_type: ["amdcpu", "intelcpu"]
+#
+#  # Live desktop variants
+#  - name: desktop-live
+#    variants:
+#      - repository: 43
+#        hardware-support: true
+#        guest-agents: false
+#
+#  # Live server variants
+#  - name: server-live
+#    variants:
+#      - repository: 43
+#        hardware-support: true
+#        guest-agents: false

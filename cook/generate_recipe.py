@@ -228,7 +228,7 @@ def generate_filename(variant, group_name=None):
         parts.append(group_name.replace('live', ''))
     
     # Version
-    parts.append(str(variant.get('version', '43')))
+    parts.append(str(variant.get('repository', '43')))
     
     return '_'.join(parts) + '.cfg'
 
