@@ -142,7 +142,7 @@ fi
 echo "You selected: $uri"
 
 # Get a list of files in "dishes" directory
-mapfile -t dish_name < <(find "dishes/" -maxdepth 1 -type f \( -name "virtual*" \) -printf "%f\n" | sed 's/\.[^.]*$//')
+mapfile -t dish_name < <(find "cook/dishes/" -maxdepth 1 -type f \( -name "virtual*" \) -printf "%f\n" | sed 's/\.[^.]*$//')
 
 # Check if there are any files
 if [ ${#dish_name[@]} -eq 0 ]; then
@@ -220,7 +220,7 @@ virt-install \
     --memballoon none \
     --disk path="${disk_path}/${vm_name}.img",format=raw,bus=virtio,cache=writeback,size="$disk_size" \
     --location="$location_param" \
-    --initrd-inject ./dishes/"$vm_name".cfg \
+    --initrd-inject cook/dishes/"$vm_name".cfg \
     --extra-args "inst.ks=file:/$vm_name.cfg" 
 
 echo "virt-install command executed with VM name: $vm_name"
