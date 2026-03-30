@@ -49,8 +49,8 @@ TEMPLATES = {
             'extra': 'packages/hand-picked.ks',
         },
         'security': {
-            'enabled': 'core/security/enabled.ks',
-            'disabled': 'core/security/disabled.ks',
+            'secure': 'core/security/enabled.ks',
+            'insecure': 'core/security/disabled.ks',
         },
         'initial-setup': {
             'server': 'initial-setup/server/config.ks',
@@ -125,14 +125,8 @@ def get_required_ingredients(variant):
     """Get required ingredients for a variant."""
     ingredients = []
     
-    # Handle special case: security "secure" maps to "enabled"
-    security = variant.get('security', 'enabled')
-    if security == 'secure':
-        security = 'enabled'
-    
     # Build variant dict with special mappings
     variant_map = dict(variant)
-    variant_map['security'] = security
     
     for category, mapping in TEMPLATES['required'].items():
         key = variant_map.get(category, list(mapping.keys())[0])

@@ -27,7 +27,7 @@ required:
   extra:
     "extra": packages/hand-picked.ks
   security:
-    "enabled": core/security/enabled.ks
+    "secure": core/security/enabled.ks
   initial-setup:
     "server": initial-setup/server/config.ks
 modifiers:
