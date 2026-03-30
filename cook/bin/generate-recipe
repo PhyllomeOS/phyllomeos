@@ -1,2 +1,2 @@
 #!/bin/bash
-exec "$(dirname "$0")/../recipe-generator/generate_recipe.py" "$@"
+exec "$(dirname "$0")/../generate_recipe.py" "$@"
